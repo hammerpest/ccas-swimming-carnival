@@ -1,0 +1,13 @@
+# Mac
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Local test output (never committed)
+diff-report/
+flow-shots/
+shots/
+shots-*/
+_site/

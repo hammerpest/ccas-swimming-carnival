@@ -1,0 +1,57 @@
+# Swim Opt 2.0-c: publish the app to GitHub Pages.
+# main goes to the site root, staging goes to /staging/.
+# A push to either branch rebuilds both, so the two links always match their branches.
+# Only the app files are published (index.html, css/, js/). Tests, baselines and docs stay in the repo only.
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches: [main, staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+      - name: Get staging
+        uses: actions/checkout@v4
+        with:
+          ref: staging
+          path: staging
+      - name: Put the site together
+        run: |
+          mkdir -p _site/staging
+          for b in main staging; do
+            dest=_site; [ "$b" = staging ] && dest=_site/staging
+            cp "$b/index.html" "$dest/"
+            cp -R "$b/css" "$b/js" "$dest/"
+          done
+          touch _site/.nojekyll
+          find _site -type f | sort
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
