@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version a. Replaces 28 October version u and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version b. Replaces 29 October version a and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version b): Check 2 (Claude in Chrome walk-through) PASSED on the staging link, see 2.16. Decision 108 recorded in version a's second save.
 
 Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107). GitHub Actions was switched off on the new repo, so nothing published at first; Claude switched it on (Actions tab, Enable Actions on this repository) and ran the workflow. Both links are LIVE: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and https://hammerpest.github.io/ccas-swimming-carnival/staging/ (staging). Both load with the staging Supabase project and no console errors. Swim Opt 2.0-c is DONE apart from checks 2 and 3. Decision 108: main uses the staging Supabase project for now.
 
@@ -402,6 +404,21 @@ Tested so far: rules (sql_test.py, 49 of 49), engine tests, six-device flow in t
 - Pushing uses HTTPS with a fine-grained token that only reaches this repo. Jordan pastes the token in the Terminal; Claude never sees it. macOS keeps it in the Keychain.
 - Checked locally: the site served from a sub-folder (as Pages does) runs the six-device flow with no errors, and Supabase mode loads with no console errors.
 
+### 2.16 Check 2: Claude in Chrome walk-through (29 October 2026, PASSED)
+
+Run in Jordan's Chrome on https://hammerpest.github.io/ccas-swimming-carnival/staging/ with the staging Supabase project. Jordan's Chrome window could not be resized (it stays 1512 x 670), so each device was a tab holding the app in a frame of the exact device size; the app lays out to the frame's size.
+- Organiser, MacBook 1512 wide: wrong PIN 0000 and organiser PIN 9999 checked on the server; year pick; 6 tiles; student import; test records (48); all 8 sections; lock and unlock.
+- Marshal, iPad landscape 1180 x 820: Not ready box, Race 3 (8 lanes, Girls 14 backstroke), Next heat, Race 4 (3 lanes), Confirm this heat, green sent line.
+- Place Judge, iPad portrait 820 x 1180: places 5, 4, 1, 2 on Race 3; Dead heat box and a true dead heat on Race 4.
+- Time Slips, phone 390 x 844: Check race, Cannot read, Read OK, Next race, Wrong slip, No signal.
+- Recorder, MacBook 1512 x 982: phone times and judge places arrived live; pink swaps; 7512 "Over 60 sec"; 2100 "Check this time" with Keep and Fix; a second Recorder (organiser tab) was locked out of Race 3 ("On another device"); Times checked on Race 3; dead heat box and Keep on Race 4.
+- Announcer, Results (all three tabs) and Houses, iPad landscape: Race 3 and 4 final result, NEW RECORD, DEAD HEAT, HRIS tags, house standings, age champions, program; the results lock showed live.
+- Compared with baseline-mac: Home PIN, organiser Students, Marshal lanes, Place Judge placed, Time Slips read OK and No signal, Recorder odd time, Announcer. Same layout, text and colours. Only expected differences: the header pill says "Online, all sent" (not "This device only (test)"), race numbers start at 3 (staging already had Races 1 and 2), names and times differ where the test slip times are random, and staging already had the 620 students loaded.
+- No sideways scroll on any screen at phone width (390) or iPad portrait (820): Home, year pick, tiles, all 6 jobs, all 8 organiser sections, Results (3 tabs), Houses.
+- Console: no errors in any tab. Network: every request 200 (app files, Red Hat fonts, PIN check, all Supabase reads and saves).
+- Not covered here: dark theme (it follows the Mac's own setting, which Claude may not change; check 1 covers dark pixel for pixel); Start a new carnival and past years (skipped so the staging year was not archived; tests/supabase_live.py covers them on staging); the main link (same files as staging).
+- Staging now holds test Races 1 to 4 from this walk-through. tests/supabase_live.py clears them.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -591,8 +608,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 1. DONE: Swim Opt 2.0-c (2.15). Both links live.
 2. DONE (decision 108): main uses the staging Supabase project until the live project is made.
-3. NEXT: Check 2: Claude in Chrome walk-through of the full carnival at every device size in Jordan's Chrome, on the Pages link. Read the console and network logs.
-4. Check 3: a separate fresh-eyes agent compares baseline/ with new screenshots (both themes, no sideways scroll on a phone, contrast, tap targets).
+3. DONE (2.16): Check 2, Claude in Chrome walk-through on the staging link. PASSED.
+4. NEXT: Check 3: a separate fresh-eyes agent compares baseline/ with new screenshots (both themes, no sideways scroll on a phone, contrast, tap targets).
 5. Send Jordan the staging link, a one-page note of what changed, and the check results.
 6. Try the app on real iPads and a phone at school (two marshals, two Recorders, the phone losing signal).
 7. When the slip photos arrive (question 30), build and test the real slip reader (Tesseract.js) to the Swiss Timing layout, easy to adjust.
