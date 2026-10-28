@@ -2,7 +2,7 @@
 
 Date: 29 October 2026, version a. Replaces 28 October version u and all earlier PROJECT-STATE files.
 
-Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107).
+Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107). GitHub Actions was switched off on the new repo, so nothing published at first; Claude switched it on (Actions tab, Enable Actions on this repository) and ran the workflow. Both links are LIVE: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and https://hammerpest.github.io/ccas-swimming-carnival/staging/ (staging). Both load with the staging Supabase project and no console errors. Swim Opt 2.0-c is DONE apart from checks 2 and 3.
 
 Changes on 28 October 2026 (version u): Swim Opt 2.0-c started (2.15). The folder is now a git repo (branch main, first commit, then a staging branch). Added .gitignore and .github/workflows/pages.yml: every push to main or staging publishes main at the site root and staging at /staging/. Tested locally from a sub-folder: six-device flow no errors, Supabase mode loads with no errors. Waiting for Jordan's GitHub steps (account, repo, token, Pages setting). No look change. New question 54 (repo public or private).
 
@@ -64,7 +64,7 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - Swim Opt 2.0 is being built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac:
   - 2.0-a (port as is): DONE (2.12). Plain HTML, CSS and JS; files copied unchanged.
   - 2.0-b (Supabase): DONE (2.13, 2.14). Staging project ccas-swimming-staging in Sydney, URL and publishable key in js/config.js. Live tests 30 of 30, rules tests 49 of 49, check 1 384 of 384 (test mode).
-  - 2.0-c (GitHub Pages): IN PROGRESS (2.15). Local git repo with main and staging and the Pages workflow. Nothing on GitHub yet: waiting for Jordan's GitHub steps, then Claude pushes.
+  - 2.0-c (GitHub Pages): DONE (2.15). Live at https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging). Claude can push (token in the Keychain).
   - Then checks 2 (Claude in Chrome walk-through) and 3 (fresh-eyes review) on the GitHub Pages staging link, then send Jordan the link, a one-page note of what changed and the check results (HANDOVER.md step 5).
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
 - Next level export: a HY3 file, not RE1 (decision 100). Waiting for a sample.
@@ -588,8 +588,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 ## 7. Exact next steps
 
-1. NEXT: Swim Opt 2.0-c. Local part DONE (2.15). Jordan: GitHub account, empty repo ccas-swimming-carnival, token, Pages source set to GitHub Actions, staging allowed in the github-pages environment, then send Claude the username. Claude: set the commit email, push main and staging, check both links load. The free plan allows 2 Supabase projects: staging now uses ccas-swimming-staging; a live project comes later, made the same way (SETUP.md).
-2. Decide with Jordan which Supabase project main uses until the live project exists (suggest: staging only, until real names are approved).
+1. DONE: Swim Opt 2.0-c (2.15). Both links live.
+2. NEXT: Decide with Jordan which Supabase project main uses until the live project exists (suggest: staging only, until real names are approved).
 3. Check 2: Claude in Chrome walk-through of the full carnival at every device size in Jordan's Chrome, on the Pages link. Read the console and network logs.
 4. Check 3: a separate fresh-eyes agent compares baseline/ with new screenshots (both themes, no sideways scroll on a phone, contrast, tap targets).
 5. Send Jordan the staging link, a one-page note of what changed, and the check results.
