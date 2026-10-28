@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 28 October 2026, version u. Replaces version t and all earlier PROJECT-STATE files (28 October versions a to t, 27 October versions c to z12).
+Date: 29 October 2026, version a. Replaces 28 October version u and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107).
 
 Changes on 28 October 2026 (version u): Swim Opt 2.0-c started (2.15). The folder is now a git repo (branch main, first commit, then a staging branch). Added .gitignore and .github/workflows/pages.yml: every push to main or staging publishes main at the site root and staging at /staging/. Tested locally from a sub-folder: six-device flow no errors, Supabase mode loads with no errors. Waiting for Jordan's GitHub steps (account, repo, token, Pages setting). No look change. New question 54 (repo public or private).
 
@@ -504,6 +506,7 @@ Tested so far: rules (sql_test.py, 49 of 49), engine tests, six-device flow in t
 102. (Answers question 51, 28 October 2026) With Supabase on, a PIN typed with no signal shows the toast "No connection. Try again."
 103. (Answers question 53, 28 October 2026) Fix the PIN table: only a job whose PIN was changed shows "Changed". Fixed in ui5.js (Change now saves only that job's PIN; the table compares with the test PIN). Checked in test mode. No baseline screen changes a PIN, so check 1 is not affected.
 104. (28 October 2026) Keep 4-digit PINs. The server limits wrong tries (5 in 5 minutes per device, 100 in 10 minutes in total).
+107. (29 October 2026, answers question 54) The repo is public, so GitHub Pages is free. All data in it is made up. Change all six PINs before any real names go in.
 106. (Answers question 52, 28 October 2026) The refused-save message is now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (was "Not saved. This page needs Contributor access to save."). Changed in ui1.js and ui5.js and checked on staging. The no-signal message "Not saved. Check the connection and try again." is unchanged. Anonymous sign-in limit stays at 100 per hour.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
@@ -577,7 +580,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
-- 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
+- (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
 Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); home screen name (105); question 50 (101); question 49 (98); question 3 file type (100, sample still wanted); questions 44 to 48 (decisions 90 to 94); question 42 (decision 86, design canvas complete); question 43 (83); question 41 (81); questions 40 and 6 (77, 79); board reviews (78); question 38 (73 to 75); questions 34, 35, 37 (69, 70, 72); question 22 (42); Recorder gaps (43 to 47); reset check (48); questions 23 to 29 (49 to 55); question 31 and review answers B, C, D (57 to 60); questions 32 and 33 (62, 63); HRIS Team List name (64); records rules (65 to 67). All Marshal and Place Judge questions closed (14 to 41).
 
