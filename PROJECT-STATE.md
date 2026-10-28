@@ -2,7 +2,7 @@
 
 Date: 29 October 2026, version a. Replaces 28 October version u and all earlier PROJECT-STATE files.
 
-Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107). GitHub Actions was switched off on the new repo, so nothing published at first; Claude switched it on (Actions tab, Enable Actions on this repository) and ran the workflow. Both links are LIVE: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and https://hammerpest.github.io/ccas-swimming-carnival/staging/ (staging). Both load with the staging Supabase project and no console errors. Swim Opt 2.0-c is DONE apart from checks 2 and 3.
+Changes on 29 October 2026 (version a): Jordan made the push token and pushed main and staging to https://github.com/hammerpest/ccas-swimming-carnival. The token is saved in the Mac Keychain, so Claude can push from now on. Repo set up in Chrome: Pages source GitHub Actions, staging allowed in the github-pages environment, email kept private. Question 54 answered by doing: the repo is public (decision 107). GitHub Actions was switched off on the new repo, so nothing published at first; Claude switched it on (Actions tab, Enable Actions on this repository) and ran the workflow. Both links are LIVE: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and https://hammerpest.github.io/ccas-swimming-carnival/staging/ (staging). Both load with the staging Supabase project and no console errors. Swim Opt 2.0-c is DONE apart from checks 2 and 3. Decision 108: main uses the staging Supabase project for now.
 
 Changes on 28 October 2026 (version u): Swim Opt 2.0-c started (2.15). The folder is now a git repo (branch main, first commit, then a staging branch). Added .gitignore and .github/workflows/pages.yml: every push to main or staging publishes main at the site root and staging at /staging/. Tested locally from a sub-folder: six-device flow no errors, Supabase mode loads with no errors. Waiting for Jordan's GitHub steps (account, repo, token, Pages setting). No look change. New question 54 (repo public or private).
 
@@ -506,6 +506,7 @@ Tested so far: rules (sql_test.py, 49 of 49), engine tests, six-device flow in t
 102. (Answers question 51, 28 October 2026) With Supabase on, a PIN typed with no signal shows the toast "No connection. Try again."
 103. (Answers question 53, 28 October 2026) Fix the PIN table: only a job whose PIN was changed shows "Changed". Fixed in ui5.js (Change now saves only that job's PIN; the table compares with the test PIN). Checked in test mode. No baseline screen changes a PIN, so check 1 is not affected.
 104. (28 October 2026) Keep 4-digit PINs. The server limits wrong tries (5 in 5 minutes per device, 100 in 10 minutes in total).
+108. (29 October 2026, answers section 7 step 2) The main link uses the staging Supabase project (ccas-swimming-staging) for now, the same as the staging link. Testing on either link changes what both show. Make the live project (SETUP.md, then change js/config.js on main only) when real names are approved or before the term 1 staff run-through, whichever comes first, and change all six PINs on it.
 107. (29 October 2026, answers question 54) The repo is public, so GitHub Pages is free. All data in it is made up. Change all six PINs before any real names go in.
 106. (Answers question 52, 28 October 2026) The refused-save message is now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (was "Not saved. This page needs Contributor access to save."). Changed in ui1.js and ui5.js and checked on staging. The no-signal message "Not saved. Check the connection and try again." is unchanged. Anonymous sign-in limit stays at 100 per hour.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
@@ -589,8 +590,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 ## 7. Exact next steps
 
 1. DONE: Swim Opt 2.0-c (2.15). Both links live.
-2. NEXT: Decide with Jordan which Supabase project main uses until the live project exists (suggest: staging only, until real names are approved).
-3. Check 2: Claude in Chrome walk-through of the full carnival at every device size in Jordan's Chrome, on the Pages link. Read the console and network logs.
+2. DONE (decision 108): main uses the staging Supabase project until the live project is made.
+3. NEXT: Check 2: Claude in Chrome walk-through of the full carnival at every device size in Jordan's Chrome, on the Pages link. Read the console and network logs.
 4. Check 3: a separate fresh-eyes agent compares baseline/ with new screenshots (both themes, no sideways scroll on a phone, contrast, tap targets).
 5. Send Jordan the staging link, a one-page note of what changed, and the check results.
 6. Try the app on real iPads and a phone at school (two marshals, two Recorders, the phone losing signal).
