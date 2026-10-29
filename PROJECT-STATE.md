@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version j. Replaces 29 October version i and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version k. Replaces 29 October version j and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version k): At Jordan's request, Swim Opt 2.1 promoted to main (the main link) before check 3 had passed in full on the reader; check 3 run 5 started in test mode at the same time while Jordan tests the site. Both links use the staging Supabase project (decision 108), made-up data only.
 
 Changes on 29 October 2026 (version j): Jordan answered question 57: when a race already has a slip, a new photo asks "Replace the Race N slip?" first (decision 117). Built on staging; test mode flow and all 384 screens unchanged apart from the new box.
 
