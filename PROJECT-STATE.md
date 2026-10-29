@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 30 October 2026, version a. Replaces 29 October version t and all earlier PROJECT-STATE files.
+Date: 30 October 2026, version b. Replaces 30 October version a and all earlier PROJECT-STATE files.
+
+Changes on 30 October 2026 (version b): Jordan confirmed the iPhone screen stayed on during a long multitimer race on Swim Opt 2.4 (decision 128 works; next step 1 closed). Out-of-date lines fixed at Jordan's request: section 0 (Swim Opt 2.0 build steps replaced by where things stand now), problems 1, 6, 7, 10 and 12a, the empty "Ask now" list, section 7 (Done line and step 2) and section 8 (version). No new decisions.
 
 Changes on 30 October 2026 (version a): Jordan tested Swim Opt 2.3 on the staging link on his iPhone in Chrome. Test 1 (a normal race) passed. Test 2: firm press, double tap and Fix splits passed, but starting a scroll on SPLIT adds a split (bug). Test 3: the clock kept time, but the phone went to sleep (the keep-awake request is ignored by Chrome on iPhone). Test 4: after the 100 m and 200 m races the phone stayed on the multitimer for 50 m races (bug). Decisions 125 to 128. Design S1.41 drawn (https://claude.ai/artifact/BYJZvCc65AfaiTUtr8adDw, source design/S1.41-multitimer-pinned.html), approved by Jordan (question 61 closed). Swim Opt 2.4 built on staging (2.28); checks 1 and 3 PASSED; check 2 run in the built-in browser because Claude in Chrome is not connected; Jordan accepted it (decision 129). Pushed to staging. Jordan tested 2.4 on his iPhone: "seems to be pretty good". Whether the screen now stays on was not confirmed. At Jordan's request, staging (Swim Opt 2.2 to 2.4) promoted to main.
 
@@ -101,11 +103,10 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - The look is approved and must not change (CLAUDE.md, decision 98). Design canvas COMPLETE at S1.38.
 - Six PINs, one per job (decision 88). Test PINs: Marshal 1111, Place Judge 2222, Recorder 3333, Time Slips 4444, Announcer 5555, Carnival Organiser 9999. Keep 4 digits (104).
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
-- Swim Opt 2.0 is being built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac:
-  - 2.0-a (port as is): DONE (2.12). Plain HTML, CSS and JS; files copied unchanged.
-  - 2.0-b (Supabase): DONE (2.13, 2.14). Staging project ccas-swimming-staging in Sydney, URL and publishable key in js/config.js. Live tests 30 of 30, rules tests 49 of 49, check 1 384 of 384 (test mode).
-  - 2.0-c (GitHub Pages): DONE (2.15). Live at https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging). Claude can push (token in the Keychain).
-  - Then checks 2 (Claude in Chrome walk-through) and 3 (fresh-eyes review) on the GitHub Pages staging link, then send Jordan the link, a one-page note of what changed and the check results (HANDOVER.md step 5).
+- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.4 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging). Claude can push (token in the Keychain).
+  - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
+  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
+  - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); Claude in Chrome stays the rule.
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
 - Next level export: a HY3 file, not RE1 (decision 100). Waiting for a sample.
 - Jordan is new to Supabase and GitHub. Jordan follows numbered click-by-click steps well and checks details like the region.
@@ -538,12 +539,12 @@ Built to S1.41 and decisions 125 to 128.
 - Camera or multitimer picked by the race (125): mtWanted in js/ui3.js. Hand switches (Multitimer, Back to slip photo) are kept per race, event and heat, and cleared on sign-out and Start a new carnival.
 - Slim banner on the phone multitimer only (under 700 px wide): signal dot and Job pill, which still opens the job menu. The clock is pinned (sticky) under the banner, which sets --hdrh. A resize only redraws when the banner must change, so typed text is never lost.
 - Taps (127): START, SPLIT and STOP take the time when the finger lands, but count only when it lifts without moving more than 12 px or being cancelled (a scroll). One pending tap per finger, so two thumbs both count. The click the browser sends after a dropped tap is ignored.
-- Keep awake (128): a hidden, muted, looping silent video (from NoSleep.js, MIT, full licence in js/vendor/silent-video.js) plays from START to STOP, alongside the browser's keep-awake request. Not yet tried on Jordan's iPhone.
+- Keep awake (128): a hidden, muted, looping silent video (from NoSleep.js, MIT, full licence in js/vendor/silent-video.js) plays from START to STOP, alongside the browser's keep-awake request. Confirmed on Jordan's iPhone (30 October 2026): the screen stayed on during a long race.
 - Tests: tests/multitimer.py now has 36 checks (screen by race both ways, hand switches, slim banner phone only, pinned clock when scrolled, scroll and slide do not count, two thumbs, typed text survives a resize). PASSED. Engine and flow PASSED.
 - Check 1: pixel diff against Swim Opt 2.3: 0 screens changed (the standard screens use 50 m races). PASSED.
 - Check 2: Claude in Chrome was not connected. Run in the desktop app's built-in browser: 100 m race opened on the multitimer with the slim banner; the Job menu works; 8 splits from 8 clicks; scrolling while running keeps the clock under the banner; placing and Send; Next race to a 50 m race opened the camera with the full banner; Recorder shows all 8 "From multitimer"; no console errors. PASSED (accepted by Jordan, decision 129).
 - Check 3: run 1 FAILED (slim banner also at iPad and MacBook sizes; a slide could still count through the click; two overlapping thumbs lost a split; licence text; banner height on rotation). All fixed. Run 2 found that the resize redraw wiped typed text; fixed. Run 3 PASSED.
-- To try on the iPhone: the scroll fix, the slim banner and pinned clock, Next race between 50 m and 100 m, and whether the screen now stays on (Settings, Auto-Lock, Never is the backup).
+- Jordan tried it on his iPhone (30 October 2026): "seems to be pretty good", and the screen stayed on. Auto-Lock Never stays the backup on the day.
 
 ### 2.27 Swim Opt 2.3: multitimer (29 October 2026, staging)
 
@@ -750,20 +751,20 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 5. Current problems
 
-1. Supabase not set up yet; until then the app only works inside Claude.
+1. SOLVED (2.13, 2.14): Supabase staging project set up and used by both links. The live project for real names is still to come (step 9).
 2. HY3 layout (decision 100) must match Jordan's sample: team code, athlete ID, date format, event codes and seed times.
 3. SOLVED (79): organiser way in.
 4. SOLVED in Swim Opt 1: "Already selected" and the Recorder lock use live presence, released on New race or Back and automatically when a device drops out. Test on real iPads (step 7).
 5. SOLVED (28 October 2026): design doc updated.
-6. The slip reader needs real Swiss Timing slip photos to be built and tested (question 30), and must be easy to adjust if the timing system changes.
-7. Phone photos need storage in Supabase (one photo per race, kept small). Check it fits the free plan once the setup steps are written.
+6. The slip reader is built from a simulated sample (decision 110, 2.20 to 2.24). It still needs real Swiss Timing slip photos to be tuned and tested (question 30), and must be easy to adjust if the timing system changes.
+7. Slip photos are stored in a private Supabase bucket "slips" (one photo per race, resized on the phone). Still to check: a full carnival's photos (about 120) fit the free plan, at the school run-through (step 4).
 8. Records file layout not known until Jordan sends the list (71).
 8b. Each age champion is out of 6 individual races (5 age races plus the 200 m freestyle, decision 72).
 9. SOLVED in Swim Opt 1: phone home is a 2 by 2 grid plus full-width Announcer and Carnival Organiser tiles.
-10. Files are named by date (this is PROJECT-STATE-2026-10-28o.md). A second save on the same day adds the next letter.
+10. PROJECT-STATE.md keeps one file name in the repo; the date and version letter are at the top. A second save on the same day takes the next letter.
 11. PARKED (76). Parent link clashes with decisions 6 and 7: only people with the PIN read data, names stay private, real names need principal and ICT approval, and students without media consent must never show publicly.
 14. NEW (decision 95): keeping every year's student names and results goes further than the privacy summary (which says the list can be deleted after the carnival). The privacy summary must be updated and approved by the principal and ICT (question 1) before real names go in. Records holders' names were already kept.
-12a. Swim Opt 1 needs everyone to have the page shared with them in Claude (Contributor) to save. Until Supabase, that means every helper needs a Claude account. Fine for testing, not for the carnival.
+12a. SOLVED by Swim Opt 2.0 (Supabase and GitHub Pages): helpers no longer need a Claude account.
 15. SOLVED by 101 (28 October 2026): baseline/ was shot on a different machine. On Jordan's Mac, text is smoothed differently, so every screen is 0.25% to 3.71% off, even for the untouched Swim Opt 1.5. Check 1 cannot pass here against baseline/ as it is (question 50).
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
 
@@ -771,7 +772,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now:
+Ask now: none.
 - (Closed: approved 30 October) 61. S1.41: OK as drawn?
 - (Closed by 123) 60. S1.40 multitimer design: OK as drawn?
 
@@ -795,10 +796,10 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 ## 7. Exact next steps
 
-Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 on both links (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); checks 2 and 3 (2.16 to 2.24).
+Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); Swim Opt 2.2 (change marshalling after sending, job order); Swim Opt 2.3 (multitimer); Swim Opt 2.4 (multitimer fixes, screen stays on, confirmed on Jordan's iPhone 30 October 2026). All on both links; checks 1 to 3 passed for each.
 
-1. NEXT: Swim Opt 2.4 is on both links (main and staging). Confirm with Jordan that the iPhone screen stays on during a 3-minute multitimer race (decision 128); if not, Auto-Lock Never on the day. Fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
-2. Jordan tests 2.1 on the site; any changes as Swim Opt 2.x.
+1. (Done 30 October 2026) The iPhone screen stays on during a long multitimer race (decision 128). Still to do: fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
+2. NEXT: Jordan keeps testing Swim Opt 2.4 on the site; any changes as Swim Opt 2.5 and on.
 3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
 5. (Done in 2.2) Small known items.
@@ -813,7 +814,7 @@ Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 on both links (O
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, version t (this file; the latest)
+- PROJECT-STATE.md in the repo, 30 October 2026 version b (this file; the latest)
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
 - Handover package: handover/ in Project Knowledge and ccas-swimming-handover.zip
