@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version g. Replaces 29 October version f and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version h. Replaces 29 October version g and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version h): Checks 2 and 3 run on Swim Opt 2.1 (2.21). Check 2 passed. Check 3 ran three times: the look passed every time; the slip reader failed twice and was made much safer each time (2.21). Deploys now version-stamp the app files. Staging data cleared (620 test students kept). Waiting for Jordan to try 2.1 on staging and decide on the residual reader risks (question 56).
 
 Changes on 29 October 2026 (version g): Jordan asked for a way to change marshalling after a race is sent (decisions 113 and 114). Planned as Swim Opt 2.2, after 2.1 is approved. Checks 2 and 3 on 2.1 under way (check 2 waiting for Claude in Chrome to reconnect).
 
@@ -469,6 +471,17 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Ticks and slip photo (112): built as asked. Only the 7 Recorder screens change in the baseline set.
 - Noticed, not changed: on the Recorder, the "Not on slip" placeholder is cut to "Not on sl" in the time box (same in 2.0); "Not on slip" shows in full underneath.
 
+### 2.21 Checks 2 and 3 on Swim Opt 2.1 (29 October 2026)
+
+- Check 2 (Claude in Chrome, staging link, frames at each device size): PASSED. Marshal sent Race 11 (iPad landscape), Place Judge tapped places (iPad portrait), the phone read a drawn slip for real (390 wide) with the green tick, Recorder (MacBook) had every lane's own time, the photo and the lane 8 warning; Announcer, Results (3 tabs) and Houses counted Race 11. Sweep of 18 screens at 390 and at 820 wide: no sideways scroll, nothing under 48 px, no errors, no failed requests.
+- Found in check 2 and fixed: after a deploy, Chrome kept old app files for up to 10 minutes and could mix old and new. .github/workflows/pages.yml now adds ?v=<commit> to every script and the stylesheet in index.html.
+- Check 3, run 1 (fresh agent): look PASS; reader FAIL. Slip times for lanes with no swimmer were used in the judge swap (a wrong time on Sophie Brooks); a hard photo could be wrong with no warning. Fixed: only marshalled lanes count; the Recorder warns "The slip has a time for lane N, but no swimmer was marshalled"; a lane whose clock check cannot run is unsure.
+- Check 3, run 2 (new agent): look PASS; reader FAIL on 82 copies: a smudged lane digit moved a time to another lane; warnings lost when the two readings were combined; a stop line with no time dropped silently; race number disagreement ignored. Fixed: the photo is always read twice (grey and black and white) and compared; the reader's own confidence (0 to 100) for each lane number, time and the race number is used (a smudged digit scored 17, clean ones about 90; under 70 is unsure); a lane twice or found by one reading only is unsure; a disputed race number asks for the photo again; empty lanes say "Not read: check the photo" when any of the slip was in doubt.
+- Check 3, run 3 (new agent): look PASS (every difference is an approved change; tap, scroll, contrast and dark theme all pass); reader FAIL on 15 of 118 new attacks. Fixed: a photo showing two slips (a continuous roll) is refused ("This photo shows more than one slip..."); a "sec" line with no readable time is reported; when the slip's lanes do not match the marshalled lanes (some slip lanes with no swimmer and some swimmers with no slip time), the phone gives an amber "check it is the Race N slip" and the Recorder shows "Lanes do not match marshalling" and "Not read: check the photo".
+- Graded after the fixes, on all 208 hard slips from the three testers (truth known for each): 33 exact, 125 flagged, 42 refused. The other 8 cannot be seen in the photo: a lane fully covered or cut off (3; Times checked stays blocked for a marshalled lane with no time, decision 92), a pen stroke turning 3 into 8 (2; caught by the lane-match warning when marshalling is right), a torn race digit read as another race (3; the phone says "Wrong slip?" unless it is on that exact misread race). Check 3 has not been run a fourth time on these last fixes (question 56).
+- Speed: about 0.8 to 1.3 seconds per photo on the Mac (two readings). A phone will be slower; not yet measured.
+- Staging data cleared with the reset step of tests/supabase_live.py: no races, times, slips, records or kept years; 620 test students; race counter back to 1. PINs unchanged.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -654,6 +667,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
 - 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
+- 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
