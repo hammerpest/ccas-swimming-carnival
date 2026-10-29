@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version c. Replaces 29 October version b and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version d. Replaces 29 October version c and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version d): S1.39 options drawn for question 55 (2.18). Nothing in the app changed; waiting for Jordan to pick.
 
 Changes on 29 October 2026 (version c): Check 3 (fresh-eyes review) PASSED, see 2.17. All three checks now pass on the GitHub Pages build. New question 55: fix the contrast and small tap targets that were already in the approved look?
 
@@ -432,6 +434,17 @@ Run in Jordan's Chrome on https://hammerpest.github.io/ccas-swimming-carnival/st
   - Tap targets under 48 px: the Job pill and header links (39 to 40 tall), Sign out link (31), organiser fields and small buttons (30 to 45), Recorder time boxes (43), DNS and DQ (40), Keep and Fix (36), Results tabs and filters (44), Marshal list buttons on a phone (36), Time Slips test buttons (44).
 - Not covered: real iPads and Safari (step 6), hover and focus states.
 
+### 2.18 S1.39 options: contrast and tap sizes (29 October 2026, waiting for Jordan)
+
+Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEBwnS. Four boards:
+- Now (approved S1.38), dark theme: green buttons 1.8:1, red Start a new carnival 2.2:1, house dot letters 2.0 to 2.8:1, bronze 3.1:1, NEW RECORD 3.4:1.
+- Option A, dark letters on bright colours (dark theme only): letters on the green and red buttons and the house dots turn near-black #0b1222; the fills stay as now. Green 10.2:1, red 8.4:1, dots 6.7 to 9.2:1.
+- Option B, white letters on deeper colours (dark theme only): buttons and house dots use the light-theme colours (green #17744a, red #ad2a20, houses #c8302a, #23824a, #2f5fc4). Green 5.8:1, red 6.7:1, dots 4.8 to 5.9:1.
+- Both options, both themes: bronze medal #9a5b1c (5.4:1) and NEW RECORD tag #b83a0c (5.8:1).
+- Tap sizes (with either option): header links and Job pill 48 px (header 8 px taller), Recorder time box, DNS, DQ, Keep and Fix 48 px (lane rows about 5 px taller), Results tabs, Marshal list buttons, organiser fields and small buttons 48 px.
+- Light theme buttons and dots already pass and do not change.
+- Once Jordan picks: build as Swim Opt 2.1, new baseline-mac and baseline shots for the changed screens, all three checks.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -610,7 +623,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
-- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is?
+- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18): Option A or B for colour, plus 48 px tap sizes.
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
