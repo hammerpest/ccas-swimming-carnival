@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version n. Replaces 29 October version m and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version o. Replaces 29 October version n and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version o): Section 7 (next steps) rewritten to match where things stand. No new decisions.
 
 Changes on 29 October 2026 (version n): At Jordan's request, the latest Swim Opt 2.1 (reader with decision 118) promoted to main. Main and staging are the same again.
 
@@ -719,18 +721,19 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 ## 7. Exact next steps
 
-1. DONE: Swim Opt 2.0-c (2.15). Both links live.
-2. DONE (decision 108): main uses the staging Supabase project until the live project is made.
-3. DONE (2.16): Check 2, Claude in Chrome walk-through on the staging link. PASSED.
-4. DONE (2.17): Check 3, fresh-eyes review. PASSED.
-5. Swim Opt 2.2 (decisions 113 and 114) once 2.1 is approved and promoted to main.
-6. NEXT: Send Jordan the staging link, a one-page note of what changed, and the check results.
-6. Try the app on real iPads and a phone at school (two marshals, two Recorders, the phone losing signal).
-7. When the slip photos arrive (question 30), build and test the real slip reader (Tesseract.js) to the Swiss Timing layout, easy to adjust.
-8. When the HY3 sample arrives (question 3), build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
-9. When the records list arrives (question 36), load it in Carnival Organiser section 6.
-10. Send the privacy summary (updated for kept years, problem 14); real names only once approved.
-11. Staff run-through in term 1, before the carnival. Wake the free Supabase project the day before (it pauses after 7 days unused).
+Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 on both links (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); checks 2 and 3 (2.16 to 2.24).
+
+1. NEXT: Swim Opt 2.2 (decisions 113 and 114): Marshal "Change an earlier race"; Recorder alert and "Add swimmer to lane" (server rule: Recorder can fill or change lanes on races already sent). Then checks 1 to 3, staging first, then main.
+2. Jordan tests 2.1 on the site; any changes as Swim Opt 2.x.
+3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
+4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
+5. Small known items: "Not on slip" placeholder cut to "Not on sl" in the Recorder time box (since 2.0); Time Slips "Check race" opens a box titled "Go to race" (since 2.0); the No signal practice button can overwrite a replaced slip within 8 seconds (practice only).
+6. When the records list arrives (question 36): load it in Carnival Organiser section 6.
+7. When the HY3 sample arrives (question 3): build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
+8. Privacy summary: update for kept years (problem 14) and send to the principal and ICT (question 1). Real names only once approved.
+9. Before real names: make the live Supabase project (SETUP.md), point main at it, change all six PINs (decisions 107 and 108).
+10. Confirm the carnival date (question 2).
+11. Staff run-through in term 1. Wake the free Supabase project the day before (it pauses after 7 days unused).
 
 ---
 
