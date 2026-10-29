@@ -39,6 +39,10 @@ jobs:
             dest=_site; [ "$b" = staging ] && dest=_site/staging
             cp "$b/index.html" "$dest/"
             cp -R "$b/css" "$b/js" "$dest/"
+            # each version asks for its own files, so a browser never mixes old and new ones
+            v=$(git -C "$b" rev-parse --short HEAD)
+            sed -i -E "s#(src=\"js/[^\"]+\.js)\"#\1?v=$v\"#g; s#(href=\"css/styles\.css)\"#\1?v=$v\"#" "$dest/index.html"
+            grep -c "?v=$v" "$dest/index.html"
           done
           touch _site/.nojekyll
           find _site -type f | sort
