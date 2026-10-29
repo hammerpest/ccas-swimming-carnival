@@ -143,7 +143,7 @@ async function newCarnival(bring){
   await A.store.set("records/all",{list:recs});
   const ny=String(+yr+1);
   await A.store.set("config/main",Object.assign({},A.cfg,{locked:false,lockedAt:null,date:ny+(A.cfg.date||"2027-02-10").slice(4),dateConfirmed:false,ageDate:yr+"-12-31",name:String(A.cfg.name||"").includes(yr)?A.cfg.name.replace(yr,ny):A.cfg.name}));
-  A.heats=[];A.times={};A.finish={};A.slips={};A.extras=[];A.roster={F:[],M:[]};A.records=recs;A.counter=1;
+  A.heats=[];A.times={};A.finish={};A.slips={};A.extras=[];A.roster={F:[],M:[]};A.records=recs;A.counter=1;A.s.mtov={};mtSave();
   A.o.newMsg="The "+yr+" carnival is kept (look only, open it from Change year). The "+ny+" carnival is ready. Race number back to 1. Load the new student list in section 2 and check the date in section 1.";
   A.modal=null;recompute();render();
 }
@@ -177,6 +177,7 @@ function renderInner(){
   if(A.role&&A.role!=="org"&&(!A.job||!canOpen(A.job))){A.job=homeJob();ssSet("swim_job",A.job)}
   if(A.role==="org"&&A.job&&!canOpen(A.job==="organiser"?"org":A.job))A.job=null;
   renderHeader();
+  document.documentElement.style.setProperty("--hdrh",document.getElementById("hdr").offsetHeight+"px");
   const main=document.getElementById("main");
   let html="";
   if(!A.role||!A.job)html=renderHome();
@@ -262,11 +263,11 @@ const ACT={
   snext:()=>{A.s.race=A.s.race+1;A.s.err=null;render()},
   stest:el=>{A.s.test=el.dataset.v;render()},
   soverall:()=>{const r=slipRace();if(r){A.modal={t:"overall",race:r.race};render()}},
-  mtopen:()=>{A.s.mt=true;A.s.err=null;mtSave();render();window.scrollTo(0,0)},
-  mtclose:()=>{A.s.mt=false;mtSave();render()},
-  mtgo:()=>mtGo(),
-  mtsplit:()=>mtSplit(),
-  mtstop:()=>mtStop(false),
+  mtopen:()=>{const r=slipRace();if(r)A.s.mtov[mtOvKey(r)]=true;A.s.err=null;mtSave();render();window.scrollTo(0,0)},
+  mtclose:()=>{const r=slipRace();if(r)A.s.mtov[mtOvKey(r)]=false;mtSave();render()},
+  mtgo:(el,e,at)=>mtGo(at),
+  mtsplit:(el,e,at)=>mtSplit(at),
+  mtstop:(el,e,at)=>mtStop(false,at),
   mtstopok:()=>mtStop(true),
   mtunsplit:()=>{A.mt.splits.pop();mtSave();render()},
   mttap:el=>{if(!locked())mtTap(+el.dataset.l)},
@@ -326,12 +327,29 @@ const ACT={
     A.modal={t:"newCarnival",step:2,list};render()},
   onew2:el=>newCarnival(el.dataset.v==="yes")
 };
-/* multitimer START, SPLIT and STOP act on the touch, not the lift, so the time is when the finger lands */
-let mtDown=0;
+/* multitimer START, SPLIT and STOP: the time is when the finger lands, but the tap only counts when the
+   finger lifts without the page scrolling (decision 127). A scroll cancels the pointer or moves it. */
+let mtDown=0;const mtPend=new Map();
 document.addEventListener("pointerdown",e=>{
   const el=e.target.closest("[data-mt]");if(!el||el.disabled||e.button>0)return;
-  e.preventDefault();mtDown=Date.now();const f=ACT[el.dataset.act];if(f)f(el,e);
+  e.preventDefault();mtPend.set(e.pointerId,{act:el.dataset.act,el,x:e.clientX,y:e.clientY,at:Date.now()});
 });
+function mtDrop(id){if(mtPend.delete(id))mtDown=Date.now()}
+document.addEventListener("pointermove",e=>{const p=mtPend.get(e.pointerId);if(p&&Math.hypot(e.clientX-p.x,e.clientY-p.y)>12)mtDrop(e.pointerId)});
+document.addEventListener("pointercancel",e=>mtDrop(e.pointerId));
+document.addEventListener("pointerup",e=>{
+  const p=mtPend.get(e.pointerId);if(!p)return;
+  mtPend.delete(e.pointerId);mtDown=Date.now();const f=ACT[p.act];if(f)f(p.el,e,p.at);
+});
+/* the slim banner is for phones only, and the pinned clock sits under the banner's real height. A resize
+   (a keyboard opening, a toolbar shrinking, a rotation) only redraws when the banner must change, so
+   text being typed is never lost */
+let mtResize=0;
+window.addEventListener("resize",()=>{clearTimeout(mtResize);mtResize=setTimeout(()=>{
+  const h=document.getElementById("hdr");
+  if(typeof mtSlim==="function"&&mtSlim()!==h.classList.contains("slim"))render();
+  else document.documentElement.style.setProperty("--hdrh",h.offsetHeight+"px");
+},150)});
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-act]");
   if(!el){if(A.menu&&!e.target.closest(".jobpill")){A.menu=false;renderHeader()}return}

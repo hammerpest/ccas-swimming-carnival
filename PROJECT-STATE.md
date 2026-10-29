@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version t. Replaces 29 October version s and all earlier PROJECT-STATE files.
+Date: 30 October 2026, version a. Replaces 29 October version t and all earlier PROJECT-STATE files.
+
+Changes on 30 October 2026 (version a): Jordan tested Swim Opt 2.3 on the staging link on his iPhone in Chrome. Test 1 (a normal race) passed. Test 2: firm press, double tap and Fix splits passed, but starting a scroll on SPLIT adds a split (bug). Test 3: the clock kept time, but the phone went to sleep (the keep-awake request is ignored by Chrome on iPhone). Test 4: after the 100 m and 200 m races the phone stayed on the multitimer for 50 m races (bug). Decisions 125 to 128. Design S1.41 drawn (https://claude.ai/artifact/BYJZvCc65AfaiTUtr8adDw, source design/S1.41-multitimer-pinned.html), approved by Jordan (question 61 closed). Swim Opt 2.4 built on staging (2.28); checks 1 and 3 PASSED; check 2 run in the built-in browser because Claude in Chrome is not connected; Jordan accepted it (decision 129). Pushed to staging.
 
 Changes on 29 October 2026 (version t): Jordan approved S1.40 (question 60 closed, decision 123). Swim Opt 2.3 built on staging (2.27): the digital multitimer. Checks 1, 2 (built-in browser, decision 124) and 3 PASSED. Committed and pushed to staging (485a3f5). Jordan ran the new 01-setup.sql on the staging project (Success). Jordan must run the new supabase/01-setup.sql on the staging project so Time Slips can save places.
 
@@ -530,6 +532,19 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.28 Swim Opt 2.4: multitimer fixes from Jordan's phone tests (30 October 2026, staging)
+
+Built to S1.41 and decisions 125 to 128.
+- Camera or multitimer picked by the race (125): mtWanted in js/ui3.js. Hand switches (Multitimer, Back to slip photo) are kept per race, event and heat, and cleared on sign-out and Start a new carnival.
+- Slim banner on the phone multitimer only (under 700 px wide): signal dot and Job pill, which still opens the job menu. The clock is pinned (sticky) under the banner, which sets --hdrh. A resize only redraws when the banner must change, so typed text is never lost.
+- Taps (127): START, SPLIT and STOP take the time when the finger lands, but count only when it lifts without moving more than 12 px or being cancelled (a scroll). One pending tap per finger, so two thumbs both count. The click the browser sends after a dropped tap is ignored.
+- Keep awake (128): a hidden, muted, looping silent video (from NoSleep.js, MIT, full licence in js/vendor/silent-video.js) plays from START to STOP, alongside the browser's keep-awake request. Not yet tried on Jordan's iPhone.
+- Tests: tests/multitimer.py now has 36 checks (screen by race both ways, hand switches, slim banner phone only, pinned clock when scrolled, scroll and slide do not count, two thumbs, typed text survives a resize). PASSED. Engine and flow PASSED.
+- Check 1: pixel diff against Swim Opt 2.3: 0 screens changed (the standard screens use 50 m races). PASSED.
+- Check 2: Claude in Chrome was not connected. Run in the desktop app's built-in browser: 100 m race opened on the multitimer with the slim banner; the Job menu works; 8 splits from 8 clicks; scrolling while running keeps the clock under the banner; placing and Send; Next race to a 50 m race opened the camera with the full banner; Recorder shows all 8 "From multitimer"; no console errors. PASSED (accepted by Jordan, decision 129).
+- Check 3: run 1 FAILED (slim banner also at iPad and MacBook sizes; a slide could still count through the click; two overlapping thumbs lost a split; licence text; banner height on rotation). All fixed. Run 2 found that the resize redraw wiped typed text; fixed. Run 3 PASSED.
+- To try on the iPhone: the scroll fix, the slim banner and pinned clock, Next race between 50 m and 100 m, and whether the screen now stays on (Settings, Auto-Lock, Never is the backup).
+
 ### 2.27 Swim Opt 2.3: multitimer (29 October 2026, staging)
 
 Built to S1.40 (decisions 121 to 123), on the staging branch.
@@ -695,6 +710,11 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 122. (29 October 2026) For multitimer races the marshal still marshals and sends every heat as normal, so the shared race counter keeps race numbers in step when the 50 m races start again.
 123. (29 October 2026, answers question 60) S1.40 approved as drawn. For multitimer races the multitimer person's first 4 taps are the places (they replace the Place Judge for that race). Next race stays on the multitimer until Back to slip photo. Swim Opt 2.3.
 124. (29 October 2026) Check 2 for Swim Opt 2.3 ran in the desktop app's built-in browser instead of Claude in Chrome, because the Chrome extension could not screenshot or read pages. A one-off: Claude in Chrome stays the rule.
+125. (30 October 2026, replaces part of 123) The Time Slips phone picks the screen from the race the marshal sent: 50 m races (fly, back, free, breast) open the camera; 100 m, 200 m and both relays open the multitimer. The Multitimer and Back to slip photo buttons stay as a manual override for one race (Back to slip photo is hidden while the clock runs or lanes are being placed).
+126. (30 October 2026) On the phone's multitimer screen the blue banner is made as small as possible, and the running clock stays pinned at the top when scrolling; START/STOP and SPLIT scroll with the page (Jordan chose clock only). Design S1.41.
+127. (30 October 2026) Fix: a SPLIT, START or STOP only counts if the finger lifts without the page scrolling; the time is still taken when the finger lands.
+128. (30 October 2026) Keep the phone awake on iPhone (Chrome and Safari) while the clock runs: a tiny silent, hidden looping video, started by START and stopped by STOP, alongside the browser's keep-awake request. Backup on the day: Settings, Display and Brightness, Auto-Lock, Never.
+129. (30 October 2026) Check 2 for Swim Opt 2.4 ran in the desktop app's built-in browser, as Claude in Chrome was not connected; Jordan accepted it. Claude in Chrome stays the rule.
 
 ## 4. Rules and constraints
 
@@ -717,7 +737,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ### 4.3 Writing style (chat, files, app text)
 - Australian spelling. Simple, direct language. No em dashes (en dashes fine in ranges). No emojis. Avoid Jordan's banned words.
 - Money in AUD, rounded to the nearest dollar.
-- Number every design change S X.Y (next is S1.41). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (next is Swim Opt 2.0, in Claude Code).
+- Number every design change S X.Y (next is S1.42). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (next is Swim Opt 2.0, in Claude Code).
 - Use the 620 test students for all testing and demo data (80).
 - Ask outstanding questions each time. Remind Jordan of the handover routine when a chat gets long.
 - Update PROJECT-STATE straight away after any decision and save it to Project Knowledge with today's date and a version letter.
@@ -752,6 +772,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ## 6. Unresolved questions (ask Jordan)
 
 Ask now:
+- (Closed: approved 30 October) 61. S1.41: OK as drawn?
 - (Closed by 123) 60. S1.40 multitimer design: OK as drawn?
 
 Still open (Jordan will send or answer later, 28 October 2026):
@@ -776,7 +797,7 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 on both links (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); checks 2 and 3 (2.16 to 2.24).
 
-1. NEXT: Swim Opt 2.2 is on staging (2.25). Jordan runs the new supabase/01-setup.sql on the staging project, tests on staging, then check 2 in Chrome; then promote to main.
+1. NEXT: Swim Opt 2.4 on staging (2.28). Jordan tests it on his iPhone (Chrome) at the staging link: the scroll fix, slim banner and pinned clock, Next race between 50 m and 100 m, and whether the screen stays on. Then promote 2.2 to 2.4 to main. Fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
 2. Jordan tests 2.1 on the site; any changes as Swim Opt 2.x.
 3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.

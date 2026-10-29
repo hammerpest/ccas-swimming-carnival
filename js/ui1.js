@@ -119,16 +119,22 @@ function renderHeader(){
     :A.job==="results"?`<button type="button" class="hlink" data-act="goto" data-job="houses">Houses</button><button type="button" class="hlink" data-act="goto" data-job="announcer">Back to Announcer</button>`
     :A.job==="houses"?`<button type="button" class="hlink" data-act="goto" data-job="results">Results</button><button type="button" class="hlink" data-act="goto" data-job="announcer">Back to Announcer</button>`:"";
   const jobs=A.role==="org"?[...JOBS,ORG_JOB]:[];
+  /* slim banner on the phone multitimer (S1.41): only the signal dot and the Job pill */
+  const slim=typeof mtSlim==="function"&&mtSlim();h.classList.toggle("slim",slim);
+  if(slim){h.innerHTML=`<div class="wrap"><div class="topin"><span class="live ${cls}"><i></i>${esc(live)}</span>${jobPill(jobs,esc(pillName()))}</div></div>`;return}
   h.innerHTML=`<div class="wrap"><div class="topin">
     ${j?`<span class="jobbadge">${esc(j.badge)}</span>`:""}
     <div class="ttl"><b>Swimming Carnival ${A.past?esc(A.past):esc(curYear())}</b><small>${esc(A.cfg.name||"CCAS")}${A.job==="organiser"?" · Organiser PIN only":""}</small></div>
     ${A.role==="org"&&A.yearPicked?`<button type="button" class="hlink" data-act="changeyear">${A.past?"Look only · ":""}Change year</button>`:""}
     ${links}
     <span class="live ${cls}"><i></i>${esc(live)}</span>
-    ${j?`<div class="jobpill"><button type="button" data-act="menu" aria-expanded="${A.menu}">Job: ${esc(pillName())}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-      ${A.menu?`<div class="jobmenu" role="menu">${jobs.length?`<div class="label">Change job</div>`:`<div class="label">Your PIN opens ${esc(pillName())} only</div>`}${jobs.map(x=>`<button type="button" role="menuitem" data-act="goto" data-job="${x.k}"><span class="n">${x.n}</span>${esc(x.name)}${pillName()===x.name?`<span class="tick">&#10003;</span>`:""}</button>`).join("")}<hr><button type="button" role="menuitem" data-act="signout">Sign out (back to PIN)</button></div>`:""}
-    </div>`:""}
+    ${j?jobPill(jobs,"Job: "+esc(pillName())):""}
   </div></div>`;
+}
+function jobPill(jobs,label){
+  return `<div class="jobpill"><button type="button" data-act="menu" aria-expanded="${A.menu}">${label}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      ${A.menu?`<div class="jobmenu" role="menu">${jobs.length?`<div class="label">Change job</div>`:`<div class="label">Your PIN opens ${esc(pillName())} only</div>`}${jobs.map(x=>`<button type="button" role="menuitem" data-act="goto" data-job="${x.k}"><span class="n">${x.n}</span>${esc(x.name)}${pillName()===x.name?`<span class="tick">&#10003;</span>`:""}</button>`).join("")}<hr><button type="button" role="menuitem" data-act="signout">Sign out (back to PIN)</button></div>`:""}
+    </div>`;
 }
 
 /* ---------- home ---------- */
@@ -208,7 +214,7 @@ function goJob(k){
   if(k==="recorder")A.r.since=Date.now();
   announce();render();window.scrollTo(0,0);
 }
-function signOut(){if(A.past)enterYear("current");if(A.store&&A.store.releaseRole)A.store.releaseRole().catch(()=>{});A.yearPicked=null;ssSet("swim_year",null);A.role=null;A.job=null;ssSet("swim_role",null);ssSet("swim_job",null);A.menu=false;A.m.phase="start";announce();render()}
+function signOut(){if(A.past)enterYear("current");if(A.store&&A.store.releaseRole)A.store.releaseRole().catch(()=>{});A.yearPicked=null;ssSet("swim_year",null);A.role=null;A.job=null;ssSet("swim_role",null);ssSet("swim_job",null);A.menu=false;A.m.phase="start";if(A.s.mtov){A.s.mtov={};mtSave()}announce();render()}
 
 /* ---------- modal ---------- */
 function modalHtml(){

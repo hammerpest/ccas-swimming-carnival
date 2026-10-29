@@ -265,3 +265,7 @@ td.nmcell{white-space:nowrap}
 .spot.px{border-style:solid;border-color:var(--muted)}
 .mtrow{flex-wrap:nowrap;gap:8px}.mtrow .btn{flex:1;padding-inline:8px}
 .splits li .btn{font:700 .88rem var(--font-body)}
+/* Slim banner and pinned clock on the phone multitimer (S1.41, Swim Opt 2.4) */
+header.top.slim .topin{padding-block:4px;flex-wrap:nowrap;justify-content:space-between}
+header.top.slim .jobpill>button{padding:6px 14px}
+.clock.pin{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdrh,60px));z-index:5}

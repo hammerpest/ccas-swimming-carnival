@@ -146,7 +146,7 @@ function renderSlips(){
   const waiting=A.s.queued||0;
   const top=waiting?`<div class="msg warn">No signal. ${plural(waiting,"photo")} waiting to send. It sends by itself when there is signal.</div>`:"";
   if(!r)return `<div class="phone">${top}${waitingCard("Waiting for the marshal","Race 1 appears here once it is sent.")}</div>`;
-  if(A.s.mt)return renderMulti(r,top);
+  if(mtWanted(r))return renderMulti(r,top);
   const done=!!A.slips[rid(r.race)];const t=slipMode();
   if(realReader()&&innerWidth<700)slipOcrLoad().catch(()=>{});
   const showNext=done&&!A.s.err&&!A.s.flash;
@@ -265,9 +265,20 @@ function mtBlank(race,sig){return {race,sig:sig||"",phase:"ready",t0:0,stopAt:0,
 function mtSig(r){return r.key+"/"+r.heat}
 /* kept on the phone so a reload mid-race keeps the clock and splits */
 const MT_KEY="swim_mt_"+(/[?&]mode=local\b/.test(location.search)?"test":"live");
-function mtSave(){try{localStorage.setItem(MT_KEY,JSON.stringify({on:!!A.s.mt,mt:A.mt}))}catch(e){}}
+function mtSave(){try{localStorage.setItem(MT_KEY,JSON.stringify({ov:A.s.mtov||{},mt:A.mt}))}catch(e){}}
 (function(){let d=null;try{d=JSON.parse(localStorage.getItem(MT_KEY)||"null")}catch(e){}
-  A.mt=d&&d.mt||mtBlank(null);A.s.mt=!!(d&&d.on)})();
+  A.mt=d&&d.mt||mtBlank(null);A.s.mtov=d&&d.ov||{}})();
+/* camera or multitimer is picked by the race (decision 125): 50 m races the camera; 100 m, 200 m and
+   relays the multitimer. Multitimer and Back to slip photo switch one race by hand. A race being
+   timed or placed always shows the multitimer. */
+function mtWanted(r){
+  const M=A.mt;if(M.race===r.race&&(!M.sig||M.sig===mtSig(r))&&(M.phase==="run"||M.phase==="place"))return true;
+  const o=A.s.mtov[mtOvKey(r)];return o!=null?o:TYPE[r.k].dist>50;
+}
+/* a hand switch belongs to one race of this carnival: race number, event and heat */
+function mtOvKey(r){return r.race+"|"+mtSig(r)}
+/* the slim banner (S1.41) shows while the multitimer is on screen, on a phone only */
+function mtSlim(){if(A.job!=="slips"||A.past||innerWidth>=700)return false;const r=slipRace();return !!r&&mtWanted(r)}
 /* a race being timed or placed is never thrown away while it still exists; a stored race whose event
    and heat no longer match (a new carnival, or cleared data) starts fresh */
 function mtFor(r){const M=A.mt;
@@ -276,7 +287,7 @@ function mtFor(r){const M=A.mt;
   else if(!M.sig){M.sig=mtSig(r);mtSave()}
   return A.mt}
 /* hand timing drops the thousandths, it never rounds up */
-function mtNow(){const M=A.mt;return Math.max(0,Math.floor(((M.phase==="run"?Date.now():M.stopAt)-M.t0)/10))}
+function mtNow(at){const M=A.mt;return Math.max(0,Math.floor(((M.phase==="run"?at||Date.now():M.stopAt)-M.t0)/10))}
 function mtFmt(cs){const m=Math.floor(cs/6000),s=Math.floor((cs%6000)/100),h=cs%100;return m+":"+String(s).padStart(2,"0")+"."+String(h).padStart(2,"0")}
 function mtOrd(n){const t=n%100;return n+(t>10&&t<14?"th":["th","st","nd","rd"][n%10]||"th")}
 function mtSplitList(sp){return `<ol class="splits">${sp.map((t,i)=>`<li><b>${i+1}</b><span>${fmtTime(t)}</span></li>`).join("")}</ol>`}
@@ -290,13 +301,13 @@ function renderMulti(r,top){
   let body="";
   if(M.phase==="ready"){
     const has=!!A.slips[rid(r.race)]||r.nTimes>0||r.tapped>0;
-    body=`<div class="clock" id="mtclock" role="timer">0:00.00</div>
+    body=`<div class="clock pin" id="mtclock" role="timer">0:00.00</div>
       <div class="mtbtns"><button type="button" class="btn mtgo" data-act="mtgo" data-mt ${lk||!n?"disabled":""}>START</button><button type="button" class="btn mtsplit" disabled>SPLIT</button></div>
       ${has?`<div class="msg info">Race ${r.race} already has ${r.tapped&&!r.nTimes?"places":"times"}. Sending replaces them.</div>`:""}
       <p class="muted" style="margin:0;font-size:.88rem">${n?`${plural(n,"swimmer")} marshalled: lane${n>1?"s":""} ${r.filled.join(", ")}.`:"No swimmers marshalled in this heat."}</p>
       ${nav}${back}`;
   }else if(M.phase==="run"){
-    body=`<div class="clock run" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
+    body=`<div class="clock run pin" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
       <div class="mtbtns"><button type="button" class="btn mtstop" data-act="mtstop" data-mt>STOP</button><button type="button" class="btn mtsplit" data-act="mtsplit" data-mt>SPLIT</button></div>
       <div class="panel stack" style="gap:8px"><div class="row" style="justify-content:space-between"><span class="label">Splits</span><span class="chip">${M.splits.length} of ${plural(n,"swimmer")}</span></div>
         ${M.splits.length?mtSplitList(M.splits):`<p class="muted" style="margin:0">Tap SPLIT as each swimmer touches.</p>`}</div>
@@ -316,7 +327,7 @@ function renderMulti(r,top){
     const sp=M.splits.length;
     const prompt=!sp?"No splits were taken. Use Fix splits to add the times.":!done?`Tap the lane that touched ${mtOrd(M.taps.length+1)} (${fmtTime(M.splits[M.taps.length])}).`:sp===n?`All ${n} placed. Check the times, then send.`:`All ${plural(lim,"time")} placed. Check the times, then send.`;
     const warn=sp<n&&sp?`${plural(sp,"split")} for ${plural(n,"swimmer")}. ${n-sp===1?"One swimmer has":n-sp+" swimmers have"} no time: add a missed time with Fix splits, or the Recorder can type it or mark DNS.`:sp>n?`${plural(sp,"split")} for ${plural(n,"swimmer")}. Delete the extra ${sp-n===1?"split":"splits"} with Fix splits, or the last ${sp-n===1?"one is":sp-n+" are"} not used.`:"";
-    body=`<div class="clock" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
+    body=`<div class="clock pin" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
       <div class="prompt ${done&&sp?"done":""}">${esc(prompt)}</div>
       ${warn?`<div class="msg warn">${esc(warn)}</div>`:""}
       <div class="pool">${lanes}</div>
@@ -332,14 +343,22 @@ function renderMulti(r,top){
 }
 /* keep the phone awake while the clock runs (a 200 m race is about 3 minutes) */
 let mtLock=null;
-async function mtWake(on){try{if(on&&navigator.wakeLock&&!mtLock){mtLock=await navigator.wakeLock.request("screen");mtLock.addEventListener("release",()=>{mtLock=null})}else if(!on&&mtLock){await mtLock.release();mtLock=null}}catch(e){mtLock=null}}
+let mtVid=null;
+function mtVideo(on){
+  try{
+    if(on){if(!mtVid){mtVid=document.createElement("video");mtVid.muted=true;mtVid.loop=true;mtVid.setAttribute("playsinline","");mtVid.setAttribute("muted","");mtVid.setAttribute("aria-hidden","true");mtVid.style.cssText="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0";mtVid.src=SILENT_MP4;document.body.appendChild(mtVid)}
+      const p=mtVid.play();if(p&&p.catch)p.catch(()=>{})}
+    else if(mtVid)mtVid.pause();
+  }catch(e){}
+}
+async function mtWake(on){mtVideo(on);try{if(on&&navigator.wakeLock&&!mtLock){mtLock=await navigator.wakeLock.request("screen");mtLock.addEventListener("release",()=>{mtLock=null})}else if(!on&&mtLock){await mtLock.release();mtLock=null}}catch(e){mtLock=null}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&A.mt&&A.mt.phase==="run")mtWake(true)});
 if(A.mt.phase==="run")mtWake(true);
-function mtGo(){const M=A.mt;if(M.phase!=="ready"||locked())return;M.t0=Date.now();M.stopTap=0;M.phase="run";M.splits=[];M.taps=[];mtSave();mtWake(true);render()}
-function mtSplit(){const M=A.mt;if(M.phase!=="run")return;M.splits.push(mtNow());mtSave();render()}
-function mtStop(force){
+function mtGo(at){const M=A.mt;if(M.phase!=="ready"||locked())return;M.t0=at||Date.now();M.stopTap=0;M.phase="run";M.splits=[];M.taps=[];mtSave();mtWake(true);render()}
+function mtSplit(at){const M=A.mt;if(M.phase!=="run")return;M.splits.push(mtNow(at));mtSave();render()}
+function mtStop(force,at){
   const r=slipRace();const M=A.mt;if(!r||M.phase!=="run")return;
-  if(!force){M.stopTap=Date.now();if(M.splits.length<r.filled.length){A.modal={t:"mtStop",n:M.splits.length,of:r.filled.length};render();return}}
+  if(!force){M.stopTap=at||Date.now();if(M.splits.length<r.filled.length){A.modal={t:"mtStop",n:M.splits.length,of:r.filled.length};render();return}}
   M.stopAt=M.stopTap||Date.now();M.phase="place";M.taps=[];A.modal=null;mtSave();mtWake(false);render();
 }
 function mtTap(l){

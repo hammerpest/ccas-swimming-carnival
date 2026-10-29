@@ -25,7 +25,7 @@ Owner: Jordan, PDHPE Head of Department at CCAS.
 - No emojis.
 - Money in AUD, rounded to the nearest dollar.
 - Never use these words: delve, realm, unleash, tapestry, holistic, synthesize, substantiate, paramount, empirical, transcend, pivotal.
-- Number every app change as **Swim Opt X.Y**. The first Claude Code release is Swim Opt 2.0. Design changes are S X.Y; the next is S1.41.
+- Number every app change as **Swim Opt X.Y**. The first Claude Code release is Swim Opt 2.0. Design changes are S X.Y; the next is S1.42.
 - After any decision, answered question or finished work, update `PROJECT-STATE.md`: write a new dated version, and tell Jordan what changed.
 - Ask Jordan any open questions from PROJECT-STATE instead of letting them sit.
 - When a session gets long, remind Jordan of the handover routine: a new dated PROJECT-STATE, then a fresh session.

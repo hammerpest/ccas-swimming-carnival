@@ -13,6 +13,15 @@ def check(ok, what):
 async def pin(p, code):
     for c in code: await p.click(f'[data-act=key][data-k="{c}"]')
     await p.wait_for_function("A.pin===''&&(!!A.role||A.pinErr)", timeout=20000)
+async def pinned(p, must_stick=False):
+    """scroll to the bottom; the clock must sit where sticky puts it: under the banner, or lower if not reached"""
+    r = await p.evaluate("""(()=>{scrollTo(0,0);const c=document.getElementById('mtclock');const t0=c.getBoundingClientRect().top;
+      scrollTo(0,document.documentElement.scrollHeight);const sy=scrollY;const hh=document.getElementById('hdr').getBoundingClientRect().bottom;
+      return {t0,sy,hh,ct:c.getBoundingClientRect().top}})()""")
+    want = max(r['hh'], r['t0'] - r['sy'])
+    ok = abs(r['ct'] - want) < 2 and (not must_stick or abs(r['ct'] - r['hh']) < 2)
+    if not ok: print('   ', r)
+    return ok
 async def main():
   async with async_playwright() as pw:
     b = await pw.chromium.launch()
@@ -42,8 +51,9 @@ async def main():
     S = await mk('slips', 390, 844)
     await pin(S, '4444'); await S.wait_for_timeout(200)
     await S.screenshot(path='1-slips.png')
-    check(await S.locator('[data-act=mtopen]').count() == 1, "Time Slips shows the Multitimer button")
-    await S.click('[data-act=mtopen]'); await S.screenshot(path='2-ready.png')
+    check(await S.locator('[data-act=mtgo]').count() == 1 and await S.locator('label.cam').count() == 0, "a 100 m race opens the multitimer by itself (125)")
+    check(await S.locator('header.top.slim').count() == 1 and await S.locator('header.top .ttl').count() == 0, "multitimer has the slim banner (S1.41)")
+    await S.screenshot(path='2-ready.png')
     filled = await S.evaluate("A.R.races.get(1).filled.map(Number)")
     check(len(filled) == 6, "race 1 has 6 swimmers")
     await S.click('[data-act=mtgo]'); await S.wait_for_timeout(400)
@@ -51,6 +61,34 @@ async def main():
         await S.click('[data-act=mtsplit]'); await S.wait_for_timeout(150)
     await S.screenshot(path='3-running.png')
     check(await S.evaluate("A.mt.splits.length") == 5, "one tap gives one split (no double count)")
+    # a touch that turns into a scroll is not a split (127)
+    await S.evaluate("""(()=>{const b=document.querySelector('[data-act=mtsplit]');const r=b.getBoundingClientRect();const x=r.x+20,y=r.y+20;
+      const ev=(t,yy)=>b.dispatchEvent(new PointerEvent(t,{bubbles:true,pointerId:7,pointerType:'touch',clientX:x,clientY:yy}));
+      ev('pointerdown',y);ev('pointermove',y-40);ev('pointerup',y-40);
+      ev('pointerdown',y);document.dispatchEvent(new PointerEvent('pointercancel',{bubbles:true,pointerId:7}));ev('pointerup',y)})()""")
+    await S.wait_for_timeout(100)
+    check(await S.evaluate("A.mt.splits.length") == 5, "a touch that scrolls or is cancelled adds no split")
+    # a mouse slide over SPLIT: the browser still sends a click afterwards, which must not count (check 3 run 1, finding 2)
+    bb = await S.locator('[data-act=mtsplit]').bounding_box()
+    await S.mouse.move(bb['x'] + 20, bb['y'] + 20); await S.mouse.down(); await S.mouse.move(bb['x'] + 20, bb['y'] + 70, steps=5); await S.mouse.up()
+    await S.wait_for_timeout(100)
+    check(await S.evaluate("A.mt.splits.length") == 5, "a 50 px slide on SPLIT adds no split")
+    await S.wait_for_timeout(900)
+    # two thumbs that overlap give two splits (finding 3)
+    await S.evaluate("""(()=>{const b=document.querySelector('[data-act=mtsplit]');const r=b.getBoundingClientRect();const x=r.x+30,y=r.y+30;
+      const ev=(t,id)=>document.elementFromPoint(x,y).dispatchEvent(new PointerEvent(t,{bubbles:true,pointerId:id,pointerType:'touch',clientX:x,clientY:y}));
+      ev('pointerdown',11);ev('pointerdown',12);ev('pointerup',11);ev('pointerup',12)})()""")
+    await S.wait_for_timeout(100)
+    check(await S.evaluate("A.mt.splits.length") == 7, "two overlapping thumbs give two splits")
+    await S.evaluate("A.mt.splits.splice(5,2);mtSave();render()")
+    # the slim banner is for phones only (finding 1)
+    await S.set_viewport_size({'width': 1180, 'height': 820}); await S.wait_for_timeout(400)
+    check(await S.locator('header.top.slim').count() == 0 and await S.locator('header.top .ttl').count() == 1, "iPad size keeps the full banner on the multitimer")
+    await S.set_viewport_size({'width': 390, 'height': 844}); await S.wait_for_timeout(400)
+    check(await S.locator('header.top.slim').count() == 1, "back to phone size: slim banner again")
+    check(await pinned(S), "running: the clock is never hidden under the banner when scrolled")
+    await S.screenshot(path='3b-running-scrolled.png')
+    await S.evaluate("window.scrollTo(0,0)")
     await S.click('[data-act=mtstop]'); await S.wait_for_timeout(100)
     check(await S.locator('.modal h2', has_text='Stop the clock?').count() == 1, "STOP with too few splits asks first")
     await S.screenshot(path='4-stop-ask.png')
@@ -62,6 +100,9 @@ async def main():
     order = [filled[3], filled[1], filled[0], filled[5], filled[2], filled[4]]
     for l in order[:3]: await S.click(f'[data-act=mttap][data-l="{l}"]')
     await S.screenshot(path='5-placing.png', full_page=True)
+    check(await pinned(S, True), "placing: the clock stays pinned under the banner when scrolled")
+    await S.screenshot(path='5b-placing-scrolled.png')
+    await S.evaluate("window.scrollTo(0,0)")
     await S.click(f'[data-act=mttap][data-l="{order[2]}"]')  # tap a placed lane to remove it
     check(await S.evaluate("A.mt.taps.length") == 2, "tapping a placed lane removes it")
     for l in order[2:]: await S.click(f'[data-act=mttap][data-l="{l}"]')
@@ -84,6 +125,9 @@ async def main():
     await S.click('[data-act=mtstop]')
     check(await S.locator('.msg.warn').count() == 1, "5 splits for 4 swimmers warns")
     await S.click('[data-act=mtfix]'); await S.screenshot(path='8-fix.png')
+    await S.fill('#mtadd', '123'); await S.set_viewport_size({'width': 390, 'height': 500}); await S.wait_for_timeout(400)
+    check(await S.input_value('#mtadd') == '123', "a resize (keyboard opening) keeps text being typed")
+    await S.fill('#mtadd', ''); await S.set_viewport_size({'width': 390, 'height': 844}); await S.wait_for_timeout(300)
     await S.click('[data-act=mtdel][data-i="2"]')
     await S.fill('#mtadd', '7512x'); await S.click('[data-act=mtaddok]')
     check(await S.locator('.modal', has_text='Only digits').count() + await S.locator('.modal span[style*="--bad"]').count() >= 1, "a bad typed time is refused")
@@ -99,8 +143,13 @@ async def main():
     check(await M.evaluate("A.counter") == 3, "marshal is on race 3 after the two 100 m races")
     for _ in range(3): await M.click('.picklist button[data-act=mset]:not([disabled]) >> nth=0')
     await M.click('[data-act=mnew]'); await M.click('[data-act=mconfirm]'); await M.wait_for_timeout(300)
-    await S.click('[data-act=mtnext]'); await S.click('[data-act=mtclose]'); await S.wait_for_timeout(100)
-    check(await S.locator('label.cam').count() == 1 and await S.evaluate("A.s.race") == 3, "Back to slip photo shows the camera on race 3")
+    await S.click('[data-act=mtnext]'); await S.wait_for_timeout(100)
+    check(await S.locator('label.cam').count() == 1 and await S.evaluate("A.s.race") == 3, "Next race to a 50 m race opens the camera by itself (125)")
+    check(await S.locator('header.top.slim').count() == 0 and await S.locator('header.top .ttl').count() == 1, "the camera keeps the full banner")
+    await S.click('[data-act=mtopen]'); await S.wait_for_timeout(100)
+    check(await S.locator('[data-act=mtgo]').count() == 1, "Multitimer switches a 50 m race by hand")
+    await S.click('[data-act=mtclose]'); await S.wait_for_timeout(100)
+    check(await S.locator('label.cam').count() == 1, "Back to slip photo switches back to the camera")
 
     R = await mk('rec')
     await pin(R, '3333'); await R.wait_for_timeout(300)
@@ -116,7 +165,7 @@ async def main():
     for _ in range(3): await M.click('.picklist button[data-act=mset]:not([disabled]) >> nth=0')
     await M.click('[data-act=mnew]'); await M.click('[data-act=mconfirm]'); await M.wait_for_timeout(300)
     await S.click('[data-act=sgoto]'); await S.click('[data-act=pickrace][data-race="4"]')
-    await S.click('[data-act=mtopen]'); await S.click('[data-act=mtgo]'); await S.wait_for_timeout(300)
+    await S.click('[data-act=mtgo]'); await S.wait_for_timeout(300)
     await S.click('[data-act=mtsplit]')
     await S.reload(); await S.wait_for_load_state('load'); await S.wait_for_function("!!A.store&&A.R&&A.R.races.size>3", timeout=20000); await S.wait_for_timeout(300)
     check(await S.evaluate("A.mt.phase") == 'run' and len(await S.evaluate("A.mt.splits")) == 1, "reload keeps the running clock and splits")
