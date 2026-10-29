@@ -30,14 +30,14 @@ function renderRecorder(){
     const p=A.R.who(id);const v=r.times[l]||{};const e=r.eff[l];const jp=r.placeTaps[l];
     const odd=v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep?(oddTime(r.k,v.t,A.cfg.limits)||(v.chk?"slip hard to read":null)):null;
     const err=A.r.errs[r.race+"-"+l];
-    const notOnSlip=r.src==="photo"&&v.t==null&&!v.st;
+    const notOnSlip=r.src==="photo"&&v.t==null&&!v.st;const sm=A.slips[rid(r.race)]||{};const notRead=notOnSlip&&(sm.miss||(sm.missed||[]).includes(l)||(sm.unsure||[]).length>0);
     const val=err?err.raw:(v.t!=null?fmtTime(v.t):"");
     rows+=`<tr class="${e&&e.pink?"pinkrow":odd?"flagrow":""}">
       <td class="num" style="font:800 1.1rem var(--font-display)">${l}</td>
       <td class="nmcell">${hdot(p.h)} <b>${esc(pname(p))}</b></td>
       <td>${jp?medal(jp)+(r.dh.some(g=>g.includes(String(l)))?` <span class="tag dh">DEAD HEAT</span>`:""):`<span class="muted">${r.tapped?"By time":"&ndash;"}</span>`}</td>
-      <td><input class="timein ${odd?"flag":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
-        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":"Typed"}</span>`:""}</td>
+      <td><input class="timein ${odd?"flag":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
+        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":"Typed"}</span>`:""}</td>
       <td class="num">${e&&e.eff!=null&&v.st!=="DQ"?`<span class="${e.pink?"pinkt":""}" style="font:800 1.05rem var(--font-mono)">${fmtTime(e.eff)}</span>${e.pink?`<span class="under pinkn">Slip ${fmtTime(e.rec)}</span>`:""}`:""}</td>
       <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DNS" aria-pressed="${v.st==="DNS"}" ${lk?"disabled":""}>DNS</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DQ" aria-pressed="${v.st==="DQ"}" ${lk?"disabled":""}>DQ</button></div></td>
       <td>${odd?`<div style="min-width:150px"><span style="color:var(--warn);font-weight:700;font-size:.85rem">Check this time: ${esc(odd)}</span><div class="row" style="gap:6px;margin-top:4px"><button type="button" class="btn small" data-act="rkeep" data-l="${l}" ${lk?"disabled":""}>Keep</button><button type="button" class="btn small" data-act="rfix" data-l="${l}" ${lk?"disabled":""}>Fix</button></div></div>`:""}</td>
@@ -195,11 +195,11 @@ async function onPhoto(file){
   const t=slipMode();
   A.s.err=null;
   const CANT="Could not read the slip. Hold the phone flat over the slip so all lanes and times are in the picture, with no glare. Then take it again.";
-  let read=null,unsure=[],miss=false;
+  let read=null,unsure=[],miss=false,missed=[];
   if(t==="real"){
     A.s.reading=true;render();
     const url=URL.createObjectURL(file);
-    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure;miss=res.problems.length>0}}catch(e){}
+    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&!res.raceUnsure&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure;miss=res.problems.length>0;missed=res.missed}}catch(e){}
     URL.revokeObjectURL(url);A.s.reading=false;
   }
   const img=await shrink(file);
@@ -209,7 +209,7 @@ async function onPhoto(file){
   if(read.race!==r.race){A.s.err=`Wrong slip? This slip says Race ${read.race}. The screen is on Race ${r.race}. Find the Race ${r.race} slip and take it again.`;render();return}
   const key=rid(r.race);
   const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false,chk:unsure.includes(+l)};
-  const meta={race:r.race,read:read.lanes,unsure,miss,at:Date.now(),dev:DEV,test:t!=="real"};
+  const meta={race:r.race,read:read.lanes,unsure,miss,missed,at:Date.now(),dev:DEV,test:t!=="real"};
   A.slips[key]=meta;
   A.times[key]={lanes,src:"photo",checked:false};recompute();
   if(t==="offline"){

@@ -33,26 +33,32 @@ function slipPrepare(img,o){
   g.putImageData(d,0,0);return c;
 }
 function slipImage(src){return new Promise((ok,bad)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>bad(new Error("Photo did not open"));i.src=src})}
-/* src: a data URL or blob URL. Reads the photo in grey first; when something is missing or doubtful,
-   reads it again in black and white and fills the gaps from that second look (a lane both looks read
-   differently is marked unsure). Returns parseSlip()'s result plus the text read. */
+/* src: a data URL or blob URL. The photo is read twice, in grey and in black and white, and the two
+   readings are compared. Only what both agree on, with confidence, is passed as sure: a lane read
+   differently, or found by only one reading, goes in "unsure"; a race number the readings do not agree on
+   (or are not confident of) sets raceUnsure, and the phone asks for the photo again. Lines either
+   reading could not use set "Some lines not read". Returns the race, lanes, order, unsure, problems,
+   missed lanes and the text read. */
 function slipMerge(a,b){
-  const r={race:a.race!=null?a.race:b.race,lanes:Object.assign({},a.lanes),order:a.order.slice(),unsure:a.unsure.slice(),problems:[],text:a.text+"\n----\n"+b.text};
-  for(const l of b.order){
-    if(r.lanes[l]==null){r.lanes[l]=b.lanes[l];r.order.push(l);if(b.unsure.includes(l))r.unsure.push(+l)}
-    else if(r.lanes[l]!==b.lanes[l]){if(!r.unsure.includes(+l))r.unsure.push(+l)}
-    else if(r.unsure.includes(+l)&&!b.unsure.includes(l))r.unsure=r.unsure.filter(x=>x!==+l);
+  const r={race:null,raceUnsure:false,lanes:{},order:[],unsure:[],problems:[],missed:[],text:a.text+"\n----\n"+b.text};
+  if(a.race!=null&&b.race!=null){r.race=a.race;if(a.race!==b.race||(a.raceLow&&b.raceLow))r.raceUnsure=true}
+  else{const one=a.race!=null?a:b;r.race=one.race;if(one.race!=null&&one.raceLow)r.raceUnsure=true}
+  const doubt=l=>{if(!r.unsure.includes(l))r.unsure.push(l)};
+  for(const l of a.order.concat(b.order.filter(x=>!a.order.includes(x)))){
+    const inA=a.lanes[l]!=null,inB=b.lanes[l]!=null;
+    r.lanes[l]=inA?a.lanes[l]:b.lanes[l];r.order.push(l);
+    if(!inA||!inB||a.lanes[l]!==b.lanes[l])doubt(l);
+    else if(a.unsure.includes(l)&&b.unsure.includes(l))doubt(l);
   }
-  if(a.race!=null&&b.race!=null&&a.race!==b.race)r.raceUnsure=true;
-  /* a line one look could not place is fine if the other look found as many lanes as it saw lines */
-  const seen=x=>x.order.length+x.problems.filter(p=>p==="A time with no lane").length;
-  if(r.order.length<Math.max(seen(a),seen(b)))r.problems=["Some lines not read"];
+  for(const l of a.unsure.concat(b.unsure))if(r.lanes[l]!=null&&(a.problems.some(p=>p==="Lane "+l+" twice")||b.problems.some(p=>p==="Lane "+l+" twice")))doubt(l);
+  for(const l of a.missed.concat(b.missed))if(r.lanes[l]==null&&!r.missed.includes(l))r.missed.push(l);
+  const seen=x=>x.order.length+x.problems.filter(p=>p==="A time with no lane"||/no time read|not on this pool/.test(p)).length;
+  if(r.missed.length||r.order.length<Math.max(seen(a),seen(b))||(a.problems.length&&b.problems.length))r.problems=["Some lines not read"];
   return r;
 }
 async function readSlipPhoto(src,maxLanes){
   const [w,img]=await Promise.all([slipOcrLoad(),slipImage(src)]);
-  const look=async o=>{const {data}=await w.recognize(slipPrepare(img,o));const r=parseSlip(data.text,maxLanes);r.text=data.text;return r};
+  const look=async o=>{const {data}=await w.recognize(slipPrepare(img,o));const r=parseSlip(data.lines&&data.lines.length?data.lines:data.text,maxLanes);r.text=data.text;return r};
   const a=await look({grey:true});
-  if(a.race!=null&&a.order.length&&!a.unsure.length&&!a.problems.length)return a;
   return slipMerge(a,await look({}));
 }

@@ -64,3 +64,13 @@ a(C.parseSlip('LANE MODE 1/ 40\nstart 11:00:00.000\nstop 3 11:01:12.340\n1:12.34
  a(JSON.stringify(r1.extra)==='[8]','empty lane slip time listed as extra');}
 sl=C.parseSlip('LANE MODE 1/ 3\nstop 4 09:19:41.700\n34.70 sec\n35.55 sec',8);
 a(sl.unsure.includes(4)&&sl.problems.includes('A time with no lane'),'no start clock: lane unsure; a time with no lane is a problem');
+// reader confidence (check 3 rerun): a low-confidence lane digit or time is unsure; a stop line with no time is missed
+{const W=(txt,c)=>({text:txt,words:txt.split(/\s+/).map(x=>({text:x,confidence:c}))});
+ const lines=[W('LANE MODE 1/ 1',95),W('start 09:19:07.000',95),{text:'stop 5 09:19:50.220',words:[{text:'stop',confidence:96},{text:'5',confidence:17},{text:'09:19:50.220',confidence:87}]},W('43.22 sec',95),W('stop 4 09:19:41.700',95),W('34.70 sec',95),W('stop 8 09:19:42.550',95)];
+ const r=C.parseSlip(lines,8);
+ a(r.lanes[5]===4322&&r.unsure.includes(5)&&!r.unsure.includes(4),'slip: smudged lane digit is unsure');
+ a(r.missed.includes(8)&&r.problems.includes('Lane 8: no time read'),'slip: stop line with no time is missed');
+ const r2=C.parseSlip([{text:'LANE MODE 1/ 3',words:[{text:'LANE',confidence:95},{text:'MODE',confidence:95},{text:'1/',confidence:95},{text:'3',confidence:30}]}],8);
+ a(r2.race===3&&r2.raceLow,'slip: low-confidence race number flagged');}
+sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:00:00.000\nstop 3 09:00:35.550\n35.55 sec\nstop 3 09:00:42.100\n42.10 sec',8);
+a(sl.lanes[3]===3555&&sl.unsure.includes(3)&&sl.problems.includes('Lane 3 twice'),'slip: a lane twice is unsure');
