@@ -247,6 +247,7 @@ const ACT={
   rnext:()=>{A.r.race=A.r.race+1;A.r.since=Date.now();announce();render()},
   rlatest:()=>{A.r.race=raceList().slice(-1)[0].race;A.r.since=Date.now();announce();render()},
   rslip:()=>viewSlip(A.r.race),
+  sreplace:()=>{const go=A.modal&&A.modal.go;A.modal=null;render();if(go)go()},
   rst:el=>{const r=recRace();const cur=(r.times[el.dataset.l]||{});const st=el.dataset.st;setLane(el.dataset.l,cur.st===st?{st:cur.t!=null?"ok":null}:{st,src:cur.src||"typed"})},
   rkeep:el=>setLane(el.dataset.l,{keep:true}),
   rfix:el=>{const r=recRace();const i=document.getElementById("t-"+r.race+"-"+el.dataset.l);if(i)i.focus()},

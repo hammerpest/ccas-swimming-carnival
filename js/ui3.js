@@ -209,6 +209,12 @@ async function onPhoto(file){
   if(t==="wrong")read.race=r.race+1;
   if(read.race!==r.race){A.s.err=`Wrong slip? This slip says Race ${read.race}. The screen is on Race ${r.race}. Find the Race ${r.race} slip and take it again.`;render();return}
   const key=rid(r.race);
+  /* a race that already has a slip asks before the new photo replaces it (decision 117), so a slip
+     read as the wrong race after going back can never overwrite a good one without a yes */
+  if(A.slips[key]){A.modal={t:"replaceSlip",race:r.race,go:()=>keepPhoto(r,t,key,read,unsure,miss,missed,img)};render();return}
+  await keepPhoto(r,t,key,read,unsure,miss,missed,img);
+}
+async function keepPhoto(r,t,key,read,unsure,miss,missed,img){
   /* slip lanes should match the marshalled lanes; when some slip lanes have no swimmer and some
      swimmers have no slip time, it may be the wrong slip or a misread lane: warn, never hide it */
   const mism=t==="real"&&Object.keys(read.lanes).some(l=>!r.lanes[l])&&r.filled.some(l=>read.lanes[l]==null);
@@ -233,5 +239,6 @@ async function sendSlip(key,img,meta,lanes){
   await w(()=>A.store.set("slips/"+key,meta));
   await w(()=>A.store.set("times/"+key,{lanes,src:"photo",checked:false,by:DEV,at:Date.now()}));
 }
+MODALS.replaceSlip=M=>`<h2>Replace the Race ${M.race} slip?</h2><p style="margin:0">Race ${M.race} already has a slip. This photo will replace its times.</p><p style="margin:0">Check the race number on the paper slip says ${M.race}.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn go" data-act="sreplace">Replace the slip</button></div>`;
 MODALS.overall=M=>{const r=A.R.races.get(M.race);const G=r&&A.R.groups.get(r.key);
   return `<h2>Race overall</h2><div class="muted">${esc(r?r.label:"")}</div>${overallTable(G,{hris:false})}<div class="acts"><button type="button" class="btn primary" data-act="closemodal">Close</button></div>`};
