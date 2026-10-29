@@ -152,7 +152,7 @@ function compute(S){
     const eff=heatEffective(lt,F.order||[]);
     const placeTaps=finishOrderFromTaps(F.order);
     const nTimes=filled.filter(l=>lt[l]&&(lt[l].t!=null||lt[l].st==="DNS"||lt[l].st==="DQ")).length;
-    const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep&&oddTime(h.k,v.t,cfg.limits)}).length;
+    const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep&&(oddTime(h.k,v.t,cfg.limits)||v.chk)}).length;
     const need=Math.min(4,filled.length);
     const dh=(F.order||[]).map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
     const tapped=Object.keys(placeTaps).filter(l=>lanes[l]).length;
@@ -245,6 +245,48 @@ function compute(S){
   return {cfg,P,events,groups,races,heats,house,houseRank,champs,broken,finalCount,maxRace,who};
 }
 
+/* ---- time slip text (Swiss Timing printer, decision 110) ----
+   "LANE MODE 1/ 7": the number after the slash is the race number; the number before it is ignored.
+   "start" and the clock times are ignored. Each "stop 4 09:19:41.700" line gives the lane; the
+   "34.70 sec" line under it is that lane's time. Lines come in finish order; a lane with no stop line
+   was not timed. Times over a minute may print as 72.34 or 1:12.34. Text comes from the phone's reader,
+   so common misreads (O for 0, l for 1, comma for point) are allowed for. The clock times are a check:
+   stop clock minus start clock should equal the lane's time; when both are read and they differ, the
+   lane is listed in "unsure" so the Recorder checks it against the paper slip. */
+function slipNum(t){return String(t).replace(/[Oo]/g,"0").replace(/[lI|]/g,"1").replace(/,/g,".")}
+function slipTime(t){
+  const m=slipNum(t).match(/^(?:(\d{1,2}):)?(\d{1,3})\.(\d{2})$/);if(!m)return null;
+  const cs=(m[1]?+m[1]*6000:0)+(+m[2])*100+(+m[3]);
+  if(m[1]&&+m[2]>=60)return null;
+  return cs>0&&cs<60000?cs:null;
+}
+function slipClock(line){
+  const m=slipNum(line).match(/(\d{2}):(\d{2})[.,](\d{3})\s*$/);
+  return m?(+m[1])*60000+(+m[2])*1000+(+m[3]):null;
+}
+function parseSlip(text,maxLanes){
+  maxLanes=maxLanes||10;
+  const lines=String(text||"").split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  let race=null,start=null,clock=null;const lanes={},order=[],problems=[],unsure=[];let lane=null;
+  for(const line of lines){
+    const rm=line.match(/M[O0]DE[^\/]*\/([\s\dOolI|]*)$/i);
+    if(rm&&race==null){const n=rm[1].trim().split(/\s+/).pop();if(n){race=+slipNum(n)}continue}
+    if(/^st\s*a\s*r?\s*t\b/i.test(line)){start=slipClock(line);continue}
+    const sm=line.match(/^s\s*t\s*[o0]\s*p\s*([\dOolI|]{1,2})(?![\d:])/i);
+    if(sm){lane=+slipNum(sm[1]);clock=slipClock(line);if(!(lane>=1&&lane<=maxLanes)){problems.push("Lane "+sm[1]+" not on this pool");lane=null}continue}
+    const tm=line.match(/([\dOolI|]{0,2}:?[\dOolI|]{1,3}[.,][\dOolI|]{2})\s*s/i);
+    if(tm&&lane!=null){
+      const cs=slipTime(tm[1]);
+      if(cs==null)problems.push("Lane "+lane+": time not clear");
+      else if(lanes[lane]!=null)problems.push("Lane "+lane+" twice");
+      else{lanes[lane]=cs;order.push(lane);
+        if(start!=null&&clock!=null){const dur=((clock-start)%3600000+3600000)%3600000;if(Math.abs(dur/10-cs)>1)unsure.push(lane)}}
+      lane=null;
+    }
+  }
+  return {race:race!=null&&race>0?race:null,lanes,order,problems,unsure};
+}
+
 /* ---- students: paste or CSV with DOB → age group (DOB never kept) ---- */
 function ageOn(dobIso,onIso){
   const b=new Date(dobIso+"T00:00:00"),c=new Date(onIso+"T00:00:00");
@@ -295,4 +337,4 @@ function parseStudents(text,ageDate){
   return {ok,bad};
 }
 
-if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey};
+if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip};

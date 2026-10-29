@@ -28,7 +28,7 @@ function renderRecorder(){
   for(let l=1;l<=L;l++){
     const id=r.lanes[l];if(!id)continue;
     const p=A.R.who(id);const v=r.times[l]||{};const e=r.eff[l];const jp=r.placeTaps[l];
-    const odd=v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep?oddTime(r.k,v.t,A.cfg.limits):null;
+    const odd=v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep?(oddTime(r.k,v.t,A.cfg.limits)||(v.chk?"slip hard to read":null)):null;
     const err=A.r.errs[r.race+"-"+l];
     const notOnSlip=r.src==="photo"&&v.t==null&&!v.st;
     const val=err?err.raw:(v.t!=null?fmtTime(v.t):"");
@@ -60,9 +60,10 @@ function renderRecorder(){
         <p class="muted" style="margin:0;font-size:.88rem">Type digits only: 3412 is 34.12 and 10234 is 1:02.34. Press Enter to save and move down. Pink times were moved by the Place Judge's order; the slip time shows underneath.</p>
         <button type="button" class="btn big ${r.checked?"go":"navy"}" data-act="rcheck" ${canCheck&&!r.checked?"":"disabled"} style="width:100%">${r.checked?"Checked":"Times checked"}</button>
       </div>
-      <div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Race overall</h3><span class="chip ${G&&G.final?"final":"prov"}">${G?G.status:""}</span></div>
+      <div class="stack"><div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Race overall</h3><span class="chip ${G&&G.final?"final":"prov"}">${G?G.status:""}</span></div>
         <div class="muted" style="font-size:.88rem">${esc(r.label)} · ${raceRange(G?G.raceNos:[])}, ${plural(G?G.heats.length:0,"heat")}, timed final</div>
         ${overallTable(G,{hl:r.race})}</div>
+        ${slipPanel(r)}</div>
     </div>`;
 }
 async function saveTime(l,raw){
@@ -74,7 +75,7 @@ async function saveTime(l,raw){
   delete A.r.errs[key];
   const cur=r.times[l]||{};
   if(cur.t===p.cs&&cur.st!=="DNS")return true;
-  const lanes={};lanes[l]={t:p.cs,st:"ok",src:"typed",keep:false};
+  const lanes={};lanes[l]={t:p.cs,st:"ok",src:"typed",keep:false,chk:false};
   const T=A.times[rid(r.race)]||{};
   A.times[rid(r.race)]=Object.assign({},T,{lanes:Object.assign({},T.lanes||{},lanes),checked:false});
   recompute();
@@ -118,6 +119,18 @@ async function viewSlip(race){
   try{const d=await A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key);if(A.modal&&A.modal.t==="slip"){A.modal.img=d&&d.img;A.modal.loading=false;render()}}catch(e){if(A.modal){A.modal.loading=false;render()}}
 }
 
+/* the slip photo under Race overall, so times, result and slip are on one screen */
+function slipPanel(r){
+  const key=rid(r.race);const meta=A.slips[key];
+  if(!meta)return `<div class="panel stack"><h3>Time slip</h3><p class="muted" style="margin:0">No slip yet for Race ${r.race}.</p></div>`;
+  const ck=key+"@"+(meta.at||0);
+  if(!(ck in A.slipImg)){A.slipImg={[ck]:null};
+    A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key).then(d=>{if(ck in A.slipImg){A.slipImg[ck]=(d&&d.img)||"";render()}}).catch(()=>{if(ck in A.slipImg){A.slipImg[ck]="";render()}})}
+  const c=A.slipImg[ck];const un=(meta.unsure||[]).filter(l=>meta.read&&meta.read[l]!=null);
+  return `<div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Time slip</h3>${un.length?`<span class="chip prov">Hard to read: lane ${un.join(", ")}</span>`:""}</div>
+    ${c?`<img src="${c}" alt="Time slip photo for race ${r.race}" style="display:block;width:100%;border-radius:10px;border:1px solid var(--line)">`:`<p class="muted" style="margin:0">${c===""?"No photo stored for this race.":"Loading the photo..."}</p>`}</div>`;
+}
+
 /* ---------- Time Slips (phone) ---------- */
 function slipRace(){
   const list=raceList();if(!list.length)return null;
@@ -129,7 +142,8 @@ function renderSlips(){
   const waiting=A.s.queued||0;
   const top=waiting?`<div class="msg warn">No signal. ${plural(waiting,"photo")} waiting to send. It sends by itself when there is signal.</div>`:"";
   if(!r)return `<div class="phone">${top}${waitingCard("Waiting for the marshal","Race 1 appears here once it is sent.")}</div>`;
-  const done=!!A.slips[rid(r.race)];
+  const done=!!A.slips[rid(r.race)];const t=slipMode();
+  if(realReader())slipOcrLoad().catch(()=>{});
   const showNext=done&&!A.s.err&&!A.s.flash;
   const hasNext=A.R.races.has(r.race+1);
   return `${lockBar()}<div class="phone">${top}
@@ -138,13 +152,16 @@ function renderSlips(){
     ${showNext?`<div class="msg ok">Race ${r.race} slip read and sent to the Recorder.</div>
        ${hasNext?`<button type="button" class="btn navy big" data-act="snext" style="width:100%">Next race</button>`:`<button type="button" class="btn big" disabled style="width:100%">Waiting for marshal</button>`}
        <label class="btn" for="camin" style="width:100%">Replace this slip with a new photo</label>`
+     :A.s.reading?`<div class="cam" role="status">Reading the slip...</div>`
      :`<label class="cam" for="camin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>${A.s.err?"Take again":"Take photo of slip"}</label>`}
     <input id="camin" type="file" accept="image/*" capture="environment" hidden ${locked()?"disabled":""}>
     <div class="row"><button type="button" class="btn" data-act="sgoto" style="flex:1">Check race</button><button type="button" class="btn" data-act="soverall" style="flex:1">Race overall</button></div>
     <div class="panel stack" style="gap:8px;background:var(--sunk);border-color:transparent">
-      <span class="label">Slip reader: test mode</span>
-      <p style="margin:0;font-size:.88rem">The reader for the Swiss Timing slip is built once real slip photos arrive. Until then the photo is saved and test times are made up, so the Recorder can be tried. Pick what the next photo should do:</p>
-      <div class="row" style="gap:6px">${[["good","Read OK"],["bad","Cannot read"],["wrong","Wrong slip"],["offline","No signal"]].map(([k,l])=>`<button type="button" class="choice" style="min-height:48px;min-width:0;font-size:.9rem" data-act="stest" data-v="${k}" aria-pressed="${A.s.test===k}">${l}</button>`).join("")}</div>
+      ${realReader()?`<span class="label">Slip reader</span>
+      <p style="margin:0;font-size:.88rem">Read the photo reads the race number, lanes and times from the slip. For practice without a slip, the other buttons make up test times instead:</p>`
+      :`<span class="label">Slip reader: test mode</span>
+      <p style="margin:0;font-size:.88rem">The reader for the Swiss Timing slip is built once real slip photos arrive. Until then the photo is saved and test times are made up, so the Recorder can be tried. Pick what the next photo should do:</p>`}
+      <div class="row" style="gap:6px">${(realReader()?[["real","Read the photo"]]:[]).concat([["good","Read OK"],["bad","Cannot read"],["wrong","Wrong slip"],["offline","No signal"]]).map(([k,l])=>`<button type="button" class="choice" style="min-height:48px;min-width:0;font-size:.9rem" data-act="stest" data-v="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>
     </div>
   </div>
   ${A.s.flash?`<div class="flash ${A.s.flash.c}" role="status">${esc(A.s.flash.t)}</div>`:""}`;
@@ -169,20 +186,32 @@ function testRead(r){
   if(r.filled.length>3&&Math.random()<0.3){const l=r.filled[r.filled.length-1];delete read[l]}
   return {race:r.race,lanes:read};
 }
+/* live mode reads the photo for real (decision 110); test mode and the practice buttons make up times */
+function realReader(){return !!(A.store&&A.store.mode!=="local")}
+function slipMode(){return A.s.test||(realReader()?"real":"good")}
 async function onPhoto(file){
   const r=slipRace();if(!r||!file)return;
-  const img=await shrink(file);
+  const t=slipMode();
   A.s.err=null;
-  if(A.s.test==="bad"||!img){A.s.err="Could not read the slip. Hold the phone flat over the slip so all lanes and times are in the picture, with no glare. Then take it again.";render();return}
-  const read=testRead(r);
-  if(A.s.test==="wrong")read.race=r.race+1;
+  const CANT="Could not read the slip. Hold the phone flat over the slip so all lanes and times are in the picture, with no glare. Then take it again.";
+  let read=null,unsure=[];
+  if(t==="real"){
+    A.s.reading=true;render();
+    const url=URL.createObjectURL(file);
+    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure}}catch(e){}
+    URL.revokeObjectURL(url);A.s.reading=false;
+  }
+  const img=await shrink(file);
+  if(t==="bad"||!img||(t==="real"&&!read)){A.s.err=CANT;render();return}
+  if(!read)read=testRead(r);
+  if(t==="wrong")read.race=r.race+1;
   if(read.race!==r.race){A.s.err=`Wrong slip? This slip says Race ${read.race}. The screen is on Race ${r.race}. Find the Race ${r.race} slip and take it again.`;render();return}
   const key=rid(r.race);
-  const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false};
-  const meta={race:r.race,read:read.lanes,at:Date.now(),dev:DEV,test:true};
+  const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false,chk:unsure.includes(+l)};
+  const meta={race:r.race,read:read.lanes,unsure,at:Date.now(),dev:DEV,test:t!=="real"};
   A.slips[key]=meta;
   A.times[key]={lanes,src:"photo",checked:false};recompute();
-  if(A.s.test==="offline"){
+  if(t==="offline"){
     A.s.queued=(A.s.queued||0)+1;A.s.waiting=Object.assign(A.s.waiting||{},{[r.race]:true});
     A.s.flash={c:"amber",t:"Saved on this phone. Sends when there is signal"};render();
     setTimeout(()=>{A.s.flash=null;render()},1300);

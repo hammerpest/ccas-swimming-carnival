@@ -211,10 +211,12 @@ MODALS.goRace=M=>{
     let st="";
     if(M.job==="judge"){const p=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;st=p>=r.need?`Top ${r.need} done`:p?`${p} of ${r.need} placed`:"Not started"}
     else if(M.job==="recorder"){st=lockedBy(r.race)?"On another device":r.tstatus}
-    else{st=A.slips[rid(r.race)]?(A.s.waiting&&A.s.waiting[r.race]?"Waiting to send":"Slip read"):"No slip yet"}
-    return `<button type="button" class="btn" style="justify-content:flex-start;gap:12px" data-act="pickrace" data-race="${r.race}" data-job="${M.job}">${badge(r.race,"sm")}<span style="flex:1;text-align:left">${esc(r.label)}<br><span class="muted" style="font-weight:600;font-size:.85rem">Heat ${r.heat}</span></span><span class="chip">${esc(st)}</span></button>`}).join(""):`<p class="muted">No races sent yet.</p>`}</div>
+    else{st=A.slips[rid(r.race)]?(A.s.waiting&&A.s.waiting[r.race]?"Waiting to send":""):"No slip yet"}
+    const tick=(M.job==="slips"||M.job==="recorder")&&A.slips[rid(r.race)]&&!(M.job==="slips"&&A.s.waiting&&A.s.waiting[r.race]);
+    return `<button type="button" class="btn" style="justify-content:flex-start;gap:12px" data-act="pickrace" data-race="${r.race}" data-job="${M.job}">${badge(r.race,"sm")}<span style="flex:1;text-align:left">${esc(r.label)}<br><span class="muted" style="font-weight:600;font-size:.85rem">Heat ${r.heat}</span></span>${st?`<span class="chip">${esc(st)}</span>`:""}${tick?slipTick():""}</button>`}).join(""):`<p class="muted">No races sent yet.</p>`}</div>
   <div class="acts"><button type="button" class="btn" data-act="closemodal">Close</button></div>`;
 };
+function slipTick(){return `<span class="sliptick"><span class="tk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Slip added</span>`}
 function waitingCard(t,s){return `<div class="panel stack" style="max-width:640px;margin:30px auto;text-align:center;align-items:center">${badge(null,"xl")}<h2>${esc(t)}</h2><p class="muted" style="margin:0">${esc(s)}</p></div>`}
 function lockBar(){if(A.past)return `<div class="lockbar">You are looking at the ${esc(A.past)} carnival. Look only: nothing can be changed. Use Change year to go back to ${esc(curYear())}.</div>`;return locked()?`<div class="lockbar">Results are locked. You can look, but nothing can be changed until the organiser unlocks them.</div>`:""}
 

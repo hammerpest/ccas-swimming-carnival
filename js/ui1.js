@@ -12,7 +12,7 @@ const A={
   peers:[],R:null,loaded:false,
   role:ssGet("swim_role",null),job:ssGet("swim_job",null),pin:"",pinErr:false,
   m:{phase:"start",k:null,x:null,g:null,lanes:{},heat:1,cur:1,open:null,filter:"",sent:[],msg:""},
-  j:{race:null,dh:false},r:{race:null,since:Date.now(),errs:{}},s:{race:null,test:"good",flash:null,err:null},
+  j:{race:null,dh:false},r:{race:null,since:Date.now(),errs:{}},s:{race:null,test:null,flash:null,err:null},slipImg:{},
   a:{idx:null},res:{tab:"race",sex:"all",type:"all",age:"all"},o:{sec:"details",preview:null,text:""},
   menu:false,modal:null,renderPending:false,
   past:null,years:[],L:{},yearPicked:ssGet("swim_year",null)
