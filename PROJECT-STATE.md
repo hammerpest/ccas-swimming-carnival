@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version e. Replaces 29 October version d and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version f. Replaces 29 October version e and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version f): Jordan approved the 48 px tap sizes (rest of question 55, decision 111), showed how to read the slip (question 30 answered with a simulated sample, decision 110) and asked for Slip added ticks and the slip photo on the Recorder (decision 112). All built as Swim Opt 2.1 on staging (2.20). Checks 2 and 3 on 2.1 still to run.
 
 Changes on 29 October 2026 (version e): Jordan picked S1.39 Option A for the colours (decision 109). Built as Swim Opt 2.1 on the staging branch only (2.19); main stays Swim Opt 2.0. Tap sizes not decided yet. Checks 2 and 3 not yet run on 2.1.
 
@@ -455,6 +457,16 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Contrast measured on the page: light 4.8 to 6.7, dark 5.4 to 10.2. All pass 4.5.
 - Still to do before Jordan approves: checks 2 and 3 on 2.1; then new baseline-mac and baseline shots once Jordan approves, so check 1 compares with the new look.
 
+### 2.20 Swim Opt 2.1, more (29 October 2026, on staging only)
+
+- 48 px tap sizes (111): header links and Job pill, small buttons (min 48 x 48), DNS and DQ, inputs and selects, Results tabs, the Marshal name search, Time Slips test buttons, the Date confirmed row. The on/off switches keep their look with an invisible 48 px tap area. Audit on all 384 screens and states: nothing under 48 px, no sideways scroll.
+- Slip reader (110): js/core.js parseSlip() turns the slip text into race, lanes, finish order, and "unsure" lanes (time does not match the clock check). js/slip-reader.js reads the photo on the phone with Tesseract.js 5.1.1 (js/vendor/tesseract, about 11 MB, loaded only on the Time Slips phone in live mode): reads in grey first, then a black and white second look if anything is missing or doubtful. Engine tests for the text, including 1:12.34 and common misreads.
+- Tested on Jordan's simulated sample and 5 harder copies (blurred, tilted 4 degrees, shadowed, small, on a bench): all 6 read exactly, nothing silently wrong, under 1 second each on the Mac. A phone will be slower, and the first read downloads the reader.
+- Live mode: the phone reads the photo for real ("Read the photo", picked by default); the four practice buttons stay. Test mode (?mode=local) is unchanged. An unsure lane is filled but shows the yellow "Check this time: slip hard to read" on the Recorder with Keep and Fix, and counts for the Times checked box.
+- Tested on staging: the sample slip on Race 2 gave "Wrong slip? This slip says Race 1"; on Race 1 it filled lanes 2, 3, 4 and 6, with lanes 1 and 5 "Not on slip"; the Recorder showed the photo under Race overall; no errors.
+- Ticks and slip photo (112): built as asked. Only the 7 Recorder screens change in the baseline set.
+- Noticed, not changed: on the Recorder, the "Not on slip" placeholder is cut to "Not on sl" in the time box (same in 2.0); "Not on slip" shows in full underneath.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -563,6 +575,9 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 107. (29 October 2026, answers question 54) The repo is public, so GitHub Pages is free. All data in it is made up. Change all six PINs before any real names go in.
 106. (Answers question 52, 28 October 2026) The refused-save message is now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (was "Not saved. This page needs Contributor access to save."). Changed in ui1.js and ui5.js and checked on staging. The no-signal message "Not saved. Check the connection and try again." is unchanged. Anonymous sign-in limit stays at 100 per hour.
 109. (29 October 2026, answers part of question 55) S1.39 Option A for the colours: in the dark theme, near-black letters on the bright green, red and house colours; in both themes, a deeper bronze medal and a deeper orange NEW RECORD tag. The tap sizes part of question 55 is still open.
+110. (29 October 2026, answers question 30 for the layout) Reading the slip: "LANE MODE x/ N": ignore x; N is the race number for the day (1, 2, 3 all day). Ignore "start" and the clock times. Each "stop L" line gives lane L; the "sec" line under it is that lane's time. Lines are in finish order; a lane with no stop line is not on the slip. A time over a minute prints as 1:12.34. Claude also uses the clock times as a check (stop minus start should equal the time).
+111. (29 October 2026, answers the rest of question 55) Every tap target 48 px or more (S1.39 tap sizes).
+112. (29 October 2026) Time Slips Check race list and the Recorder's Go to race list show a big green tick and "Slip added" for every race with a slip. The Recorder shows the slip photo under Race overall, so times, result and slip are on one screen ("View slip photo" stays for a bigger view).
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -630,11 +645,11 @@ Ask now:
 
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
-- 30. Photos of real Swiss Timing slips (several, including a heat with empty lanes and a DQ or DNS if possible). Jordan will share them once a sample is ready.
+- 30. (Partly answered, decision 110: the layout, from a simulated sample.) Still wanted: a few photos of real slips taken at the pool, to tune the reader.
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
-- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Still open: the 48 px tap sizes.
+- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
