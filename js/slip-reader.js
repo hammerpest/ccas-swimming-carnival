@@ -44,7 +44,9 @@ function slipMerge(a,b){
     else if(r.unsure.includes(+l)&&!b.unsure.includes(l))r.unsure=r.unsure.filter(x=>x!==+l);
   }
   if(a.race!=null&&b.race!=null&&a.race!==b.race)r.raceUnsure=true;
-  if(!r.order.length)r.problems=a.problems.concat(b.problems);
+  /* a line one look could not place is fine if the other look found as many lanes as it saw lines */
+  const seen=x=>x.order.length+x.problems.filter(p=>p==="A time with no lane").length;
+  if(r.order.length<Math.max(seen(a),seen(b)))r.problems=["Some lines not read"];
   return r;
 }
 async function readSlipPhoto(src,maxLanes){

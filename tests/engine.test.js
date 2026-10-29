@@ -50,8 +50,17 @@ a(sl.problems.length===0,'slip no problems');
 sl=C.parseSlip('LANE MODE 3/ 12\nstop 1 10:02:01.000\n72.34 sec\nstop 2 10:02:05.000\n1:15.10 sec',8);
 a(sl.race===12&&sl.lanes[1]===7234&&sl.lanes[2]===7510,'slip over a minute, both ways');
 sl=C.parseSlip('LANE M0DE 1/ l5\nst0p 5 09:00:00.0\n3O,12 sec\nstop 9 09:00:01.0\n31.00 sec',8);
-a(sl.race===15&&sl.lanes[5]===3012&&sl.problems.length===1,'slip misreads allowed, lane 9 flagged on an 8 lane pool');
+a(sl.race===15&&sl.lanes[5]===3012&&sl.problems[0]==='Lane 9 not on this pool','slip misreads allowed, lane 9 flagged on an 8 lane pool');
 a(C.parseSlip('nothing useful here').race===null,'slip unreadable');
 sl=C.parseSlip('LANE MODE 1/7 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\nstop 8 09:19:42.550\n35.95 sec',8);
 a(sl.race===1&&sl.unsure.length===1&&sl.unsure[0]===8,'slip: race is the last number; a time that disagrees with the clock is unsure');
 a(C.parseSlip('LANE MODE 1/ 40\nstart 11:00:00.000\nstop 3 11:01:12.340\n1:12.34 sec',8).lanes[3]===7234,'slip 1:12.34 over a minute, as the printer shows it');
+// slip time for an empty lane must not change the results (check 3 on 2.1, defect 1)
+{const S2={config:{},students:[{id:'a',s:'A',f:'Ann',h:'B',x:'F',g:'14'},{id:'b',s:'B',f:'Bea',h:'J',x:'F',g:'14'}],
+ heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a',2:'b'}}],
+ times:{r0001:{lanes:{1:{t:3600},2:{t:3800},8:{t:3000}}}},finish:{r0001:{order:[[2],[1]]}},records:[],openGroups:new Set()};
+ const R2=C.compute(S2);const r1=R2.races.get(1);
+ a(r1.eff[2].eff===3600&&r1.eff[1].eff===3800&&!r1.eff[8],'empty lane slip time ignored in the judge swap');
+ a(JSON.stringify(r1.extra)==='[8]','empty lane slip time listed as extra');}
+sl=C.parseSlip('LANE MODE 1/ 3\nstop 4 09:19:41.700\n34.70 sec\n35.55 sec',8);
+a(sl.unsure.includes(4)&&sl.problems.includes('A time with no lane'),'no start clock: lane unsure; a time with no lane is a problem');

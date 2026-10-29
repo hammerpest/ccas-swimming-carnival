@@ -54,6 +54,7 @@ function renderRecorder(){
           ${A.R.races.has(r.race+1)?`<button type="button" class="btn navy" data-act="rnext" style="margin-left:auto">Next race</button>`:`<button type="button" class="btn" disabled style="margin-left:auto">Waiting for marshal</button>`}
         </div>
         ${r.dh.length?`<div class="msg warn">Dead heat: ${r.dh.map(g=>"lanes "+g.join(" and ")).join("; ")} were tapped as a tie by the Place Judge. Place judges must split the result if they can. Check with them before pressing Times checked.</div>`:""}
+        ${r.extra.length?`<div class="msg warn">The slip has a time for ${r.extra.length>1?"lanes "+r.extra.slice(0,-1).join(", ")+" and "+r.extra.slice(-1):"lane "+r.extra[0]}, but no swimmer was marshalled ${r.extra.length>1?"in those lanes":"in that lane"}. A swimmer may have been missed: check with the marshal.</div>`:""}
         ${lockedBy(r.race)?`<div class="msg warn">Being entered by another device. You can look, but times cannot be changed here until it is finished.</div>`:""}
         <div class="panel" style="padding:0;overflow:hidden"><div class="tablewrap"><table>
           <thead><tr><th class="num">Lane</th><th>Swimmer</th><th>Place</th><th>Time</th><th class="num">Result</th><th>DNS / DQ</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="7" class="muted">No swimmers in this heat.</td></tr>`}</tbody></table></div></div>
@@ -127,7 +128,7 @@ function slipPanel(r){
   if(!(ck in A.slipImg)){A.slipImg={[ck]:null};
     A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key).then(d=>{if(ck in A.slipImg){A.slipImg[ck]=(d&&d.img)||"";render()}}).catch(()=>{if(ck in A.slipImg){A.slipImg[ck]="";render()}})}
   const c=A.slipImg[ck];const un=(meta.unsure||[]).filter(l=>meta.read&&meta.read[l]!=null);
-  return `<div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Time slip</h3>${un.length?`<span class="chip prov">Hard to read: lane ${un.join(", ")}</span>`:""}</div>
+  return `<div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Time slip</h3><span class="row" style="gap:6px">${un.length?`<span class="chip prov">Hard to read: lane ${un.join(", ")}</span>`:""}${meta.miss?`<span class="chip prov">Some lines not read: check the photo</span>`:""}</span></div>
     ${c?`<img src="${c}" alt="Time slip photo for race ${r.race}" style="display:block;width:100%;border-radius:10px;border:1px solid var(--line)">`:`<p class="muted" style="margin:0">${c===""?"No photo stored for this race.":"Loading the photo..."}</p>`}</div>`;
 }
 
@@ -143,7 +144,7 @@ function renderSlips(){
   const top=waiting?`<div class="msg warn">No signal. ${plural(waiting,"photo")} waiting to send. It sends by itself when there is signal.</div>`:"";
   if(!r)return `<div class="phone">${top}${waitingCard("Waiting for the marshal","Race 1 appears here once it is sent.")}</div>`;
   const done=!!A.slips[rid(r.race)];const t=slipMode();
-  if(realReader())slipOcrLoad().catch(()=>{});
+  if(realReader()&&innerWidth<700)slipOcrLoad().catch(()=>{});
   const showNext=done&&!A.s.err&&!A.s.flash;
   const hasNext=A.R.races.has(r.race+1);
   return `${lockBar()}<div class="phone">${top}
@@ -194,11 +195,11 @@ async function onPhoto(file){
   const t=slipMode();
   A.s.err=null;
   const CANT="Could not read the slip. Hold the phone flat over the slip so all lanes and times are in the picture, with no glare. Then take it again.";
-  let read=null,unsure=[];
+  let read=null,unsure=[],miss=false;
   if(t==="real"){
     A.s.reading=true;render();
     const url=URL.createObjectURL(file);
-    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure}}catch(e){}
+    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure;miss=res.problems.length>0}}catch(e){}
     URL.revokeObjectURL(url);A.s.reading=false;
   }
   const img=await shrink(file);
@@ -208,7 +209,7 @@ async function onPhoto(file){
   if(read.race!==r.race){A.s.err=`Wrong slip? This slip says Race ${read.race}. The screen is on Race ${r.race}. Find the Race ${r.race} slip and take it again.`;render();return}
   const key=rid(r.race);
   const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false,chk:unsure.includes(+l)};
-  const meta={race:r.race,read:read.lanes,unsure,at:Date.now(),dev:DEV,test:t!=="real"};
+  const meta={race:r.race,read:read.lanes,unsure,miss,at:Date.now(),dev:DEV,test:t!=="real"};
   A.slips[key]=meta;
   A.times[key]={lanes,src:"photo",checked:false};recompute();
   if(t==="offline"){
@@ -218,8 +219,8 @@ async function onPhoto(file){
     setTimeout(async()=>{await sendSlip(key,img,meta,lanes);A.s.queued=Math.max(0,(A.s.queued||1)-1);delete A.s.waiting[r.race];render()},8000);
     return;
   }
-  A.s.flash={c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
-  setTimeout(()=>{A.s.flash=null;render()},1100);
+  A.s.flash=miss||unsure.length?{c:"amber",t:`Race ${r.race} sent, but some of the slip was hard to read. Retake it if you can.`}:{c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
+  setTimeout(()=>{A.s.flash=null;render()},miss||unsure.length?2500:1100);
   await sendSlip(key,img,meta,lanes);
 }
 async function sendSlip(key,img,meta,lanes){

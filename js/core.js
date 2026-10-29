@@ -149,7 +149,10 @@ function compute(S){
     const lanes=h.lanes||{};
     const filled=Object.keys(lanes).filter(l=>lanes[l]);
     const lt=T.lanes||{};
-    const eff=heatEffective(lt,F.order||[]);
+    /* only marshalled lanes count; a slip time for an empty lane is shown to the Recorder as "extra" */
+    const ltIn={};for(const l of filled)if(lt[l])ltIn[l]=lt[l];
+    const eff=heatEffective(ltIn,(F.order||[]).map(g=>g.filter(l=>lanes[l])).filter(g=>g.length));
+    const extra=Object.keys(lt).filter(l=>!lanes[l]&&lt[l]&&lt[l].t!=null&&lt[l].st!=="DNS"&&lt[l].st!=="DQ").map(Number).sort((a,b)=>a-b);
     const placeTaps=finishOrderFromTaps(F.order);
     const nTimes=filled.filter(l=>lt[l]&&(lt[l].t!=null||lt[l].st==="DNS"||lt[l].st==="DQ")).length;
     const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep&&(oddTime(h.k,v.t,cfg.limits)||v.chk)}).length;
@@ -159,7 +162,7 @@ function compute(S){
     let tstatus="Waiting for slip";
     if(nTimes)tstatus=T.checked?"Checked":"To check";
     const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,
-      tstatus,checked:!!T.checked,checkedAt:T.checkedAt||0,nTimes,flagged,need,tapped,dh,src:T.src||null,hasSlip:!!(S.slips&&S.slips[id])};
+      tstatus,checked:!!T.checked,checkedAt:T.checkedAt||0,nTimes,flagged,need,tapped,dh,extra,src:T.src||null,hasSlip:!!(S.slips&&S.slips[id])};
     races.set(h.race,r);
     const G=ensure(key);G.heats.push(r);
   }
@@ -251,8 +254,9 @@ function compute(S){
    "34.70 sec" line under it is that lane's time. Lines come in finish order; a lane with no stop line
    was not timed. Times over a minute may print as 72.34 or 1:12.34. Text comes from the phone's reader,
    so common misreads (O for 0, l for 1, comma for point) are allowed for. The clock times are a check:
-   stop clock minus start clock should equal the lane's time; when both are read and they differ, the
-   lane is listed in "unsure" so the Recorder checks it against the paper slip. */
+   stop clock minus start clock should equal the lane's time; when they differ, or either clock could
+   not be read, the lane is listed in "unsure" so the Recorder checks it against the paper slip. A time
+   line with no readable lane is listed in "problems". */
 function slipNum(t){return String(t).replace(/[Oo]/g,"0").replace(/[lI|]/g,"1").replace(/,/g,".")}
 function slipTime(t){
   const m=slipNum(t).match(/^(?:(\d{1,2}):)?(\d{1,3})\.(\d{2})$/);if(!m)return null;
@@ -280,9 +284,11 @@ function parseSlip(text,maxLanes){
       if(cs==null)problems.push("Lane "+lane+": time not clear");
       else if(lanes[lane]!=null)problems.push("Lane "+lane+" twice");
       else{lanes[lane]=cs;order.push(lane);
-        if(start!=null&&clock!=null){const dur=((clock-start)%3600000+3600000)%3600000;if(Math.abs(dur/10-cs)>1)unsure.push(lane)}}
+        if(start==null||clock==null)unsure.push(lane);
+        else{const dur=((clock-start)%3600000+3600000)%3600000;if(Math.abs(dur/10-cs)>1)unsure.push(lane)}}
       lane=null;
     }
+    else if(tm)problems.push("A time with no lane");
   }
   return {race:race!=null&&race>0?race:null,lanes,order,problems,unsure};
 }
