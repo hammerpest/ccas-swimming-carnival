@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version l. Replaces 29 October version k and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version m. Replaces 29 October version l and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version m): Jordan answered question 58: the reader should be fast, and anything odd is checked and accepted by the Recorder (decision 118). Reader rounds stopped. Check 3 runs 5 and 6 fixes built; odd slips are now sent with every lane yellow instead of refused. On staging only; main has 2.1 from version k.
 
 Changes on 29 October 2026 (version l): Check 3 run 5 on 2.1 (main): look PASS, replace box PASS; reader FAIL only on two-slip photos that were flagged but not refused (2.23). Two small reader fixes on staging only. Question 58 open.
 
@@ -506,6 +508,14 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Fixed on staging only (main unchanged while Jordan tests): a misread "MODE" no longer gives the wrong "more than one slip" message (it now says Could not read); two stop lines read on one line count as two slips. Engine tests 36 of 36.
 - Also noted: 16 of 28 damaged photos refused (safe, but the phone may often ask for another photo); a low-confidence lane read the same way by both readings passes as sure (no wrong value found); the No signal practice button could overwrite a replaced slip within 8 seconds (practice only).
 
+### 2.24 Reader after check 3 run 6 (29 October 2026, staging)
+
+- Check 3 run 6 (196 new photos, test mode only): staging pixel-identical to main; reader FAIL on two-slip photos with the other slip's header folded away (times all yellow) and lanes dropped silently when "stop" or "sec" was garbled; 3 of 24 fair photos refused.
+- Fixed: finish order, a lane twice and two times on one line used as two-slip signs; a stop clock more than 10 seconds from its time in both readings means two slips; any line with a clock or a time that cannot be used is reported, never skipped; clocks read with a space ("08:04:00. 339") are accepted; a lost slash before the race number is allowed. Engine tests 45 of 45.
+- Graded on all 673 fake slips from the six testers: no time is wrong without a warning; the 24 fair photos: none refused (8 exact, 16 flagged). One two-slip photo (heats seconds apart) gives one foreign time, marked yellow.
+- Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
+- Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -622,6 +632,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 115. (29 October 2026, answers question 56) Accepted: the reader cannot see a lane whose lines are fully covered or cut off, a pen stroke that turns one digit into another clean digit, or a race digit torn off. Other safeguards cover them (Times checked blocked, lane-match warning, Wrong slip).
 116. (29 October 2026) No time-of-day check on slips: the slip's clock time is never compared with when the race was sent.
 117. (29 October 2026, answers question 57) When a race already has a slip, a new photo is read and then the phone asks "Replace the Race N slip?" ("Race N already has a slip. This photo will replace its times. Check the race number on the paper slip says N.") with "< Back" and "Replace the slip". So a slip read as the wrong race after going back to an earlier race never overwrites a good one without a yes. Built in Swim Opt 2.1.
+118. (29 October 2026, answers question 58) The slip reader should be fast. When a slip is odd or unclear, its times go through marked yellow and the Recorder checks them against the photo and accepts them; the phone only asks for another photo when it cannot tell which race the slip is for. No more reader test rounds for now; real slip photos at the pool (question 30) are the next test.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -696,7 +707,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
 - (Closed by 115) 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
 - (Closed by 117) 57. A faded race digit can make a slip read as another race (23 read as 3). Safe in the normal flow; a risk only if the phone has gone back to that earlier race. Option: when a race already has a slip, a new photo asks "Replace the Race 3 slip?" first. Add that, or accept as is?
-- 58. Check 3 has not passed the reader in five runs; the remaining cases (two slips in one photo, all flagged yellow) need the Recorder to look at the photo. Accept 2.1 as it is (it is on main), or keep working on the reader? Real slip photos at the pool remain the best test (question 30).
+- (Closed by 118) 58. Check 3 has not passed the reader in five runs; the remaining cases (two slips in one photo, all flagged yellow) need the Recorder to look at the photo. Accept 2.1 as it is (it is on main), or keep working on the reader? Real slip photos at the pool remain the best test (question 30).
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
