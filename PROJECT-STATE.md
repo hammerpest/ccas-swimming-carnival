@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version d. Replaces 29 October version c and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version e. Replaces 29 October version d and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version e): Jordan picked S1.39 Option A for the colours (decision 109). Built as Swim Opt 2.1 on the staging branch only (2.19); main stays Swim Opt 2.0. Tap sizes not decided yet. Checks 2 and 3 not yet run on 2.1.
 
 Changes on 29 October 2026 (version d): S1.39 options drawn for question 55 (2.18). Nothing in the app changed; waiting for Jordan to pick.
 
@@ -445,6 +447,14 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Light theme buttons and dots already pass and do not change.
 - Once Jordan picks: build as Swim Opt 2.1, new baseline-mac and baseline shots for the changed screens, all three checks.
 
+### 2.19 Swim Opt 2.1: S1.39 Option A (29 October 2026, on staging only)
+
+- Branches from now on: new work goes on staging first; main only gets it after Jordan approves on the staging link.
+- css/styles.css: new tokens --on-ok, --on-bad, --on-house (white in light, #0b1222 in dark), used by the green buttons and slip flash, the red button and pressed DNS/DQ, and the house dots. --bronze is now #9a5b1c and the NEW RECORD tag uses a new --rec #b83a0c (both themes); --flame stays for the orange record borders. index.html comment says Swim Opt 2.1.
+- Check 1 against baseline-mac: 218 of 384 screens identical; 166 differ, none changed size. The 48 light-theme changes are only screens with a bronze medal or NEW RECORD tag; the dark changes are those plus the green and red buttons and house dots. Checked by eye before and after (Recorder dark, Results light, Marshal Go dark).
+- Contrast measured on the page: light 4.8 to 6.7, dark 5.4 to 10.2. All pass 4.5.
+- Still to do before Jordan approves: checks 2 and 3 on 2.1; then new baseline-mac and baseline shots once Jordan approves, so check 1 compares with the new look.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -552,6 +562,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 108. (29 October 2026, answers section 7 step 2) The main link uses the staging Supabase project (ccas-swimming-staging) for now, the same as the staging link. Testing on either link changes what both show. Make the live project (SETUP.md, then change js/config.js on main only) when real names are approved or before the term 1 staff run-through, whichever comes first, and change all six PINs on it.
 107. (29 October 2026, answers question 54) The repo is public, so GitHub Pages is free. All data in it is made up. Change all six PINs before any real names go in.
 106. (Answers question 52, 28 October 2026) The refused-save message is now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (was "Not saved. This page needs Contributor access to save."). Changed in ui1.js and ui5.js and checked on staging. The no-signal message "Not saved. Check the connection and try again." is unchanged. Anonymous sign-in limit stays at 100 per hour.
+109. (29 October 2026, answers part of question 55) S1.39 Option A for the colours: in the dark theme, near-black letters on the bright green, red and house colours; in both themes, a deeper bronze medal and a deeper orange NEW RECORD tag. The tap sizes part of question 55 is still open.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -623,7 +634,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
-- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18): Option A or B for colour, plus 48 px tap sizes.
+- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Still open: the 48 px tap sizes.
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
