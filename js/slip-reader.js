@@ -40,7 +40,7 @@ function slipImage(src){return new Promise((ok,bad)=>{const i=new Image();i.onlo
    reading could not use set "Some lines not read". Returns the race, lanes, order, unsure, problems,
    missed lanes and the text read. */
 function slipMerge(a,b){
-  const r={race:null,raceUnsure:false,twoSlips:!!(a.twoSlips||b.twoSlips),lanes:{},order:[],unsure:[],problems:[],missed:[],text:a.text+"\n----\n"+b.text};
+  const r={race:null,raceUnsure:false,twoSlips:!!(a.twoSlips||b.twoSlips||a.far.some(l=>b.far.includes(l))),mixed:!!(a.mixed&&b.mixed),lanes:{},order:[],unsure:[],problems:[],missed:[],text:a.text+"\n----\n"+b.text};
   if(a.race!=null&&b.race!=null){r.race=a.race;if(a.race!==b.race||(a.raceLow&&b.raceLow))r.raceUnsure=true}
   else{const one=a.race!=null?a:b,other=one===a?b:a;r.race=one.race;if(one.race!=null&&(one.raceLow||other.head))r.raceUnsure=true}
   const doubt=l=>{if(!r.unsure.includes(l))r.unsure.push(l)};
@@ -52,8 +52,8 @@ function slipMerge(a,b){
   }
   for(const l of a.unsure.concat(b.unsure))if(r.lanes[l]!=null&&(a.problems.some(p=>p==="Lane "+l+" twice")||b.problems.some(p=>p==="Lane "+l+" twice")))doubt(l);
   for(const l of a.missed.concat(b.missed))if(r.lanes[l]==null&&!r.missed.includes(l))r.missed.push(l);
-  const seen=x=>x.order.length+x.problems.filter(p=>p==="A time with no lane"||p==="A time not read"||/no time read|not on this pool/.test(p)).length;
-  if(r.missed.length||r.order.length<Math.max(seen(a),seen(b))||(a.problems.length&&b.problems.length))r.problems=["Some lines not read"];
+  const seen=x=>x.order.length+x.problems.filter(p=>p==="A time with no lane"||p==="A time not read"||p==="A stop line not read"||/no time read|not on this pool/.test(p)).length;
+  if(r.missed.length||r.order.length<Math.max(seen(a),seen(b))||(a.problems.length&&b.problems.length)||a.problems.concat(b.problems).includes("A stop line not read"))r.problems=["Some lines not read"];
   return r;
 }
 async function readSlipPhoto(src,maxLanes){

@@ -258,24 +258,27 @@ function compute(S){
    paper slip) when stop clock minus start clock does not equal its time, when a clock could not be read,
    when the reader was not confident of its lane number or time, or when the lane appears twice.
    "problems" lists lines that could not be used; "missed" lists lanes with a stop line but no time.
-   A photo showing more than one slip (a second "LANE MODE" or "start", even on the same line, or any
-   printed lane or time above the "LANE MODE" line) sets "twoSlips": the phone then asks for a photo of
-   one slip only, so another race's lanes are never mixed in. A real slip prints each lane once, one
-   time per line, in finish order, so a lane twice, two times on one line, or a time more than a second
-   faster than the one above it also mean two slips; a smaller dip makes both lanes unsure.
-   More than one number after the slash
-   (for example a number written on the slip) makes the race number unsure.
+   A photo showing more than one slip sets "twoSlips" and the phone asks for a photo of one slip only, so
+   another race's lanes are never mixed in. Sure signs: a second "LANE MODE" or "start" (even on the
+   same line), two stop lines or two times on one line, any printed lane or time above the "LANE MODE"
+   line, or a lane whose stop clock is more than 10 seconds away from its time ("far": the phone refuses
+   when both readings agree on that). Weaker signs that a misread can also cause (a lane twice, a time
+   more than a second faster than the one above it, as a real slip is in finish order) set "mixed"; a
+   smaller dip makes both lanes unsure. A line with a clock or a time on it that cannot be used is never
+   skipped quietly: it goes in "problems". The race number is the last number after the slash; when
+   the slash is lost the last number after "MODE" is used. Extra numbers make it unsure ("raceLow").
    Input is the text, or the reader's lines with a confidence (0 to 100) for each word. */
 const SLIP_CONF=70;
 function slipNum(t){return String(t).replace(/[Oo]/g,"0").replace(/[lI|]/g,"1").replace(/,/g,".")}
 function slipTime(t){
-  const m=slipNum(t).match(/^(?:(\d{1,2}):)?(\d{1,3})\.(\d{2})$/);if(!m)return null;
+  const m=slipNum(t).replace(/\s+/g,"").match(/^(?:(\d{1,2}):)?(\d{1,3})\.(\d{2})$/);if(!m)return null;
   const cs=(m[1]?+m[1]*6000:0)+(+m[2])*100+(+m[3]);
   if(m[1]&&+m[2]>=60)return null;
   return cs>0&&cs<60000?cs:null;
 }
+const SLIP_CLOCK=/(\d{2})\s*:\s*(\d{2})\s*[.,]\s*(\d{3})\s*$/;
 function slipClock(line){
-  const m=slipNum(line).match(/(\d{2}):(\d{2})[.,](\d{3})\s*$/);
+  const m=slipNum(line).match(SLIP_CLOCK);
   return m?(+m[1])*60000+(+m[2])*1000+(+m[3]):null;
 }
 function slipLines(input){
@@ -291,37 +294,56 @@ function slipLow(line,re){
 function parseSlip(input,maxLanes){
   maxLanes=maxLanes||10;
   const lines=slipLines(input);
-  let race=null,raceLow=false,start=null,clock=null,lane=null,laneLow=false,heads=0,starts=0,above=false;
-  const lanes={},order=[],problems=[],unsure=[],missed=[];
+  const D="[\\dOolI|]";
+  const STOP=new RegExp("^(?:s\\s*)?t?\\s*[o0]\\s*p\\s*("+D+"{1,2})(?![\\d:])","i");
+  const STOPISH=/^\W{0,2}(?:s\s*)?t?\s*[o0]\s*p/i;
+  const TIME=new RegExp("("+D+"{0,2}\\s*:?\\s*"+D+"{1,3}\\s*[.,]\\s*"+D+"{2})(?=\\s*s|\\s*$)","i");
+  let race=null,raceLow=false,start=null,clock=null,lane=null,laneLow=false,heads=0,starts=0,above=false,strong=false,weak=false;
+  const lanes={},order=[],problems=[],unsure=[],missed=[],far=[];
   const doubt=l=>{if(!unsure.includes(l))unsure.push(l)};
   const noTime=()=>{if(lane!=null){problems.push("Lane "+lane+": no time read");if(!missed.includes(lane))missed.push(lane)}lane=null};
+  const lastConfLow=L=>{if(!L.w)return false;const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)};
   for(const L of lines){
     const line=L.t;
-    heads+=(line.match(/M[O0]DE/gi)||[]).length;if((line.match(/\bs\s*t\s*[o0]\s*p\b/gi)||[]).length>1||(line.match(/\d[.,]\d{2}\s*s/gi)||[]).length>1)starts+=2;starts+=Math.max(0,(line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length-1);
-    const rm=line.match(/M[O0]DE[^\/]*\/([\s\dOolI|]*)$/i);
-    if(rm&&race==null){const ns=rm[1].trim().split(/\s+/).filter(Boolean);const n=ns[ns.length-1];if(n){race=+slipNum(n);raceLow=ns.length>1||slipLow(L,/\d|[OolI|]$/)&&(!L.w||(()=>{const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)})())}continue}
-    if(/^st\s*a\s*r?\s*t\b/i.test(line)){starts++;if(starts===1)start=slipClock(line);continue}
-    if(!heads&&(/^s\s*t\s*[o0]\s*p\b/i.test(line)||/\d[.,]\d{2}\s*s/i.test(line))){above=true;continue}
-    const sm=line.match(/^s\s*t\s*[o0]\s*p\s*([\dOolI|]{1,2})(?![\d:])/i);
+    heads+=(line.match(/M[O0]DE/gi)||[]).length;
+    if((line.match(/\bs\s*t\s*[o0]\s*p\b/gi)||[]).length>1||(line.match(/\d[.,]\s*\d{2}\s*s/gi)||[]).length>1)strong=true;
+    if((line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length>1)strong=true;
+    const mm=line.match(/M[O0]DE(.*)$/i);
+    if(mm){
+      if(race==null){
+        const tail=mm[1],sl=tail.lastIndexOf("/");
+        let ns=(sl>=0?tail.slice(sl+1):tail).trim().split(/\s+/).filter(x=>/^[\dOolI|]+$/.test(x));
+        if(sl<0&&ns.length>=2)ns=ns.slice(1);
+        const n=ns[ns.length-1];
+        if(n){race=+slipNum(n);raceLow=ns.length>1||(sl<0&&!/\s/.test(tail.trim()))||lastConfLow(L)}
+      }
+      continue;
+    }
+    if(/^st\s*a\s*r?\s*t\b/i.test(line)){starts++;if(starts>1)strong=true;else start=slipClock(line);continue}
+    const sm=line.match(STOP);
+    const clockish=SLIP_CLOCK.test(slipNum(line))||/\d{3,4}\s*:\s*\d{2}/.test(line);
+    const tm=!sm&&!clockish?line.match(TIME):null;
+    if(!heads){if(sm||clockish||tm||STOPISH.test(line))above=true;continue}
     if(sm){noTime();lane=+slipNum(sm[1]);clock=slipClock(line);laneLow=slipLow(L,/^[^:]*[\dOolI|]/);
       if(!(lane>=1&&lane<=maxLanes)){problems.push("Lane "+sm[1]+" not on this pool");lane=null}continue}
-    const tm=line.match(/([\dOolI|]{0,2}:?[\dOolI|]{1,3}[.,][\dOolI|]{2})\s*s/i);
+    if(clockish||STOPISH.test(line)){noTime();problems.push("A stop line not read");continue}
     if(tm&&lane!=null){
       const cs=slipTime(tm[1]);
       if(cs==null){noTime();continue}
-      if(lanes[lane]!=null){problems.push("Lane "+lane+" twice");doubt(lane);starts+=2}
+      if(lanes[lane]!=null){problems.push("Lane "+lane+" twice");doubt(lane);weak=true}
       else{lanes[lane]=cs;order.push(lane);
         if(laneLow||slipLow(L,/\d[.,]\d/))doubt(lane);
         if(start==null||clock==null)doubt(lane);
-        else{const dur=((clock-start)%3600000+3600000)%3600000;if(Math.abs(dur/10-cs)>1)doubt(lane)}}
+        else{const dur=((clock-start)%3600000+3600000)%3600000,gap=Math.abs(dur/10-cs);if(gap>1)doubt(lane);if(gap>1000)far.push(lane)}}
       lane=null;
     }
     else if(tm)problems.push("A time with no lane");
-    else if(/\bs\s*e\s*c\b/i.test(line)){problems.push("A time not read");noTime()}
+    else if(/\bs\s*e\s*c\b/i.test(line)||/\d\D{0,3}\d/.test(line)){problems.push("A time not read");noTime()}
   }
   noTime();
-  for(let i=1;i<order.length;i++){const d=lanes[order[i]]-lanes[order[i-1]];if(d<-100)starts+=2;else if(d<0){doubt(order[i]);doubt(order[i-1])}}
-  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,head:heads>0,twoSlips:heads>1||starts>1||(above&&heads>0)};
+  for(let i=1;i<order.length;i++){const d=lanes[order[i]]-lanes[order[i-1]];if(d<-100)weak=true;else if(d<0){doubt(order[i]);doubt(order[i-1])}}
+  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,far,head:heads>0,
+    twoSlips:heads>1||strong||(above&&heads>0),mixed:weak};
 }
 
 /* ---- students: paste or CSV with DOB → age group (DOB never kept) ---- */

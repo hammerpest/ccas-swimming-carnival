@@ -73,7 +73,7 @@ a(sl.unsure.includes(4)&&sl.problems.includes('A time with no lane'),'no start c
  const r2=C.parseSlip([{text:'LANE MODE 1/ 3',words:[{text:'LANE',confidence:95},{text:'MODE',confidence:95},{text:'1/',confidence:95},{text:'3',confidence:30}]}],8);
  a(r2.race===3&&r2.raceLow,'slip: low-confidence race number flagged');}
 sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:00:00.000\nstop 3 09:00:35.550\n35.55 sec\nstop 3 09:00:42.100\n42.10 sec',8);
-a(sl.lanes[3]===3555&&sl.twoSlips&&sl.problems.includes('Lane 3 twice'),'slip: a lane twice means two slips');
+a(sl.lanes[3]===3555&&sl.mixed&&sl.problems.includes('Lane 3 twice'),'slip: a lane twice is refused (mixed)');
 sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\nTIMING Time2\nLANE MODE 1/ 2\nstart 09:21:00.000\nstop 1 09:21:33.010\n33.01 sec',8);
 a(sl.twoSlips&&sl.race===1,'slip: two slips in one photo are spotted');
 sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\n.  sec',8);
@@ -83,7 +83,20 @@ a(C.parseSlip('48.03 sec\nTIMING Time2\nLANE MODE 1/ 5\nstart 09:00:00.000\nstop
 a(C.parseSlip('LANE MODE 1/ 21   12\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).raceLow,'slip: a second number after the slash makes the race unsure');
 a(!C.parseSlip('LANE MOLE 1/ 5\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: a misread header is not called two slips');
 a(C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:30.000 stop 3 08:36:32.440\n30.00 sec',8).twoSlips,'slip: two stop lines joined on one line are two slips');
-a(C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:40.000\n40.00 sec\nstop 5 09:00:31.000\n31.00 sec',8).twoSlips,'slip: a time faster than the one above means two slips');
+a(C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:40.000\n40.00 sec\nstop 5 09:00:31.000\n31.00 sec',8).mixed,'slip: a time faster than the one above is refused (mixed)');
 a(C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:40.000\n40.00 sec\n41.00 sec  33.00 sec',8).twoSlips,'slip: two times on one line means two slips');
 sl=C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:40.000\n40.00 sec\nstop 5 09:00:39.500\n39.50 sec',8);
 a(!sl.twoSlips&&sl.unsure.includes(2)&&sl.unsure.includes(5),'slip: a small dip makes both lanes unsure');
+// check 3 run 6
+sl=C.parseSlip('LANE MODE 1/ 41\nstart 11:25:28.000\nstop 1 11:26:00.300\n32.30 sec\nstop 3 10:40:26.950\n46.95 sec',8);
+a(sl.far.includes(3)&&sl.unsure.includes(3),'slip: a stop clock minutes away from its time is far');
+sl=C.parseSlip('LANE MODE 1/ 4\nstart 09:45:00.000\nstop 3 09:45:34.716\n34.71 sec\nop 7 09:45:35.349\n35.34\nstop 8 09:45:36.000\n36.00 sec',8);
+a(sl.lanes[7]===3534,'slip: a garbled stop word ("op 7") still gives the lane');
+sl=C.parseSlip('LANE MODE 1/ 4\nstart 09:45:00.000\nstop409:53:09.853\n31:85sec\nstop 8 09:45:36.000\n36.00 sec',8);
+a(sl.problems.length>0,'slip: an unreadable stop line is a problem, never skipped');
+sl=C.parseSlip('LANE MODE 1/ 4\nstart 08:04:00. 000\nstop 2 08:04:34. 500\n34.50 sec',8);
+a(sl.lanes[2]===3450&&!sl.unsure.includes(2),'slip: a clock read with a space still checks');
+sl=C.parseSlip('LANE MODE 1 9\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8);
+a(sl.race===9&&!sl.raceLow,'slip: a lost slash still gives the race');
+sl=C.parseSlip('5top 5 13:11:01.015\n45.01 5ec',8);
+a(sl.race===null,'slip: no header, no race');
