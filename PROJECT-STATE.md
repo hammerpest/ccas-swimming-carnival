@@ -2,7 +2,7 @@
 
 Date: 29 October 2026, version t. Replaces 29 October version s and all earlier PROJECT-STATE files.
 
-Changes on 29 October 2026 (version t): Jordan approved S1.40 (question 60 closed, decision 123). Swim Opt 2.3 built on staging (2.27): the digital multitimer. Checks 1, 2 (built-in browser, decision 124) and 3 PASSED. Not yet committed. Jordan must run the new supabase/01-setup.sql on the staging project so Time Slips can save places.
+Changes on 29 October 2026 (version t): Jordan approved S1.40 (question 60 closed, decision 123). Swim Opt 2.3 built on staging (2.27): the digital multitimer. Checks 1, 2 (built-in browser, decision 124) and 3 PASSED. Committed and pushed to staging (485a3f5). Jordan ran the new 01-setup.sql on the staging project (Success). Jordan must run the new supabase/01-setup.sql on the staging project so Time Slips can save places.
 
 Changes on 29 October 2026 (version s): Jordan asked for a digital multitimer for 100 m and 200 m races that finish at the far end (decision 121). The marshal still sends those heats as normal, so race numbers stay in step (122). Design S1.40 drawn (2.26), waiting for Jordan's OK (question 60). To be built as Swim Opt 2.3.
 
@@ -537,7 +537,7 @@ Built to S1.40 (decisions 121 to 123), on the staging branch.
 - START, SPLIT and STOP act when the finger lands (pointerdown), not on release. Times are cut to hundredths, never rounded up. The clock counts from the START time and the phone stays awake while it runs. The clock and splits are kept on the phone, so a reload mid-race keeps them.
 - Send writes times (src "multi"), finish (the first 4 taps) and a slips record (multi: true, the splits; no photo). A race that already has times asks "Replace the Race N times?" first.
 - Recorder: "From multitimer" under each time; View slip photo is grey; the slip panel shows the splits.
-- Supabase: Time Slips may now write finish (01-setup.sql). Jordan to run it again on staging.
+- Supabase: Time Slips may now write finish (01-setup.sql). Run on staging by Jordan, 29 October 2026.
 - New test: tests/multitimer.py (25 checks: one tap one split, STOP asks, places, Fix splits, Next race, marshal on race 3 after two 100 m races, Recorder, reload mid-race comes back on the race being timed, phone width, tap sizes). PASSED. Engine, SQL and flow tests PASSED.
 - Check 1: baseline-mac/ is from Swim Opt 1.5, so 2.1 and 2.2 changes already differ there (368 screens). Compared instead with Swim Opt 2.2 shot on the same Mac: only the 48 slips-* screens differ, all from the new Multitimer button. PASSED as the approved S1.40 change.
 - Check 3 (fresh-eyes agent): run 1 FAILED (a reload mid-race could lose the clock when an earlier race had no slip) plus 4 should-fix items. All fixed: the race being timed stays on screen; stored state kept apart for test mode and live, and tied to the race's event and heat; Send also asks when the Place Judge has places ("Replace the Race N results?"); wake lock taken again after switching apps; Recorder no longer says "paper slip" for multitimer races; the clock stops at the STOP tap; changing splits clears the tapped places. Run 2 PASSED; its one live-only item (a reload on the sent screen could drop to ready while tables load) was then fixed.
