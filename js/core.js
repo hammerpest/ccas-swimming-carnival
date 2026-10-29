@@ -258,6 +258,8 @@ function compute(S){
    paper slip) when stop clock minus start clock does not equal its time, when a clock could not be read,
    when the reader was not confident of its lane number or time, or when the lane appears twice.
    "problems" lists lines that could not be used; "missed" lists lanes with a stop line but no time.
+   A photo showing more than one slip (a second "LANE MODE" or "start" line) sets "twoSlips": the
+   phone then asks for a photo of one slip only, so another race's lanes are never mixed in.
    Input is the text, or the reader's lines with a confidence (0 to 100) for each word. */
 const SLIP_CONF=70;
 function slipNum(t){return String(t).replace(/[Oo]/g,"0").replace(/[lI|]/g,"1").replace(/,/g,".")}
@@ -284,15 +286,16 @@ function slipLow(line,re){
 function parseSlip(input,maxLanes){
   maxLanes=maxLanes||10;
   const lines=slipLines(input);
-  let race=null,raceLow=false,start=null,clock=null,lane=null,laneLow=false;
+  let race=null,raceLow=false,start=null,clock=null,lane=null,laneLow=false,heads=0,starts=0;
   const lanes={},order=[],problems=[],unsure=[],missed=[];
   const doubt=l=>{if(!unsure.includes(l))unsure.push(l)};
   const noTime=()=>{if(lane!=null){problems.push("Lane "+lane+": no time read");if(!missed.includes(lane))missed.push(lane)}lane=null};
   for(const L of lines){
     const line=L.t;
+    if(/M[O0]DE/i.test(line))heads++;
     const rm=line.match(/M[O0]DE[^\/]*\/([\s\dOolI|]*)$/i);
     if(rm&&race==null){const n=rm[1].trim().split(/\s+/).pop();if(n){race=+slipNum(n);raceLow=slipLow(L,/\d|[OolI|]$/)&&(!L.w||(()=>{const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)})())}continue}
-    if(/^st\s*a\s*r?\s*t\b/i.test(line)){start=slipClock(line);continue}
+    if(/^st\s*a\s*r?\s*t\b/i.test(line)){starts++;if(starts===1)start=slipClock(line);continue}
     const sm=line.match(/^s\s*t\s*[o0]\s*p\s*([\dOolI|]{1,2})(?![\d:])/i);
     if(sm){noTime();lane=+slipNum(sm[1]);clock=slipClock(line);laneLow=slipLow(L,/^[^:]*[\dOolI|]/);
       if(!(lane>=1&&lane<=maxLanes)){problems.push("Lane "+sm[1]+" not on this pool");lane=null}continue}
@@ -308,9 +311,10 @@ function parseSlip(input,maxLanes){
       lane=null;
     }
     else if(tm)problems.push("A time with no lane");
+    else if(/\bs\s*e\s*c\b/i.test(line)){problems.push("A time not read");noTime()}
   }
   noTime();
-  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed};
+  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,twoSlips:heads>1||starts>1};
 }
 
 /* ---- students: paste or CSV with DOB → age group (DOB never kept) ---- */

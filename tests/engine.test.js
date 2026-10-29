@@ -74,3 +74,7 @@ a(sl.unsure.includes(4)&&sl.problems.includes('A time with no lane'),'no start c
  a(r2.race===3&&r2.raceLow,'slip: low-confidence race number flagged');}
 sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:00:00.000\nstop 3 09:00:35.550\n35.55 sec\nstop 3 09:00:42.100\n42.10 sec',8);
 a(sl.lanes[3]===3555&&sl.unsure.includes(3)&&sl.problems.includes('Lane 3 twice'),'slip: a lane twice is unsure');
+sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\nTIMING Time2\nLANE MODE 1/ 2\nstart 09:21:00.000\nstop 1 09:21:33.010\n33.01 sec',8);
+a(sl.twoSlips&&sl.race===1,'slip: two slips in one photo are spotted');
+sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\n.  sec',8);
+a(sl.problems.includes('A time not read'),'slip: a sec line with no time is a problem');

@@ -128,7 +128,7 @@ function slipPanel(r){
   if(!(ck in A.slipImg)){A.slipImg={[ck]:null};
     A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key).then(d=>{if(ck in A.slipImg){A.slipImg[ck]=(d&&d.img)||"";render()}}).catch(()=>{if(ck in A.slipImg){A.slipImg[ck]="";render()}})}
   const c=A.slipImg[ck];const un=(meta.unsure||[]).filter(l=>meta.read&&meta.read[l]!=null);
-  return `<div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Time slip</h3><span class="row" style="gap:6px">${un.length?`<span class="chip prov">Hard to read: lane ${un.join(", ")}</span>`:""}${meta.miss?`<span class="chip prov">Some lines not read: check the photo</span>`:""}</span></div>
+  return `<div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Time slip</h3><span class="row" style="gap:6px">${un.length?`<span class="chip prov">Hard to read: lane ${un.join(", ")}</span>`:""}${meta.mism?`<span class="chip prov">Lanes do not match marshalling: check the photo</span>`:meta.miss?`<span class="chip prov">Some lines not read: check the photo</span>`:""}</span></div>
     ${c?`<img src="${c}" alt="Time slip photo for race ${r.race}" style="display:block;width:100%;border-radius:10px;border:1px solid var(--line)">`:`<p class="muted" style="margin:0">${c===""?"No photo stored for this race.":"Loading the photo..."}</p>`}</div>`;
 }
 
@@ -195,21 +195,26 @@ async function onPhoto(file){
   const t=slipMode();
   A.s.err=null;
   const CANT="Could not read the slip. Hold the phone flat over the slip so all lanes and times are in the picture, with no glare. Then take it again.";
-  let read=null,unsure=[],miss=false,missed=[];
+  let read=null,unsure=[],miss=false,missed=[],two=false;
   if(t==="real"){
     A.s.reading=true;render();
     const url=URL.createObjectURL(file);
-    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);if(res.race!=null&&!res.raceUnsure&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure;miss=res.problems.length>0;missed=res.missed}}catch(e){}
+    try{const res=await readSlipPhoto(url,Number(A.cfg.lanes)||8);two=!!res.twoSlips;if(!two&&res.race!=null&&!res.raceUnsure&&res.order.length){read={race:res.race,lanes:res.lanes};unsure=res.unsure;miss=res.problems.length>0;missed=res.missed}}catch(e){}
     URL.revokeObjectURL(url);A.s.reading=false;
   }
   const img=await shrink(file);
+  if(two){A.s.err=`This photo shows more than one slip. Fold or cover the others, then take a photo of the Race ${r.race} slip only.`;render();return}
   if(t==="bad"||!img||(t==="real"&&!read)){A.s.err=CANT;render();return}
   if(!read)read=testRead(r);
   if(t==="wrong")read.race=r.race+1;
   if(read.race!==r.race){A.s.err=`Wrong slip? This slip says Race ${read.race}. The screen is on Race ${r.race}. Find the Race ${r.race} slip and take it again.`;render();return}
   const key=rid(r.race);
+  /* slip lanes should match the marshalled lanes; when some slip lanes have no swimmer and some
+     swimmers have no slip time, it may be the wrong slip or a misread lane: warn, never hide it */
+  const mism=t==="real"&&Object.keys(read.lanes).some(l=>!r.lanes[l])&&r.filled.some(l=>read.lanes[l]==null);
+  if(mism)miss=true;
   const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false,chk:unsure.includes(+l)};
-  const meta={race:r.race,read:read.lanes,unsure,miss,missed,at:Date.now(),dev:DEV,test:t!=="real"};
+  const meta={race:r.race,read:read.lanes,unsure,miss,missed,mism,at:Date.now(),dev:DEV,test:t!=="real"};
   A.slips[key]=meta;
   A.times[key]={lanes,src:"photo",checked:false};recompute();
   if(t==="offline"){
@@ -219,8 +224,8 @@ async function onPhoto(file){
     setTimeout(async()=>{await sendSlip(key,img,meta,lanes);A.s.queued=Math.max(0,(A.s.queued||1)-1);delete A.s.waiting[r.race];render()},8000);
     return;
   }
-  A.s.flash=miss||unsure.length?{c:"amber",t:`Race ${r.race} sent, but some of the slip was hard to read. Retake it if you can.`}:{c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
-  setTimeout(()=>{A.s.flash=null;render()},miss||unsure.length?2500:1100);
+  A.s.flash=mism?{c:"amber",t:`Race ${r.race} sent, but the slip's lanes do not match the marshalled lanes. Check it is the Race ${r.race} slip.`}:miss||unsure.length?{c:"amber",t:`Race ${r.race} sent, but some of the slip was hard to read. Retake it if you can.`}:{c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
+  setTimeout(()=>{A.s.flash=null;render()},miss||unsure.length?3500:1100);
   await sendSlip(key,img,meta,lanes);
 }
 async function sendSlip(key,img,meta,lanes){
