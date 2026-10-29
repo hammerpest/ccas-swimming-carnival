@@ -81,3 +81,5 @@ a(sl.problems.includes('A time not read'),'slip: a sec line with no time is a pr
 a(C.parseSlip('LANE MODE 1/ 20   LANE MODE 1/ 21\nstart 09:00:00.000 start 09:03:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: two slips side by side are spotted');
 a(C.parseSlip('48.03 sec\nTIMING Time2\nLANE MODE 1/ 5\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: the end of the previous slip above the header is spotted');
 a(C.parseSlip('LANE MODE 1/ 21   12\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).raceLow,'slip: a second number after the slash makes the race unsure');
+a(!C.parseSlip('LANE MOLE 1/ 5\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: a misread header is not called two slips');
+a(C.parseSlip('LANE MODE 1/ 5\nstart 09:00:00.000\nstop 2 09:00:30.000 stop 3 08:36:32.440\n30.00 sec',8).twoSlips,'slip: two stop lines joined on one line are two slips');

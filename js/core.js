@@ -294,7 +294,7 @@ function parseSlip(input,maxLanes){
   const noTime=()=>{if(lane!=null){problems.push("Lane "+lane+": no time read");if(!missed.includes(lane))missed.push(lane)}lane=null};
   for(const L of lines){
     const line=L.t;
-    heads+=(line.match(/M[O0]DE/gi)||[]).length;starts+=Math.max(0,(line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length-1);
+    heads+=(line.match(/M[O0]DE/gi)||[]).length;if((line.match(/\bs\s*t\s*[o0]\s*p\b/gi)||[]).length>1)starts+=2;starts+=Math.max(0,(line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length-1);
     const rm=line.match(/M[O0]DE[^\/]*\/([\s\dOolI|]*)$/i);
     if(rm&&race==null){const ns=rm[1].trim().split(/\s+/).filter(Boolean);const n=ns[ns.length-1];if(n){race=+slipNum(n);raceLow=ns.length>1||slipLow(L,/\d|[OolI|]$/)&&(!L.w||(()=>{const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)})())}continue}
     if(/^st\s*a\s*r?\s*t\b/i.test(line)){starts++;if(starts===1)start=slipClock(line);continue}
@@ -317,7 +317,7 @@ function parseSlip(input,maxLanes){
     else if(/\bs\s*e\s*c\b/i.test(line)){problems.push("A time not read");noTime()}
   }
   noTime();
-  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,head:heads>0,twoSlips:heads>1||starts>1||above};
+  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,head:heads>0,twoSlips:heads>1||starts>1||(above&&heads>0)};
 }
 
 /* ---- students: paste or CSV with DOB → age group (DOB never kept) ---- */
