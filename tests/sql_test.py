@@ -98,6 +98,8 @@ r.q("select doc_update('times', 'r0001', '{\"lanes\":{\"2\":{\"t\":3500}}}')")
 d = r.q("select doc from times where id='r0001'")[0][0]
 check(d["lanes"]["1"]["t"] == 3412 and d["lanes"]["2"]["t"] == 3500 and d["checked"] is False, "update keeps the other lanes")
 check(not r.ok("insert into heats values ('r0009', '{}')"), "recorder cannot write heats")
+check(r.ok("select doc_update('heats', 'r0001', '{\"lanes\":{\"7\":\"t007\"}}')"), "recorder can fill a lane on a race already sent (2.2)")
+check(not r.ok("select doc_update('heats', 'r0042', '{\"lanes\":{\"1\":\"t001\"}}')"), "recorder cannot make a new race (2.2)")
 check(not r.ok("select doc_update('pins', 'x', '{}')"), "doc_update refuses unknown collections")
 
 # judge, slips, announcer
@@ -136,6 +138,7 @@ check(m.q("select check_pin('org', %s)", (HASH["org"],))[0][0] is False, "check_
 o.q("select doc_update('config', 'main', '{\"locked\":true}')")
 check(not m.ok("insert into heats values ('r0050', '{}')") and not m.ok("select next_race('x')"), "locked: marshal cannot write")
 check(m.q("select count(*) from heats")[0][0] == 1, "locked: marshal can still look")
+check(not r.ok("select doc_update('heats', 'r0001', '{\"lanes\":{\"6\":\"t006\"}}')"), "locked: recorder cannot change lanes (2.2)")
 check(o.ok("insert into heats values ('r0050', '{}')"), "locked: organiser can still write")
 o.q("select doc_update('config', 'main', '{\"locked\":false}')")
 o.q("select set_year('2026')")

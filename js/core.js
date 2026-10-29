@@ -159,10 +159,12 @@ function compute(S){
     const need=Math.min(4,filled.length);
     const dh=(F.order||[]).map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
     const tapped=Object.keys(placeTaps).filter(l=>lanes[l]).length;
+    /* a lane changed after Times checked sends the race back to "To check" (decision 113) */
+    const checked=!!T.checked&&!(h.edited&&T.checkedAt&&h.edited>T.checkedAt);
     let tstatus="Waiting for slip";
-    if(nTimes)tstatus=T.checked?"Checked":"To check";
+    if(nTimes)tstatus=checked?"Checked":"To check";
     const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,
-      tstatus,checked:!!T.checked,checkedAt:T.checkedAt||0,nTimes,flagged,need,tapped,dh,extra,src:T.src||null,hasSlip:!!(S.slips&&S.slips[id])};
+      tstatus,checked,checkedAt:T.checkedAt||0,nTimes,flagged,need,tapped,dh,extra,src:T.src||null,hasSlip:!!(S.slips&&S.slips[id])};
     races.set(h.race,r);
     const G=ensure(key);G.heats.push(r);
   }

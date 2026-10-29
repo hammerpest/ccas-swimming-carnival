@@ -33,6 +33,7 @@ function heatsSentFor(key){return A.heats.filter(h=>groupKey(h.k,h.x,h.g)===key)
 function renderMarshal(){
   const m=A.m;
   if(m.phase==="lanes")return renderMarshalLanes();
+  if(m.phase==="edit")return renderMarshalEdit();
   const types=enabledTypes();const t=TYPE[m.k];
   const miss=mMissing();const showMiss=m.showMiss;
   const row=(id,title,inner,isMiss)=>`<div class="mrow ${showMiss&&isMiss?"miss":""}" id="${id}"><span class="label">${title}</span><div class="choices">${inner}</div></div>`;
@@ -50,6 +51,7 @@ function renderMarshal(){
       ${miss.length?`<div class="what not"><span class="label" style="color:var(--warn)">Not ready yet</span><br>Still to choose: ${esc(miss.join(", "))}</div>`:`<div class="what">${esc(name)}<br><span class="muted" style="font:600 .95rem var(--font-body)">Heat ${heatsSentFor(groupKey(m.k,t.nosex?"X":m.x,m.g))+1}</span></div>`}
       <button type="button" class="btn go big" data-act="mgo" ${locked()?"disabled":""}>Go</button>
     </div>
+    ${A.heats.length&&!locked()?`<div style="text-align:center;margin-top:24px"><button type="button" class="linkbtn" data-act="medit">Change an earlier race</button></div>`:""}
   </div>`;
 }
 function marshalGo(){
@@ -69,17 +71,7 @@ function renderMarshalLanes(){
   for(let l=1;l<=L;l++){
     const id=m.lanes[l];const p=id?A.R.who(id):null;
     let pick="";
-    if(m.open===l){
-      const list=eligible(m.k,m.x,m.g);const q=m.filter.toLowerCase();
-      const shown=q?list.filter(s=>(listName(s)).toLowerCase().includes(q)):list;
-      pick=`<div class="picklist" role="listbox" aria-label="Swimmers for lane ${l}">
-        <div class="acts">${TYPE[m.k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:48px" autocomplete="off">`}
-          ${TYPE[m.k].relay?"":`<button type="button" class="btn small" data-act="maddnew" data-l="${l}">+ Not on the list</button>`}
-          <button type="button" class="btn small" data-act="mclear" data-l="${l}">Clear lane</button>
-          <button type="button" class="btn small" data-act="mclose">Close</button></div>
-        ${shown.length?shown.map(s=>{const dis=used.has(s.id)||(inHeat.has(s.id)&&id!==s.id);return `<button type="button" class="pick" data-act="mset" data-l="${l}" data-id="${esc(s.id)}" ${dis?"disabled":""}>${hdot(s.h)}<span>${esc(listName(s))}</span>${used.has(s.id)?`<span class="muted" style="margin-left:auto;font-size:.8rem">Earlier heat</span>`:inHeat.has(s.id)&&id!==s.id?`<span class="muted" style="margin-left:auto;font-size:.8rem">In this heat</span>`:""}</button>`}).join(""):`<div class="muted" style="padding:10px">No names match.</div>`}
-      </div>`;
-    }
+    if(m.open===l)pick=laneList(l,m.k,m.x,m.g,used,inHeat,id,"mset","mclear");
     lanes+=`<div class="lane ${m.cur===l&&!id?"cur":""}" style="position:relative"><div class="blk">${l}</div>
       <button type="button" class="body" data-act="mlane" data-l="${l}" aria-label="Lane ${l}">${p?`<span class="nm">${hdot(p.h)}<span>${esc(pname(p))}</span></span>`:`<span class="empty">${m.cur===l?"Tap to choose a swimmer":"Empty"}</span>`}</button>
       <div class="wall" aria-hidden="true"></div>${pick}</div>`;
@@ -92,6 +84,54 @@ function renderMarshalLanes(){
       <button type="button" class="btn big" data-act="mnew" ${locked()?"disabled":""}>New race</button>
     </div>
     ${m.bar?`<div class="msg ok" style="margin-bottom:12px">${esc(m.bar)}</div>`:""}
+    <div class="pool">${lanes}</div>`;
+}
+/* the name list for one lane: the Marshal's pool screens and the Recorder's "Add swimmer to lane" */
+function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct){
+  const m=A.m;const list=eligible(k,x,g);const q=m.filter.toLowerCase();
+  const shown=q?list.filter(s=>(listName(s)).toLowerCase().includes(q)):list;
+  return `<div class="picklist" role="listbox" aria-label="Swimmers for lane ${l}">
+        <div class="acts">${TYPE[k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:48px" autocomplete="off">`}
+          ${TYPE[k].relay||!clearAct?"":`<button type="button" class="btn small" data-act="maddnew" data-l="${l}">+ Not on the list</button>`}
+          ${clearAct?`<button type="button" class="btn small" data-act="${clearAct}" data-l="${l}">Clear lane</button>`:""}
+          <button type="button" class="btn small" data-act="${clearAct?"mclose":"closemodal"}">${clearAct?"Close":"Cancel"}</button></div>
+        ${shown.length?shown.map(s=>{const dis=used.has(s.id)||(inHeat.has(s.id)&&id!==s.id);return `<button type="button" class="pick" data-act="${setAct}" data-l="${l}" data-id="${esc(s.id)}" ${dis?"disabled":""}>${hdot(s.h)}<span>${esc(listName(s))}</span>${used.has(s.id)?`<span class="muted" style="margin-left:auto;font-size:.8rem">Earlier heat</span>`:inHeat.has(s.id)&&id!==s.id?`<span class="muted" style="margin-left:auto;font-size:.8rem">In this heat</span>`:""}</button>`}).join(""):`<div class="muted" style="padding:10px">No names match.</div>`}
+      </div>`;
+}
+/* Swim Opt 2.2 (decisions 113 and 114): change who is in a lane on a race already sent. Saves straight
+   away; a time already in the lane stays with the lane; a race already checked goes back to "To check". */
+function heatUsed(H){
+  const key=groupKey(H.k,H.x,H.g);const used=new Set();
+  for(const h of A.heats)if(h.race!==H.race&&groupKey(h.k,h.x,h.g)===key)for(const l in (h.lanes||{}))if(h.lanes[l])used.add(h.lanes[l]);
+  return used;
+}
+async function setHeatLane(race,l,id){
+  const H=A.heats.find(h=>h.race===race);if(!H)return false;
+  if(locked()){toast("Results are locked.");return false}
+  const lanes={[l]:id||null};const edited=Date.now();
+  H.lanes=Object.assign({},H.lanes||{},lanes);H.edited=edited;recompute();render();
+  return await w(()=>A.store.update("heats/"+rid(race),{lanes,edited}));
+}
+function renderMarshalEdit(){
+  const m=A.m;const H=A.heats.find(h=>h.race===m.edit);
+  if(!H){m.phase="start";m.edit=null;return renderMarshal()}
+  const L=Number(A.cfg.lanes)||8;const ln=H.lanes||{};
+  const used=heatUsed(H);const inHeat=new Set(Object.values(ln).filter(Boolean));
+  const filled=Object.keys(ln).filter(l=>ln[l]).length;
+  let lanes="";
+  for(let l=1;l<=L;l++){
+    const id=ln[l];const p=id?A.R.who(id):null;
+    const pick=m.open===l?laneList(l,H.k,H.x,H.g,used,inHeat,id,"meset","meclear"):"";
+    lanes+=`<div class="lane" style="position:relative"><div class="blk">${l}</div>
+      <button type="button" class="body" data-act="mlane" data-l="${l}" aria-label="Lane ${l}">${p?`<span class="nm">${hdot(p.h)}<span>${esc(pname(p))}</span></span>`:`<span class="empty">Empty</span>`}</button>
+      <div class="wall" aria-hidden="true"></div>${pick}</div>`;
+  }
+  return `${lockBar()}<div class="racebar">
+      <button type="button" class="btn navy big" data-act="medone">Done</button>
+      ${badge(H.race,"xl")}
+      <div class="info"><b>${esc(groupLabel(H.k,H.x,H.g))}</b><span>Heat ${H.heat} · ${filled} of ${L} lanes filled</span></div>
+    </div>
+    <div class="msg warn" style="margin-bottom:12px">Changing Race ${H.race}. Changes save straight away. A time already in a lane stays with that lane.</div>
     <div class="pool">${lanes}</div>`;
 }
 function nextEmpty(from){const L=Number(A.cfg.lanes)||8;for(let i=1;i<=L;i++){const l=((from-1+i)%L)+1;if(!A.m.lanes[l])return l}return null}
@@ -134,6 +174,7 @@ async function addSwimmer(l){
   const x=A.m.x==="X"?document.getElementById("nsX").value:A.m.x;
   const st={id:"x-"+(s+"-"+f).toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-"+Date.now().toString(36),s,f,h:document.getElementById("nsH").value,x,g:document.getElementById("nsG").value,added:true};
   const r=await w(()=>A.store.set("extras/"+st.id,st));if(!r)return;
+  if(A.m.phase==="edit"){A.extras=A.extras.concat([st]);A.modal=null;A.m.open=null;recompute();await setHeatLane(A.m.edit,l,st.id);render();return}
   A.extras=A.extras.concat([st]);A.m.lanes[l]=st.id;A.m.cur=nextEmpty(l)||l;A.m.open=null;A.modal=null;recompute();render();
 }
 
@@ -207,9 +248,10 @@ function judgeNext(force){
 MODALS.confirmPlaces=M=>`<h2>Confirm places</h2><p style="margin:0">Race ${M.race}, Heat ${M.heat}: ${M.placed} of ${M.need} places tapped. Times will decide any place not tapped.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back to lanes</button><button type="button" class="btn go" data-act="jconfirm">Confirm</button></div>`;
 MODALS.goRace=M=>{
   const list=raceList();
-  return `<h2>Go to race</h2><div class="stack" style="gap:6px">${list.length?list.slice().reverse().map(r=>{
+  return `<h2>${M.job==="slips"?"Check race":M.job==="medit"?"Change an earlier race":"Go to race"}</h2><div class="stack" style="gap:6px">${list.length?list.slice().reverse().map(r=>{
     let st="";
-    if(M.job==="judge"){const p=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;st=p>=r.need?`Top ${r.need} done`:p?`${p} of ${r.need} placed`:"Not started"}
+    if(M.job==="medit"){const n=Object.values(r.lanes||{}).filter(Boolean).length;st=plural(n,"lane")+" filled"}
+    else if(M.job==="judge"){const p=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;st=p>=r.need?`Top ${r.need} done`:p?`${p} of ${r.need} placed`:"Not started"}
     else if(M.job==="recorder"){st=lockedBy(r.race)?"On another device":r.tstatus}
     else{st=A.slips[rid(r.race)]?(A.s.waiting&&A.s.waiting[r.race]?"Waiting to send":""):"No slip yet"}
     const tick=(M.job==="slips"||M.job==="recorder")&&A.slips[rid(r.race)]&&!(M.job==="slips"&&A.s.waiting&&A.s.waiting[r.race]);

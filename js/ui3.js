@@ -36,7 +36,7 @@ function renderRecorder(){
       <td class="num" style="font:800 1.1rem var(--font-display)">${l}</td>
       <td class="nmcell">${hdot(p.h)} <b>${esc(pname(p))}</b></td>
       <td>${jp?medal(jp)+(r.dh.some(g=>g.includes(String(l)))?` <span class="tag dh">DEAD HEAT</span>`:""):`<span class="muted">${r.tapped?"By time":"&ndash;"}</span>`}</td>
-      <td><input class="timein ${odd?"flag":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
+      <td><input class="timein ${odd?"flag":""} ${notOnSlip?"nos":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
         ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":"Typed"}</span>`:""}</td>
       <td class="num">${e&&e.eff!=null&&v.st!=="DQ"?`<span class="${e.pink?"pinkt":""}" style="font:800 1.05rem var(--font-mono)">${fmtTime(e.eff)}</span>${e.pink?`<span class="under pinkn">Slip ${fmtTime(e.rec)}</span>`:""}`:""}</td>
       <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DNS" aria-pressed="${v.st==="DNS"}" ${lk?"disabled":""}>DNS</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DQ" aria-pressed="${v.st==="DQ"}" ${lk?"disabled":""}>DQ</button></div></td>
@@ -54,7 +54,8 @@ function renderRecorder(){
           ${A.R.races.has(r.race+1)?`<button type="button" class="btn navy" data-act="rnext" style="margin-left:auto">Next race</button>`:`<button type="button" class="btn" disabled style="margin-left:auto">Waiting for marshal</button>`}
         </div>
         ${r.dh.length?`<div class="msg warn">Dead heat: ${r.dh.map(g=>"lanes "+g.join(" and ")).join("; ")} were tapped as a tie by the Place Judge. Place judges must split the result if they can. Check with them before pressing Times checked.</div>`:""}
-        ${r.extra.length?`<div class="msg warn">The slip has a time for ${r.extra.length>1?"lanes "+r.extra.slice(0,-1).join(", ")+" and "+r.extra.slice(-1):"lane "+r.extra[0]}, but no swimmer was marshalled ${r.extra.length>1?"in those lanes":"in that lane"}. A swimmer may have been missed: check with the marshal.</div>`:""}
+        ${r.extra.length?`<div class="msg warn">The slip has a time for ${r.extra.length>1?"lanes "+r.extra.slice(0,-1).join(", ")+" and "+r.extra.slice(-1):"lane "+r.extra[0]}, but no swimmer was marshalled ${r.extra.length>1?"in those lanes":"in that lane"}. A swimmer may have been missed: add them here or check with the marshal.
+          <div class="row" style="gap:8px;margin-top:8px">${r.extra.map(l=>`<button type="button" class="btn small" data-act="raddlane" data-l="${l}" ${lk?"disabled":""}>Add swimmer to lane ${l}</button>`).join("")}</div></div>`:""}
         ${lockedBy(r.race)?`<div class="msg warn">Being entered by another device. You can look, but times cannot be changed here until it is finished.</div>`:""}
         <div class="panel" style="padding:0;overflow:hidden"><div class="tablewrap"><table>
           <thead><tr><th class="num">Lane</th><th>Swimmer</th><th>Place</th><th>Time</th><th class="num">Result</th><th>DNS / DQ</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="7" class="muted">No swimmers in this heat.</td></tr>`}</tbody></table></div></div>
@@ -216,6 +217,7 @@ async function onPhoto(file){
 /* anything odd is sent, never held up: doubtful lanes go yellow for the Recorder to check against the
    photo and accept (decision 118). Only a slip whose race cannot be told is refused. */
 async function keepPhoto(r,t,key,read,unsure,miss,missed,img,two){
+  A.s.pend=A.s.pend||{};clearTimeout(A.s.pend[key]);delete A.s.pend[key];
   /* slip lanes should match the marshalled lanes; when some slip lanes have no swimmer and some
      swimmers have no slip time, it may be the wrong slip or a misread lane: warn, never hide it */
   const mism=t==="real"&&Object.keys(read.lanes).some(l=>!r.lanes[l])&&r.filled.some(l=>read.lanes[l]==null);
@@ -228,7 +230,7 @@ async function keepPhoto(r,t,key,read,unsure,miss,missed,img,two){
     A.s.queued=(A.s.queued||0)+1;A.s.waiting=Object.assign(A.s.waiting||{},{[r.race]:true});
     A.s.flash={c:"amber",t:"Saved on this phone. Sends when there is signal"};render();
     setTimeout(()=>{A.s.flash=null;render()},1300);
-    setTimeout(async()=>{await sendSlip(key,img,meta,lanes);A.s.queued=Math.max(0,(A.s.queued||1)-1);delete A.s.waiting[r.race];render()},8000);
+    A.s.pend[key]=setTimeout(async()=>{delete A.s.pend[key];await sendSlip(key,img,meta,lanes);A.s.queued=Math.max(0,(A.s.queued||1)-1);delete A.s.waiting[r.race];render()},8000);
     return;
   }
   A.s.flash=two?{c:"amber",t:`Race ${r.race} sent, but the photo may show more than one slip. The Recorder will check it.`}:mism?{c:"amber",t:`Race ${r.race} sent, but the slip's lanes do not match the marshalled lanes. Check it is the Race ${r.race} slip.`}:miss||unsure.length?{c:"amber",t:`Race ${r.race} sent, but some of the slip was hard to read. Retake it if you can.`}:{c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
@@ -240,6 +242,10 @@ async function sendSlip(key,img,meta,lanes){
   await w(()=>A.store.set("slips/"+key,meta));
   await w(()=>A.store.set("times/"+key,{lanes,src:"photo",checked:false,by:DEV,at:Date.now()}));
 }
+MODALS.pickLane=M=>{const r=A.R.races.get(M.race);if(!r)return `<p>Race not found.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">Close</button></div>`;
+  const H=A.heats.find(h=>h.race===M.race)||{};const t=(r.times||{})[M.l];
+  return `<h2>Add swimmer to lane ${M.l}</h2><p class="muted" style="margin:0">Race ${M.race}, ${esc(r.label)}, heat ${r.heat}.${t&&t.t!=null?` The slip time ${fmtTime(t.t)} becomes theirs.`:""}</p>
+  <div style="position:relative;min-height:320px">${laneList(M.l,r.k,r.x,r.g,heatUsed(H),new Set(Object.values(H.lanes||{}).filter(Boolean)),null,"rsetlane",null).replace('class="picklist"','class="picklist" style="position:static;box-shadow:none"')}</div>`};
 MODALS.replaceSlip=M=>`<h2>Replace the Race ${M.race} slip?</h2><p style="margin:0">Race ${M.race} already has a slip. This photo will replace its times.</p><p style="margin:0">Check the race number on the paper slip says ${M.race}.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn go" data-act="sreplace">Replace the slip</button></div>`;
 MODALS.overall=M=>{const r=A.R.races.get(M.race);const G=r&&A.R.groups.get(r.key);
   return `<h2>Race overall</h2><div class="muted">${esc(r?r.label:"")}</div>${overallTable(G,{hris:false})}<div class="acts"><button type="button" class="btn primary" data-act="closemodal">Close</button></div>`};

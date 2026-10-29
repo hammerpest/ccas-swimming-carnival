@@ -123,6 +123,23 @@ begin
   end loop;
 end $$;
 
+-- Swim Opt 2.2 (decision 114): the Recorder may fill or change lanes, but only on a race already sent
+-- (the heat row must exist), and not when results are locked or a past year is open.
+create or replace function private.recorder_heat(row_id text) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select private.my_role() = 'recorder' and not private.in_past() and not private.is_locked()
+    and exists (select 1 from public.heats h where h.id = row_id)
+$$;
+revoke all on function private.recorder_heat(text) from public, anon;
+grant execute on function private.recorder_heat(text) to authenticated;
+drop policy if exists "job can add" on public.heats;
+drop policy if exists "job can change" on public.heats;
+create policy "job can add" on public.heats for insert to authenticated
+  with check (private.can_write('heats') or private.recorder_heat(id));
+create policy "job can change" on public.heats for update to authenticated
+  using (private.can_write('heats') or private.recorder_heat(id))
+  with check (private.can_write('heats') or private.recorder_heat(id));
+
 -- ---------- PINs ----------
 -- Every wrong PIN is counted. More than 5 wrong in 5 minutes on one device,
 -- or 100 wrong in 10 minutes in total, and every PIN is refused for a while.

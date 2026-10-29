@@ -232,6 +232,7 @@ tr.flagrow td{background:var(--warn-bg)}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;max-width:100%}
 input:not([type=checkbox]):not([type=radio]),select{min-height:48px}
 textarea{width:100%;min-height:150px;font-family:var(--font-mono);font-size:.85rem}
+.timein.nos::placeholder{font-family:var(--font-body);font-size:.8rem}
 .sliptick{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;font-weight:700;color:var(--ok);flex:0 0 auto}
 .sliptick .tk{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--ok);color:var(--on-ok)}.sliptick svg{width:26px;height:26px}
 .switch::before{content:"";position:absolute;inset:-9px -2px}
