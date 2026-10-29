@@ -262,6 +262,25 @@ const ACT={
   snext:()=>{A.s.race=A.s.race+1;A.s.err=null;render()},
   stest:el=>{A.s.test=el.dataset.v;render()},
   soverall:()=>{const r=slipRace();if(r){A.modal={t:"overall",race:r.race};render()}},
+  mtopen:()=>{A.s.mt=true;A.s.err=null;mtSave();render();window.scrollTo(0,0)},
+  mtclose:()=>{A.s.mt=false;mtSave();render()},
+  mtgo:()=>mtGo(),
+  mtsplit:()=>mtSplit(),
+  mtstop:()=>mtStop(false),
+  mtstopok:()=>mtStop(true),
+  mtunsplit:()=>{A.mt.splits.pop();mtSave();render()},
+  mttap:el=>{if(!locked())mtTap(+el.dataset.l)},
+  mtundo:()=>{A.mt.taps.pop();mtSave();render()},
+  mtreset:()=>{A.mt.taps=[];mtSave();render()},
+  mtfix:()=>{A.modal={t:"mtFix"};render()},
+  mtdel:el=>{const sp=A.mt.splits.slice();sp.splice(+el.dataset.i,1);mtFixSplits(sp)},
+  mtaddok:()=>{const raw=document.getElementById("mtadd").value;const p=parseTime(raw);
+    if(!raw.trim()||p.err){A.modal.raw=raw;A.modal.err=p.err||"Type a time first.";render();return}
+    A.modal.raw="";A.modal.err=null;mtFixSplits(A.mt.splits.concat(p.cs))},
+  mtclear:()=>{const r=slipRace();A.modal=null;A.mt=mtBlank(r?r.race:null);mtSave();mtWake(false);render()},
+  mtsend:()=>mtSend(false),
+  mtsendok:()=>mtSend(true),
+  mtnext:()=>{A.s.race=A.s.race+1;A.s.err=null;render();window.scrollTo(0,0)},
   aprev:()=>{A.a.idx=Math.max(0,A.a.idx-1);render()},
   anext:()=>{const f=finalsInOrder();if(f[A.a.idx])markRead(f[A.a.idx].key);A.a.idx=Math.min(f.length-1,A.a.idx+1);render()},
   rtab:el=>{A.res.tab=el.dataset.v;render()},
@@ -307,10 +326,17 @@ const ACT={
     A.modal={t:"newCarnival",step:2,list};render()},
   onew2:el=>newCarnival(el.dataset.v==="yes")
 };
+/* multitimer START, SPLIT and STOP act on the touch, not the lift, so the time is when the finger lands */
+let mtDown=0;
+document.addEventListener("pointerdown",e=>{
+  const el=e.target.closest("[data-mt]");if(!el||el.disabled||e.button>0)return;
+  e.preventDefault();mtDown=Date.now();const f=ACT[el.dataset.act];if(f)f(el,e);
+});
 document.addEventListener("click",e=>{
   const el=e.target.closest("[data-act]");
   if(!el){if(A.menu&&!e.target.closest(".jobpill")){A.menu=false;renderHeader()}return}
   if(el.disabled)return;
+  if(el.dataset.mt!=null&&Date.now()-mtDown<800)return;
   const f=ACT[el.dataset.act];if(f)f(el,e);
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(A.modal){A.modal=null;render()}else if(A.menu){A.menu=false;renderHeader()}}});

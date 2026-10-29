@@ -37,7 +37,7 @@ function renderRecorder(){
       <td class="nmcell">${hdot(p.h)} <b>${esc(pname(p))}</b></td>
       <td>${jp?medal(jp)+(r.dh.some(g=>g.includes(String(l)))?` <span class="tag dh">DEAD HEAT</span>`:""):`<span class="muted">${r.tapped?"By time":"&ndash;"}</span>`}</td>
       <td><input class="timein ${odd?"flag":""} ${notOnSlip?"nos":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
-        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":"Typed"}</span>`:""}</td>
+        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":v.src==="multi"?"From multitimer":"Typed"}</span>`:""}</td>
       <td class="num">${e&&e.eff!=null&&v.st!=="DQ"?`<span class="${e.pink?"pinkt":""}" style="font:800 1.05rem var(--font-mono)">${fmtTime(e.eff)}</span>${e.pink?`<span class="under pinkn">Slip ${fmtTime(e.rec)}</span>`:""}`:""}</td>
       <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DNS" aria-pressed="${v.st==="DNS"}" ${lk?"disabled":""}>DNS</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DQ" aria-pressed="${v.st==="DQ"}" ${lk?"disabled":""}>DQ</button></div></td>
       <td>${odd?`<div style="min-width:150px"><span style="color:var(--warn);font-weight:700;font-size:.85rem">Check this time: ${esc(odd)}</span><div class="row" style="gap:6px;margin-top:4px"><button type="button" class="btn small" data-act="rkeep" data-l="${l}" ${lk?"disabled":""}>Keep</button><button type="button" class="btn small" data-act="rfix" data-l="${l}" ${lk?"disabled":""}>Fix</button></div></div>`:""}</td>
@@ -49,7 +49,7 @@ function renderRecorder(){
         <div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div class="info" style="min-width:0"><b style="display:block;font:800 1.3rem var(--font-display)">${esc(r.label)}</b><span class="muted" style="font-weight:600">Heat ${r.heat} · <span class="chip ${r.checked?"final":r.nTimes?"prov":""}">${esc(r.tstatus)}</span></span></div></div>
         <div class="row recnav">
           <button type="button" class="btn" data-act="rgoto">Go to race</button>
-          <button type="button" class="btn" data-act="rslip" ${r.hasSlip?"":"disabled"}>View slip photo</button>
+          <button type="button" class="btn" data-act="rslip" ${r.hasSlip&&!(A.slips[rid(r.race)]||{}).multi?"":"disabled"}>View slip photo</button>
           ${r.race<max?`<button type="button" class="btn" data-act="rlatest">Back to latest</button>`:""}
           ${A.R.races.has(r.race+1)?`<button type="button" class="btn navy" data-act="rnext" style="margin-left:auto">Next race</button>`:`<button type="button" class="btn" disabled style="margin-left:auto">Waiting for marshal</button>`}
         </div>
@@ -100,7 +100,7 @@ function recNextToCheck(from){
 async function timesChecked(force){
   const r=recRace();if(!r)return;
   const missing=r.filled.filter(l=>{const v=r.times[l]||{};return v.t==null&&v.st!=="DNS"&&v.st!=="DQ"});
-  if(missing.length){A.modal={t:"info",title:"A lane has no time",body:`<p style="margin:0">${missing.length===1?"Lane "+missing[0]+" has":"Lanes "+missing.join(", ")+" have"} no time yet. Type the time from the paper slip, or mark DNS or DQ, then press Times checked.</p>`,ok:"< Back to times"};render();return}
+  if(missing.length){A.modal={t:"info",title:"A lane has no time",body:`<p style="margin:0">${missing.length===1?"Lane "+missing[0]+" has":"Lanes "+missing.join(", ")+" have"} no time yet. ${r.src==="multi"?"Type the time":"Type the time from the paper slip"}, or mark DNS or DQ, then press Times checked.</p>`,ok:"< Back to times"};render();return}
   if(!force&&(r.flagged||r.dh.length)){A.modal={t:"flagged",n:r.flagged,dh:r.dh};render();return}
   const key=rid(r.race);const T=A.times[key]||{};
   const patch={checked:true,checkedAt:Date.now(),checkedBy:DEV};
@@ -125,6 +125,7 @@ async function viewSlip(race){
 function slipPanel(r){
   const key=rid(r.race);const meta=A.slips[key];
   if(!meta)return `<div class="panel stack"><h3>Time slip</h3><p class="muted" style="margin:0">No slip yet for Race ${r.race}.</p></div>`;
+  if(meta.multi)return `<div class="panel stack"><h3>Multitimer</h3><p class="muted" style="margin:0">Timed on the phone multitimer: no slip photo. Splits in finish order:</p>${mtSplitList(meta.splits||[])}</div>`;
   const ck=key+"@"+(meta.at||0);
   if(!(ck in A.slipImg)){A.slipImg={[ck]:null};
     A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key).then(d=>{if(ck in A.slipImg){A.slipImg[ck]=(d&&d.img)||"";render()}}).catch(()=>{if(ck in A.slipImg){A.slipImg[ck]="";render()}})}
@@ -136,6 +137,7 @@ function slipPanel(r){
 /* ---------- Time Slips (phone) ---------- */
 function slipRace(){
   const list=raceList();if(!list.length)return null;
+  if(A.mt&&(A.mt.phase==="run"||A.mt.phase==="place")&&A.R.races.has(A.mt.race))A.s.race=A.mt.race;
   if(A.s.race==null||!A.R.races.has(A.s.race)){const first=list.find(r=>!A.slips[rid(r.race)]);A.s.race=(first||list[list.length-1]).race}
   return A.R.races.get(A.s.race);
 }
@@ -144,6 +146,7 @@ function renderSlips(){
   const waiting=A.s.queued||0;
   const top=waiting?`<div class="msg warn">No signal. ${plural(waiting,"photo")} waiting to send. It sends by itself when there is signal.</div>`:"";
   if(!r)return `<div class="phone">${top}${waitingCard("Waiting for the marshal","Race 1 appears here once it is sent.")}</div>`;
+  if(A.s.mt)return renderMulti(r,top);
   const done=!!A.slips[rid(r.race)];const t=slipMode();
   if(realReader()&&innerWidth<700)slipOcrLoad().catch(()=>{});
   const showNext=done&&!A.s.err&&!A.s.flash;
@@ -151,12 +154,13 @@ function renderSlips(){
   return `${lockBar()}<div class="phone">${top}
     <div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div style="min-width:0"><b style="font:800 1.15rem var(--font-display);display:block">${esc(r.label)}</b><span class="muted">Heat ${r.heat}</span></div></div>
     ${A.s.err?`<div class="msg bad" role="alert">${A.s.err}</div>`:""}
-    ${showNext?`<div class="msg ok">Race ${r.race} slip read and sent to the Recorder.</div>
+    ${showNext?`<div class="msg ok">${A.slips[rid(r.race)].multi?`Race ${r.race} multitimer times sent to the Recorder.`:`Race ${r.race} slip read and sent to the Recorder.`}</div>
        ${hasNext?`<button type="button" class="btn navy big" data-act="snext" style="width:100%">Next race</button>`:`<button type="button" class="btn big" disabled style="width:100%">Waiting for marshal</button>`}
        <label class="btn" for="camin" style="width:100%">Replace this slip with a new photo</label>`
      :A.s.reading?`<div class="cam" role="status">Reading the slip...</div>`
      :`<label class="cam" for="camin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>${A.s.err?"Take again":"Take photo of slip"}</label>`}
     <input id="camin" type="file" accept="image/*" capture="environment" hidden ${locked()?"disabled":""}>
+    ${A.s.reading?"":`<button type="button" class="btn big mtopen" data-act="mtopen">${MT_ICON}Multitimer</button>`}
     <div class="row"><button type="button" class="btn" data-act="sgoto" style="flex:1">Check race</button><button type="button" class="btn" data-act="soverall" style="flex:1">Race overall</button></div>
     <div class="panel stack" style="gap:8px;background:var(--sunk);border-color:transparent">
       ${realReader()?`<span class="label">Slip reader</span>
@@ -250,3 +254,127 @@ MODALS.pickLane=M=>{const r=A.R.races.get(M.race);if(!r)return `<p>Race not foun
 MODALS.replaceSlip=M=>`<h2>Replace the Race ${M.race} slip?</h2><p style="margin:0">Race ${M.race} already has a slip. This photo will replace its times.</p><p style="margin:0">Check the race number on the paper slip says ${M.race}.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn go" data-act="sreplace">Replace the slip</button></div>`;
 MODALS.overall=M=>{const r=A.R.races.get(M.race);const G=r&&A.R.groups.get(r.key);
   return `<h2>Race overall</h2><div class="muted">${esc(r?r.label:"")}</div>${overallTable(G,{hris:false})}<div class="acts"><button type="button" class="btn primary" data-act="closemodal">Close</button></div>`};
+
+/* ---------- Multitimer (decision 121, S1.40) ----------
+   For 100 m and 200 m races that finish at the far end. START on the gun, SPLIT at each touch, STOP,
+   then tap lanes in finish order: each tap takes the next split. The top 4 taps are the places
+   (they replace the Place Judge for the race). Sent like a slip: times, places and a slips record. */
+const MT_ICON=`<svg class="mtico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 10v4l2 2M10 3h4M12 3v4"/></svg>`;
+const CAM_ICON=`<svg class="mtico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>`;
+function mtBlank(race,sig){return {race,sig:sig||"",phase:"ready",t0:0,stopAt:0,splits:[],taps:[]}}
+function mtSig(r){return r.key+"/"+r.heat}
+/* kept on the phone so a reload mid-race keeps the clock and splits */
+const MT_KEY="swim_mt_"+(/[?&]mode=local\b/.test(location.search)?"test":"live");
+function mtSave(){try{localStorage.setItem(MT_KEY,JSON.stringify({on:!!A.s.mt,mt:A.mt}))}catch(e){}}
+(function(){let d=null;try{d=JSON.parse(localStorage.getItem(MT_KEY)||"null")}catch(e){}
+  A.mt=d&&d.mt||mtBlank(null);A.s.mt=!!(d&&d.on)})();
+/* a race being timed or placed is never thrown away while it still exists; a stored race whose event
+   and heat no longer match (a new carnival, or cleared data) starts fresh */
+function mtFor(r){const M=A.mt;
+  if((M.phase==="run"||M.phase==="place")&&A.R.races.has(M.race)&&M.race!==r.race)return M;
+  if(M.race!==r.race||(M.sig&&M.sig!==mtSig(r))){A.mt=mtBlank(r.race,mtSig(r));mtSave()}
+  else if(!M.sig){M.sig=mtSig(r);mtSave()}
+  return A.mt}
+/* hand timing drops the thousandths, it never rounds up */
+function mtNow(){const M=A.mt;return Math.max(0,Math.floor(((M.phase==="run"?Date.now():M.stopAt)-M.t0)/10))}
+function mtFmt(cs){const m=Math.floor(cs/6000),s=Math.floor((cs%6000)/100),h=cs%100;return m+":"+String(s).padStart(2,"0")+"."+String(h).padStart(2,"0")}
+function mtOrd(n){const t=n%100;return n+(t>10&&t<14?"th":["th","st","nd","rd"][n%10]||"th")}
+function mtSplitList(sp){return `<ol class="splits">${sp.map((t,i)=>`<li><b>${i+1}</b><span>${fmtTime(t)}</span></li>`).join("")}</ol>`}
+function mtLimit(r){return Math.min(A.mt.splits.length,r.filled.length)}
+function renderMulti(r,top){
+  const M=mtFor(r);const n=r.filled.length;const lk=locked();
+  const hasNext=A.R.races.has(r.race+1);
+  const head=`<div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div style="min-width:0"><b style="font:800 1.15rem var(--font-display);display:block">${esc(r.label)}</b><span class="muted">Heat ${r.heat}</span></div></div>`;
+  const nav=`<div class="row"><button type="button" class="btn" data-act="sgoto" style="flex:1">Check race</button><button type="button" class="btn" data-act="soverall" style="flex:1">Race overall</button></div>`;
+  const back=`<button type="button" class="btn" data-act="mtclose" style="width:100%">${CAM_ICON}Back to slip photo</button>`;
+  let body="";
+  if(M.phase==="ready"){
+    const has=!!A.slips[rid(r.race)]||r.nTimes>0||r.tapped>0;
+    body=`<div class="clock" id="mtclock" role="timer">0:00.00</div>
+      <div class="mtbtns"><button type="button" class="btn mtgo" data-act="mtgo" data-mt ${lk||!n?"disabled":""}>START</button><button type="button" class="btn mtsplit" disabled>SPLIT</button></div>
+      ${has?`<div class="msg info">Race ${r.race} already has ${r.tapped&&!r.nTimes?"places":"times"}. Sending replaces them.</div>`:""}
+      <p class="muted" style="margin:0;font-size:.88rem">${n?`${plural(n,"swimmer")} marshalled: lane${n>1?"s":""} ${r.filled.join(", ")}.`:"No swimmers marshalled in this heat."}</p>
+      ${nav}${back}`;
+  }else if(M.phase==="run"){
+    body=`<div class="clock run" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
+      <div class="mtbtns"><button type="button" class="btn mtstop" data-act="mtstop" data-mt>STOP</button><button type="button" class="btn mtsplit" data-act="mtsplit" data-mt>SPLIT</button></div>
+      <div class="panel stack" style="gap:8px"><div class="row" style="justify-content:space-between"><span class="label">Splits</span><span class="chip">${M.splits.length} of ${plural(n,"swimmer")}</span></div>
+        ${M.splits.length?mtSplitList(M.splits):`<p class="muted" style="margin:0">Tap SPLIT as each swimmer touches.</p>`}</div>
+      <button type="button" class="btn" data-act="mtunsplit" style="width:100%" ${M.splits.length?"":"disabled"}>Undo last split</button>`;
+  }else if(M.phase==="place"){
+    const lim=mtLimit(r);const done=M.taps.length>=lim;const L=Number(A.cfg.lanes)||8;
+    let lanes="";
+    for(let l=1;l<=L;l++){
+      const id=r.lanes[l];const p=id?A.R.who(id):null;const i=M.taps.indexOf(l);let wall="";
+      if(p){
+        if(i>=0)wall=`<button type="button" class="spot ${i<4?"p"+(i+1):"px"}" data-act="mttap" data-l="${l}" aria-label="Lane ${l}, place ${i+1}, ${fmtTime(M.splits[i])}. Tap to remove" ${lk?"disabled":""}>${i+1}</button><span class="mtt">${fmtTime(M.splits[i])}</span>`;
+        else if(!done)wall=`<button type="button" class="spot" data-act="mttap" data-l="${l}" aria-label="Lane ${l}, tap for place ${M.taps.length+1}" ${lk?"disabled":""}></button>`;
+        else wall=`<span class="bytime">No time</span>`;
+      }
+      lanes+=`<div class="lane"><div class="blk">${l}</div><div class="body" style="cursor:default">${p?`<span class="nm">${hdot(p.h)}<span>${esc(pname(p))}</span></span>`:`<span class="empty">Empty</span>`}</div><div class="wall mt">${wall}</div></div>`;
+    }
+    const sp=M.splits.length;
+    const prompt=!sp?"No splits were taken. Use Fix splits to add the times.":!done?`Tap the lane that touched ${mtOrd(M.taps.length+1)} (${fmtTime(M.splits[M.taps.length])}).`:sp===n?`All ${n} placed. Check the times, then send.`:`All ${plural(lim,"time")} placed. Check the times, then send.`;
+    const warn=sp<n&&sp?`${plural(sp,"split")} for ${plural(n,"swimmer")}. ${n-sp===1?"One swimmer has":n-sp+" swimmers have"} no time: add a missed time with Fix splits, or the Recorder can type it or mark DNS.`:sp>n?`${plural(sp,"split")} for ${plural(n,"swimmer")}. Delete the extra ${sp-n===1?"split":"splits"} with Fix splits, or the last ${sp-n===1?"one is":sp-n+" are"} not used.`:"";
+    body=`<div class="clock" id="mtclock" role="timer">${mtFmt(mtNow())}</div>
+      <div class="prompt ${done&&sp?"done":""}">${esc(prompt)}</div>
+      ${warn?`<div class="msg warn">${esc(warn)}</div>`:""}
+      <div class="pool">${lanes}</div>
+      <div class="row mtrow"><button type="button" class="btn" data-act="mtundo" ${M.taps.length&&!lk?"":"disabled"}>Undo last</button><button type="button" class="btn danger" data-act="mtreset" ${M.taps.length&&!lk?"":"disabled"}>Start again</button><button type="button" class="btn" data-act="mtfix" ${lk?"disabled":""}>Fix splits</button></div>
+      <button type="button" class="btn go big" data-act="mtsend" style="width:100%" ${done&&sp&&!lk?"":"disabled"}>Send to Recorder</button>`;
+  }else{
+    body=`<div class="msg ok">Race ${r.race} times sent to the Recorder.</div>
+      ${hasNext?`<button type="button" class="btn navy big" data-act="mtnext" style="width:100%">Next race</button>`:`<button type="button" class="btn big" disabled style="width:100%">Waiting for marshal</button>`}
+      ${nav}${back}`;
+  }
+  return `${lockBar()}<div class="phone">${top}${head}${body}</div>
+  ${A.s.flash?`<div class="flash ${A.s.flash.c}" role="status">${esc(A.s.flash.t)}</div>`:""}`;
+}
+/* keep the phone awake while the clock runs (a 200 m race is about 3 minutes) */
+let mtLock=null;
+async function mtWake(on){try{if(on&&navigator.wakeLock&&!mtLock){mtLock=await navigator.wakeLock.request("screen");mtLock.addEventListener("release",()=>{mtLock=null})}else if(!on&&mtLock){await mtLock.release();mtLock=null}}catch(e){mtLock=null}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&A.mt&&A.mt.phase==="run")mtWake(true)});
+if(A.mt.phase==="run")mtWake(true);
+function mtGo(){const M=A.mt;if(M.phase!=="ready"||locked())return;M.t0=Date.now();M.stopTap=0;M.phase="run";M.splits=[];M.taps=[];mtSave();mtWake(true);render()}
+function mtSplit(){const M=A.mt;if(M.phase!=="run")return;M.splits.push(mtNow());mtSave();render()}
+function mtStop(force){
+  const r=slipRace();const M=A.mt;if(!r||M.phase!=="run")return;
+  if(!force){M.stopTap=Date.now();if(M.splits.length<r.filled.length){A.modal={t:"mtStop",n:M.splits.length,of:r.filled.length};render();return}}
+  M.stopAt=M.stopTap||Date.now();M.phase="place";M.taps=[];A.modal=null;mtSave();mtWake(false);render();
+}
+function mtTap(l){
+  const r=slipRace();const M=A.mt;if(!r||M.phase!=="place")return;
+  const i=M.taps.indexOf(l);
+  if(i>=0)M.taps.splice(i,1);else if(M.taps.length<mtLimit(r))M.taps.push(l);
+  mtSave();render();
+}
+async function mtSend(force){
+  const r=slipRace();const M=A.mt;if(!r||M.phase!=="place"||locked())return;
+  const key=rid(r.race);
+  if(!force&&(A.slips[key]||r.nTimes>0||r.tapped>0)){A.modal={t:"mtReplace",race:r.race,judge:r.tapped>0};render();return}
+  A.modal=null;
+  const lanes={},read={};
+  M.taps.forEach((l,i)=>{lanes[l]={t:M.splits[i],st:"ok",src:"multi",keep:false,chk:false};read[l]=M.splits[i]});
+  const top=M.taps.slice(0,Math.min(4,r.filled.length));
+  const fin={order:top.map(l=>[l]),seq:top.slice(),at:Date.now(),dev:DEV};
+  const meta={race:r.race,multi:true,splits:M.splits.slice(),read,unsure:[],miss:false,missed:[],mism:false,two:false,at:Date.now(),dev:DEV,test:false};
+  A.slips[key]=meta;A.times[key]={lanes,src:"multi",checked:false};A.finish[key]=fin;recompute();
+  M.phase="sent";mtSave();
+  A.s.flash={c:"green",t:`Race ${r.race} sent to the Recorder`};render();
+  setTimeout(()=>{A.s.flash=null;render()},1100);
+  await w(()=>A.store.set("slips/"+key,meta));
+  await w(()=>A.store.set("times/"+key,{lanes,src:"multi",checked:false,by:DEV,at:Date.now()}));
+  await w(()=>A.store.set("finish/"+key,fin));
+}
+/* Fix splits: delete a double tap, add a missed time, or clear and time again */
+function mtFixSplits(sp){const M=A.mt;M.splits=sp.slice().sort((a,b)=>a-b);M.taps=[];mtSave();render()}
+MODALS.mtStop=M=>`<h2>Stop the clock?</h2><p style="margin:0">Only ${plural(M.n,"split")} for ${plural(M.of,"swimmer")}. Stop anyway?</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Keep timing</button><button type="button" class="btn redfill" data-act="mtstopok">Stop the clock</button></div>`;
+MODALS.mtReplace=M=>`<h2>Replace the Race ${M.race} results?</h2><p style="margin:0">Race ${M.race} already has ${M.judge?"times or Place Judge places":"times"}. These multitimer times and places will replace them.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn go" data-act="mtsendok">Replace the results</button></div>`;
+MODALS.mtFix=M=>{const sp=A.mt.splits;
+  return `<h2>Fix splits</h2><p class="muted" style="margin:0">Delete a double tap, or add a time that was missed. Changing the splits clears the places tapped so far.</p>
+  ${sp.length?`<ol class="splits">${sp.map((t,i)=>`<li><b>${i+1}</b><span style="flex:1">${fmtTime(t)}</span><button type="button" class="btn small danger" data-act="mtdel" data-i="${i}">Delete</button></li>`).join("")}</ol>`:`<p class="muted" style="margin:0">No splits yet.</p>`}
+  <label class="label" for="mtadd">Add a missed time</label>
+  <div class="row" style="flex-wrap:nowrap"><input class="timein" id="mtadd" inputmode="numeric" autocomplete="off" placeholder="Type time" value="${esc(M.raw||"")}" style="flex:1;min-height:48px"><button type="button" class="btn" data-act="mtaddok">Add</button></div>
+  ${M.err?`<span style="color:var(--bad);font-weight:700">${esc(M.err)}</span>`:`<span class="muted" style="font-size:.88rem">Type digits only: 12734 is 1:27.34.</span>`}
+  <div class="acts"><button type="button" class="btn danger" data-act="mtclear">Clear the clock and time again</button><button type="button" class="btn primary" data-act="closemodal">Done</button></div>`};
+setInterval(()=>{if(A.mt&&A.mt.phase==="run"){const c=document.getElementById("mtclock");if(c)c.textContent=mtFmt(mtNow())}},47);

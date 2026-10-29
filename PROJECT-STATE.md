@@ -1,6 +1,10 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version r. Replaces 29 October version q and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version t. Replaces 29 October version s and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version t): Jordan approved S1.40 (question 60 closed, decision 123). Swim Opt 2.3 built on staging (2.27): the digital multitimer. Checks 1, 2 (built-in browser, decision 124) and 3 PASSED. Not yet committed. Jordan must run the new supabase/01-setup.sql on the staging project so Time Slips can save places.
+
+Changes on 29 October 2026 (version s): Jordan asked for a digital multitimer for 100 m and 200 m races that finish at the far end (decision 121). The marshal still sends those heats as normal, so race numbers stay in step (122). Design S1.40 drawn (2.26), waiting for Jordan's OK (question 60). To be built as Swim Opt 2.3.
 
 Changes on 29 October 2026 (version r): Jordan answered question 59 (decision 120): keep the quiet clock check. Waiting for Jordan's test sheet PDF (macOS blocks reading Downloads; Jordan to move it into the SWIM 2027- App folder).
 
@@ -526,6 +530,31 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.27 Swim Opt 2.3: multitimer (29 October 2026, staging)
+
+Built to S1.40 (decisions 121 to 123), on the staging branch.
+- Time Slips: new Multitimer button. Multitimer screen: START, SPLIT, STOP, tap lanes in finish order, Send to Recorder, Next race. Code in js/ui3.js (renderMulti and the mt functions), actions in js/ui5.js, styles at the end of css/styles.css.
+- START, SPLIT and STOP act when the finger lands (pointerdown), not on release. Times are cut to hundredths, never rounded up. The clock counts from the START time and the phone stays awake while it runs. The clock and splits are kept on the phone, so a reload mid-race keeps them.
+- Send writes times (src "multi"), finish (the first 4 taps) and a slips record (multi: true, the splits; no photo). A race that already has times asks "Replace the Race N times?" first.
+- Recorder: "From multitimer" under each time; View slip photo is grey; the slip panel shows the splits.
+- Supabase: Time Slips may now write finish (01-setup.sql). Jordan to run it again on staging.
+- New test: tests/multitimer.py (25 checks: one tap one split, STOP asks, places, Fix splits, Next race, marshal on race 3 after two 100 m races, Recorder, reload mid-race comes back on the race being timed, phone width, tap sizes). PASSED. Engine, SQL and flow tests PASSED.
+- Check 1: baseline-mac/ is from Swim Opt 1.5, so 2.1 and 2.2 changes already differ there (368 screens). Compared instead with Swim Opt 2.2 shot on the same Mac: only the 48 slips-* screens differ, all from the new Multitimer button. PASSED as the approved S1.40 change.
+- Check 3 (fresh-eyes agent): run 1 FAILED (a reload mid-race could lose the clock when an earlier race had no slip) plus 4 should-fix items. All fixed: the race being timed stays on screen; stored state kept apart for test mode and live, and tied to the race's event and heat; Send also asks when the Place Judge has places ("Replace the Race N results?"); wake lock taken again after switching apps; Recorder no longer says "paper slip" for multitimer races; the clock stops at the STOP tap; changing splits clears the tapped places. Run 2 PASSED; its one live-only item (a reload on the sent screen could drop to ready while tables load) was then fixed.
+- Check 2: Claude in Chrome could not screenshot or read any page, even a plain page with no scripts (an extension fault). At Jordan's request this once (decision 124) it ran in the desktop app's built-in browser instead, with real clicks: organiser loads 620 test students; Marshal (iPad 1180 x 820) sends 100 m Girls 13 heats of 6 and 4; Time Slips (phone 390 x 844, light then dark) times Race 1 (START, splits one per click, STOP asks with 5 of 6, Keep timing, 6th split, STOP), places 4, 2, 1, 6, 3, 5, sends; Next race, times Race 2 in dark, places, sends; Marshal's next race is 3; Recorder (MacBook 1512 x 982) shows the places, "From multitimer", View slip photo grey, the splits panel. Stored times and places checked against the taps. No console errors. PASSED.
+- Notes for Jordan: not yet tried on a real phone (a long firm press, or trying to scroll from the START/SPLIT buttons, counts as a tap); long names are cut short in the phone lanes, as on the Place Judge; small additions not on the S1.40 boards: Check race and Race overall on the ready screen, an info line when a race already has results, Back to slip photo on the sent screen, the Recorder's Multitimer splits panel.
+
+### 2.26 S1.40 Multitimer design (29 October 2026, approved by 123)
+
+Canvas "CCAS Swim S1.40": https://claude.ai/artifact/NoiC1YVYqq57op4Lqf28m9 (source `design/S1.40-multitimer.html`). Six phone boards, light and dark:
+1. Time Slips screen as now, plus a full-width "Multitimer" button under the camera.
+2. Ready: big clock 0:00.00, green START, SPLIT grey, "Back to slip photo".
+3. Running: START becomes red STOP; yellow SPLIT adds a time to the split list in finish order; "Undo last split".
+4. After STOP: pool lanes like the Place Judge; tap lanes in finish order and each tap takes the next split time. Top 4 get medal colours and count as the Place Judge's places; 5th and on get a plain solid ring.
+5. All placed: "Send to Recorder" (green). Times reach the Recorder like a slip, marked "From multitimer", no photo.
+6. Sent: Next race (stays on the multitimer), Check race, Race overall.
+Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a double tap or adds a missed time; the clock counts from the START time so it survives a screen lock.
+
 ### 2.25 Swim Opt 2.2 (29 October 2026, staging)
 
 - Marshal (113): "Change an earlier race" link at the bottom of the start screen once a race is sent (hidden when locked or in a past year). It lists sent races ("N lanes filled"); picking one opens that race's pool screen with Done, the RACE badge and an amber "Changing Race N. Changes save straight away. A time already in a lane stays with that lane." The usual name list (+ Not on the list, Clear lane, Close); swimmers in other heats are greyed ("Other heat"). Saves straight away to heats/<race> (lanes and an "edited" time); the race keeps its number; nothing is sent to the starter again. A race already Times checked goes back to "To check" (allowing 2 minutes for device clocks). A save the server refuses is undone on screen.
@@ -662,6 +691,10 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 100. (Answers question 3, 28 October 2026) The file for the next level is a HY3 file, not RE1. This replaces the RE1 plan in 2.4 and the Write RE1 file button on Carnival Organiser section 7 (to be renamed once the sample is checked; the board label stays until Jordan OKs the change). DOB is still matched on the organiser's computer at export and never stored.
 
 ---
+121. (29 October 2026) Digital multitimer for 100 m and 200 m races that finish at the far end: one person on the Time Slips phone presses START, SPLIT for each touch, STOP, then taps lanes in finish order to give each split a lane, then sends to the Recorder and presses Next race. Design S1.40; build as Swim Opt 2.3.
+122. (29 October 2026) For multitimer races the marshal still marshals and sends every heat as normal, so the shared race counter keeps race numbers in step when the 50 m races start again.
+123. (29 October 2026, answers question 60) S1.40 approved as drawn. For multitimer races the multitimer person's first 4 taps are the places (they replace the Place Judge for that race). Next race stays on the multitimer until Back to slip photo. Swim Opt 2.3.
+124. (29 October 2026) Check 2 for Swim Opt 2.3 ran in the desktop app's built-in browser instead of Claude in Chrome, because the Chrome extension could not screenshot or read pages. A one-off: Claude in Chrome stays the rule.
 
 ## 4. Rules and constraints
 
@@ -684,7 +717,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 ### 4.3 Writing style (chat, files, app text)
 - Australian spelling. Simple, direct language. No em dashes (en dashes fine in ranges). No emojis. Avoid Jordan's banned words.
 - Money in AUD, rounded to the nearest dollar.
-- Number every design change S X.Y (next is S1.39). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (next is Swim Opt 2.0, in Claude Code).
+- Number every design change S X.Y (next is S1.41). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (next is Swim Opt 2.0, in Claude Code).
 - Use the 620 test students for all testing and demo data (80).
 - Ask outstanding questions each time. Remind Jordan of the handover routine when a chat gets long.
 - Update PROJECT-STATE straight away after any decision and save it to Project Knowledge with today's date and a version letter.
@@ -719,6 +752,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 ## 6. Unresolved questions (ask Jordan)
 
 Ask now:
+- (Closed by 123) 60. S1.40 multitimer design: OK as drawn?
 
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.

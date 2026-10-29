@@ -82,7 +82,7 @@ begin
   return case tbl
     when 'heats'  then r = 'marshal'
     when 'extras' then r = 'marshal'
-    when 'finish' then r = 'judge'
+    when 'finish' then r in ('judge', 'slips')  -- slips: multitimer places (decision 121)
     when 'times'  then r in ('recorder', 'slips')
     when 'slips'  then r = 'slips'
     when 'photos' then r = 'slips'
