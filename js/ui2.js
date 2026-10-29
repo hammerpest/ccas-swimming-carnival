@@ -87,7 +87,7 @@ function renderMarshalLanes(){
     <div class="pool">${lanes}</div>`;
 }
 /* the name list for one lane: the Marshal's pool screens and the Recorder's "Add swimmer to lane" */
-function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct){
+function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct,usedLabel){
   const m=A.m;const list=eligible(k,x,g);const q=m.filter.toLowerCase();
   const shown=q?list.filter(s=>(listName(s)).toLowerCase().includes(q)):list;
   return `<div class="picklist" role="listbox" aria-label="Swimmers for lane ${l}">
@@ -95,7 +95,7 @@ function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct){
           ${TYPE[k].relay||!clearAct?"":`<button type="button" class="btn small" data-act="maddnew" data-l="${l}">+ Not on the list</button>`}
           ${clearAct?`<button type="button" class="btn small" data-act="${clearAct}" data-l="${l}">Clear lane</button>`:""}
           <button type="button" class="btn small" data-act="${clearAct?"mclose":"closemodal"}">${clearAct?"Close":"Cancel"}</button></div>
-        ${shown.length?shown.map(s=>{const dis=used.has(s.id)||(inHeat.has(s.id)&&id!==s.id);return `<button type="button" class="pick" data-act="${setAct}" data-l="${l}" data-id="${esc(s.id)}" ${dis?"disabled":""}>${hdot(s.h)}<span>${esc(listName(s))}</span>${used.has(s.id)?`<span class="muted" style="margin-left:auto;font-size:.8rem">Earlier heat</span>`:inHeat.has(s.id)&&id!==s.id?`<span class="muted" style="margin-left:auto;font-size:.8rem">In this heat</span>`:""}</button>`}).join(""):`<div class="muted" style="padding:10px">No names match.</div>`}
+        ${shown.length?shown.map(s=>{const dis=used.has(s.id)||(inHeat.has(s.id)&&id!==s.id);return `<button type="button" class="pick" data-act="${setAct}" data-l="${l}" data-id="${esc(s.id)}" ${dis?"disabled":""}>${hdot(s.h)}<span>${esc(listName(s))}</span>${used.has(s.id)?`<span class="muted" style="margin-left:auto;font-size:.8rem">${usedLabel||"Earlier heat"}</span>`:inHeat.has(s.id)&&id!==s.id?`<span class="muted" style="margin-left:auto;font-size:.8rem">In this heat</span>`:""}</button>`}).join(""):`<div class="muted" style="padding:10px">No names match.</div>`}
       </div>`;
 }
 /* Swim Opt 2.2 (decisions 113 and 114): change who is in a lane on a race already sent. Saves straight
@@ -108,9 +108,11 @@ function heatUsed(H){
 async function setHeatLane(race,l,id){
   const H=A.heats.find(h=>h.race===race);if(!H)return false;
   if(locked()){toast("Results are locked.");return false}
-  const lanes={[l]:id||null};const edited=Date.now();
+  const lanes={[l]:id||null};const edited=Date.now();const was={lanes:H.lanes,edited:H.edited};
   H.lanes=Object.assign({},H.lanes||{},lanes);H.edited=edited;recompute();render();
-  return await w(()=>A.store.update("heats/"+rid(race),{lanes,edited}));
+  const ok=await w(()=>A.store.update("heats/"+rid(race),{lanes,edited}));
+  if(!ok){H.lanes=was.lanes;H.edited=was.edited;recompute();render()}
+  return ok;
 }
 function renderMarshalEdit(){
   const m=A.m;const H=A.heats.find(h=>h.race===m.edit);
@@ -121,7 +123,7 @@ function renderMarshalEdit(){
   let lanes="";
   for(let l=1;l<=L;l++){
     const id=ln[l];const p=id?A.R.who(id):null;
-    const pick=m.open===l?laneList(l,H.k,H.x,H.g,used,inHeat,id,"meset","meclear"):"";
+    const pick=m.open===l?laneList(l,H.k,H.x,H.g,used,inHeat,id,"meset","meclear","Other heat"):"";
     lanes+=`<div class="lane" style="position:relative"><div class="blk">${l}</div>
       <button type="button" class="body" data-act="mlane" data-l="${l}" aria-label="Lane ${l}">${p?`<span class="nm">${hdot(p.h)}<span>${esc(pname(p))}</span></span>`:`<span class="empty">Empty</span>`}</button>
       <div class="wall" aria-hidden="true"></div>${pick}</div>`;

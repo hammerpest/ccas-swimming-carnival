@@ -217,7 +217,8 @@ async function onPhoto(file){
 /* anything odd is sent, never held up: doubtful lanes go yellow for the Recorder to check against the
    photo and accept (decision 118). Only a slip whose race cannot be told is refused. */
 async function keepPhoto(r,t,key,read,unsure,miss,missed,img,two){
-  A.s.pend=A.s.pend||{};clearTimeout(A.s.pend[key]);delete A.s.pend[key];
+  A.s.pend=A.s.pend||{};
+  if(A.s.pend[key]){clearTimeout(A.s.pend[key]);delete A.s.pend[key];A.s.queued=Math.max(0,(A.s.queued||1)-1);if(A.s.waiting)delete A.s.waiting[r.race]}
   /* slip lanes should match the marshalled lanes; when some slip lanes have no swimmer and some
      swimmers have no slip time, it may be the wrong slip or a misread lane: warn, never hide it */
   const mism=t==="real"&&Object.keys(read.lanes).some(l=>!r.lanes[l])&&r.filled.some(l=>read.lanes[l]==null);
@@ -245,7 +246,7 @@ async function sendSlip(key,img,meta,lanes){
 MODALS.pickLane=M=>{const r=A.R.races.get(M.race);if(!r)return `<p>Race not found.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">Close</button></div>`;
   const H=A.heats.find(h=>h.race===M.race)||{};const t=(r.times||{})[M.l];
   return `<h2>Add swimmer to lane ${M.l}</h2><p class="muted" style="margin:0">Race ${M.race}, ${esc(r.label)}, heat ${r.heat}.${t&&t.t!=null?` The slip time ${fmtTime(t.t)} becomes theirs.`:""}</p>
-  <div style="position:relative;min-height:320px">${laneList(M.l,r.k,r.x,r.g,heatUsed(H),new Set(Object.values(H.lanes||{}).filter(Boolean)),null,"rsetlane",null).replace('class="picklist"','class="picklist" style="position:static;box-shadow:none"')}</div>`};
+  <div style="position:relative;min-height:320px">${laneList(M.l,r.k,r.x,r.g,heatUsed(H),new Set(Object.values(H.lanes||{}).filter(Boolean)),null,"rsetlane",null,"Other heat").replace('class="picklist"','class="picklist" style="position:static;box-shadow:none"')}</div>`};
 MODALS.replaceSlip=M=>`<h2>Replace the Race ${M.race} slip?</h2><p style="margin:0">Race ${M.race} already has a slip. This photo will replace its times.</p><p style="margin:0">Check the race number on the paper slip says ${M.race}.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn go" data-act="sreplace">Replace the slip</button></div>`;
 MODALS.overall=M=>{const r=A.R.races.get(M.race);const G=r&&A.R.groups.get(r.key);
   return `<h2>Race overall</h2><div class="muted">${esc(r?r.label:"")}</div>${overallTable(G,{hris:false})}<div class="acts"><button type="button" class="btn primary" data-act="closemodal">Close</button></div>`};

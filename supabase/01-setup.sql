@@ -139,6 +139,19 @@ create policy "job can add" on public.heats for insert to authenticated
 create policy "job can change" on public.heats for update to authenticated
   using (private.can_write('heats') or private.recorder_heat(id))
   with check (private.can_write('heats') or private.recorder_heat(id));
+-- The Recorder may change only the lanes (and the time of the change), nothing else in a race.
+create or replace function private.heats_recorder_lanes_only() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not private.can_write('heats') and private.my_role() = 'recorder'
+     and (new.doc - 'lanes' - 'edited') is distinct from (old.doc - 'lanes' - 'edited') then
+    raise exception 'The Recorder can only change lanes' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+drop trigger if exists heats_recorder_lanes_only on public.heats;
+create trigger heats_recorder_lanes_only before update on public.heats
+  for each row execute function private.heats_recorder_lanes_only();
 
 -- ---------- PINs ----------
 -- Every wrong PIN is counted. More than 5 wrong in 5 minutes on one device,

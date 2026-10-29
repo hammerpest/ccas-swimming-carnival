@@ -100,6 +100,8 @@ check(d["lanes"]["1"]["t"] == 3412 and d["lanes"]["2"]["t"] == 3500 and d["check
 check(not r.ok("insert into heats values ('r0009', '{}')"), "recorder cannot write heats")
 check(r.ok("select doc_update('heats', 'r0001', '{\"lanes\":{\"7\":\"t007\"}}')"), "recorder can fill a lane on a race already sent (2.2)")
 check(not r.ok("select doc_update('heats', 'r0042', '{\"lanes\":{\"1\":\"t001\"}}')"), "recorder cannot make a new race (2.2)")
+check(not r.ok("select doc_update('heats', 'r0001', '{\"race\":99}')"), "recorder can change only lanes, not the race (2.2)")
+check(m.ok("select doc_update('heats', 'r0001', '{\"heat\":1}')"), "marshal can still change the whole race (2.2)")
 check(not r.ok("select doc_update('pins', 'x', '{}')"), "doc_update refuses unknown collections")
 
 # judge, slips, announcer

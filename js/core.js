@@ -159,8 +159,9 @@ function compute(S){
     const need=Math.min(4,filled.length);
     const dh=(F.order||[]).map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
     const tapped=Object.keys(placeTaps).filter(l=>lanes[l]).length;
-    /* a lane changed after Times checked sends the race back to "To check" (decision 113) */
-    const checked=!!T.checked&&!(h.edited&&T.checkedAt&&h.edited>T.checkedAt);
+    /* a lane changed after Times checked sends the race back to "To check" (decision 113); two minutes
+       either way allows for device clocks that differ, so a doubtful change is checked again */
+    const checked=!!T.checked&&!(h.edited&&T.checkedAt&&h.edited>T.checkedAt-120000);
     let tstatus="Waiting for slip";
     if(nTimes)tstatus=checked?"Checked":"To check";
     const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,
