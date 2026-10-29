@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version b. Replaces 29 October version a and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version c. Replaces 29 October version b and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version c): Check 3 (fresh-eyes review) PASSED, see 2.17. All three checks now pass on the GitHub Pages build. New question 55: fix the contrast and small tap targets that were already in the approved look?
 
 Changes on 29 October 2026 (version b): Check 2 (Claude in Chrome walk-through) PASSED on the staging link, see 2.16. Decision 108 recorded in version a's second save.
 
@@ -419,6 +421,17 @@ Run in Jordan's Chrome on https://hammerpest.github.io/ccas-swimming-carnival/st
 - Not covered here: dark theme (it follows the Mac's own setting, which Claude may not change; check 1 covers dark pixel for pixel); Start a new carnival and past years (skipped so the staging year was not archived; tests/supabase_live.py covers them on staging); the main link (same files as staging).
 - Staging now holds test Races 1 to 4 from this walk-through. tests/supabase_live.py clears them.
 
+### 2.17 Check 3: fresh-eyes review (29 October 2026, PASSED)
+
+- 384 new screenshots taken from the live staging link in test mode (tests/baseline_shots.py). Against baseline-mac: 0 different (so check 1 also passes on the published build).
+- A separate agent that did not build the app compared them with baseline/. Verdict: PASS, the look has not changed. Only differences: text edge smoothing (problem 15) and the date fields showing in Australian order (the known "date fields follow the browser's language" quirk). It also rebuilt the untouched Swim Opt 1.5 and shot the live page itself: pixel-identical.
+- No sideways scroll at phone width on any of the 48 screens, both themes. Dark theme fully dark on every screen.
+- Found, but ALREADY IN THE APPROVED LOOK (same in Swim Opt 1.5; css/styles.css is unchanged), so not fixed without Jordan's OK (question 55):
+  - Dark theme contrast below WCAG AA: white text on the green buttons (Go, Confirm this heat, Times are right, the slip flash) 1.83:1; white on the red Start a new carnival button 2.24:1; house dot letters 2.03 to 2.80:1.
+  - Both themes: bronze medal number 3.14:1; NEW RECORD tag 3.44:1.
+  - Tap targets under 48 px: the Job pill and header links (39 to 40 tall), Sign out link (31), organiser fields and small buttons (30 to 45), Recorder time boxes (43), DNS and DQ (40), Keep and Fix (36), Results tabs and filters (44), Marshal list buttons on a phone (36), Time Slips test buttons (44).
+- Not covered: real iPads and Safari (step 6), hover and focus states.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -597,6 +610,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
+- 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is?
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
@@ -609,8 +623,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 1. DONE: Swim Opt 2.0-c (2.15). Both links live.
 2. DONE (decision 108): main uses the staging Supabase project until the live project is made.
 3. DONE (2.16): Check 2, Claude in Chrome walk-through on the staging link. PASSED.
-4. NEXT: Check 3: a separate fresh-eyes agent compares baseline/ with new screenshots (both themes, no sideways scroll on a phone, contrast, tap targets).
-5. Send Jordan the staging link, a one-page note of what changed, and the check results.
+4. DONE (2.17): Check 3, fresh-eyes review. PASSED.
+5. NEXT: Send Jordan the staging link, a one-page note of what changed, and the check results.
 6. Try the app on real iPads and a phone at school (two marshals, two Recorders, the phone losing signal).
 7. When the slip photos arrive (question 30), build and test the real slip reader (Tesseract.js) to the Swiss Timing layout, easy to adjust.
 8. When the HY3 sample arrives (question 3), build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
