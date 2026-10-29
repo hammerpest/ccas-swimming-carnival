@@ -2,8 +2,8 @@
 const JOBS=[
   {k:"marshal",n:1,name:"Marshal",badge:"MARSHAL",dev:"iPad",desc:"Put swimmers in lanes and send each heat"},
   {k:"judge",n:2,name:"Place Judge",badge:"PLACE JUDGE",dev:"iPad",desc:"Tap the top places in each heat"},
-  {k:"recorder",n:3,name:"Recorder",badge:"RECORDER",dev:"MacBook",desc:"Check times and press Times checked"},
-  {k:"slips",n:4,name:"Time Slips",badge:"TIME SLIPS",dev:"Phone",desc:"Photograph each printed time slip"},
+  {k:"slips",n:3,name:"Time Slips",badge:"TIME SLIPS",dev:"Phone",desc:"Photograph each printed time slip"},
+  {k:"recorder",n:4,name:"Recorder",badge:"RECORDER",dev:"MacBook",desc:"Check times and press Times checked"},
   {k:"announcer",n:5,name:"Announcer",badge:"ANNOUNCER",dev:"iPad or laptop",desc:"Read results, records and house points"}
 ];
 const ORG_JOB={k:"organiser",n:6,name:"Carnival Organiser",badge:"CARNIVAL ORGANISER",dev:"MacBook",desc:"Organiser only"};
@@ -23,7 +23,7 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;",
 function rid(n){return "r"+String(n).padStart(4,"0")}
 function pinHash(p){let h=2166136261;const s="ccas-swim:"+p;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
 /* One PIN per job (decision 88). The organiser PIN opens every job. */
-const PIN_ROLES=[["marshal","Marshal","1111"],["judge","Place Judge","2222"],["recorder","Recorder","3333"],["slips","Time Slips","4444"],["announcer","Announcer","5555"],["org","Carnival Organiser","9999"]];
+const PIN_ROLES=[["marshal","Marshal","1111"],["judge","Place Judge","2222"],["slips","Time Slips","4444"],["recorder","Recorder","3333"],["announcer","Announcer","5555"],["org","Carnival Organiser","9999"]];
 const DEFAULT_PINS=Object.fromEntries(PIN_ROLES.map(([k,,p])=>[k,pinHash(p)]));
 function pins(){const c=A.cfg.pins||{};return Object.fromEntries(PIN_ROLES.map(([k])=>[k,c[k]||DEFAULT_PINS[k]]))}
 function canOpen(k){if(A.role==="org")return true;if(!A.role)return false;if(k===A.role)return true;return A.role==="announcer"&&(k==="results"||k==="houses")}
