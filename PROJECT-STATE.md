@@ -1,8 +1,10 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version m. Replaces 29 October version l and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version n. Replaces 29 October version m and all earlier PROJECT-STATE files.
 
-Changes on 29 October 2026 (version m): Jordan answered question 58: the reader should be fast, and anything odd is checked and accepted by the Recorder (decision 118). Reader rounds stopped. Check 3 runs 5 and 6 fixes built; odd slips are now sent with every lane yellow instead of refused. On staging only; main has 2.1 from version k.
+Changes on 29 October 2026 (version n): At Jordan's request, the latest Swim Opt 2.1 (reader with decision 118) promoted to main. Main and staging are the same again.
+
+Changes on 29 October 2026 (version m): Jordan answered question 58: the reader should be fast, and anything odd is checked and accepted by the Recorder (decision 118). Reader rounds stopped. Check 3 runs 5 and 6 fixes built; odd slips are now sent with every lane yellow instead of refused. Promoted to main in version n.
 
 Changes on 29 October 2026 (version l): Check 3 run 5 on 2.1 (main): look PASS, replace box PASS; reader FAIL only on two-slip photos that were flagged but not refused (2.23). Two small reader fixes on staging only. Question 58 open.
 
