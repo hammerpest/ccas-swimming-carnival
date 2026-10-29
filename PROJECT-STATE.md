@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version p. Replaces 29 October version o and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version q. Replaces 29 October version p and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version q): Jordan ran the new 01-setup.sql on staging (checked: the Recorder cannot make a race or change its number). Job order swapped (decision 119), on staging. Jordan confirmed how to read the slip with an annotated picture (same as decision 110); question 59 about the clock check.
 
 Changes on 29 October 2026 (version p): Swim Opt 2.2 built on staging (decisions 113 and 114) with three small fixes (2.25). Check 3 found five small things; all fixed. Waiting for Jordan to run the new supabase/01-setup.sql on the staging project, then his own tests; check 2 still to run.
 
@@ -649,6 +651,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 116. (29 October 2026) No time-of-day check on slips: the slip's clock time is never compared with when the race was sent.
 117. (29 October 2026, answers question 57) When a race already has a slip, a new photo is read and then the phone asks "Replace the Race N slip?" ("Race N already has a slip. This photo will replace its times. Check the race number on the paper slip says N.") with "< Back" and "Replace the slip". So a slip read as the wrong race after going back to an earlier race never overwrites a good one without a yes. Built in Swim Opt 2.1.
 118. (29 October 2026, answers question 58) The slip reader should be fast. When a slip is odd or unclear, its times go through marked yellow and the Recorder checks them against the photo and accepts them; the phone only asks for another photo when it cannot tell which race the slip is for. No more reader test rounds for now; real slip photos at the pool (question 30) are the next test.
+119. (29 October 2026) Job order follows the day: 1 Marshal, 2 Place Judge, 3 Time Slips, 4 Recorder, 5 Announcer (6 Carnival Organiser). Home tiles, the Job menu and the organiser's PIN table follow it. PINs unchanged (Time Slips 4444, Recorder 3333). Swim Opt 2.2.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -724,6 +727,7 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - (Closed by 115) 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
 - (Closed by 117) 57. A faded race digit can make a slip read as another race (23 read as 3). Safe in the normal flow; a risk only if the phone has gone back to that earlier race. Option: when a race already has a slip, a new photo asks "Replace the Race 3 slip?" first. Add that, or accept as is?
 - (Closed by 118) 58. Check 3 has not passed the reader in five runs; the remaining cases (two slips in one photo, all flagged yellow) need the Recorder to look at the photo. Accept 2.1 as it is (it is on main), or keep working on the reader? Real slip photos at the pool remain the best test (question 30).
+- 59. Jordan's annotated slip says ignore the clock numbers (09:19:41.700). The reader never uses them as times, but uses them quietly as a check (stop minus start should equal the time; a mismatch makes the lane yellow, and helps spot a second slip). Keep the check, or ignore the clocks completely?
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
