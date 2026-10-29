@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version o. Replaces 29 October version n and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version p. Replaces 29 October version o and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version p): Swim Opt 2.2 built on staging (decisions 113 and 114) with three small fixes (2.25). Check 3 found five small things; all fixed. Waiting for Jordan to run the new supabase/01-setup.sql on the staging project, then his own tests; check 2 still to run.
 
 Changes on 29 October 2026 (version o): Section 7 (next steps) rewritten to match where things stand. No new decisions.
 
@@ -520,6 +522,16 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.25 Swim Opt 2.2 (29 October 2026, staging)
+
+- Marshal (113): "Change an earlier race" link at the bottom of the start screen once a race is sent (hidden when locked or in a past year). It lists sent races ("N lanes filled"); picking one opens that race's pool screen with Done, the RACE badge and an amber "Changing Race N. Changes save straight away. A time already in a lane stays with that lane." The usual name list (+ Not on the list, Clear lane, Close); swimmers in other heats are greyed ("Other heat"). Saves straight away to heats/<race> (lanes and an "edited" time); the race keeps its number; nothing is sent to the starter again. A race already Times checked goes back to "To check" (allowing 2 minutes for device clocks). A save the server refuses is undone on screen.
+- Recorder (114): the warning for slip times in lanes with no swimmer has "Add swimmer to lane N" buttons; each opens "Add swimmer to lane N" with the name list for that race; picking fills the lane, the slip time becomes theirs, and the warning clears. The organiser can do both.
+- Server (supabase/01-setup.sql): private.recorder_heat lets the Recorder change a heat only if it already exists, not when locked or in a past year; a trigger lets the Recorder change only lanes (and the edit time). The Marshal and organiser are unchanged. tests/sql_test.py: all passed, including 5 new checks. Jordan must run the new 01-setup.sql on the staging project (SQL Editor) for the Recorder's Add swimmer to save in live mode.
+- Small fixes: "Not on slip" placeholder fits the Recorder time box; the Time Slips "Check race" box is titled "Check race"; the No signal practice button can no longer overwrite a newer slip, and its banner clears on Replace.
+- Check 1 style: 384 screens against the last 2.1 set: only the Marshal start screen changed (the link); nothing under 48 px; no sideways scroll. Engine tests 45 of 45; six-device flow no errors.
+- Check 3 (fresh agent, test mode): FAIL on small things, all fixed and retested: stuck No signal banner after Replace (new in 2.2), "Earlier heat" label while changing a race, the Recorder could change more than lanes on the server, a refused save stayed on screen, device clock differences.
+- Not yet: check 2 in Chrome on staging (needs the new server rules); check 3 not re-run after the fixes.
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -723,11 +735,11 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 on both links (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); checks 2 and 3 (2.16 to 2.24).
 
-1. NEXT: Swim Opt 2.2 (decisions 113 and 114): Marshal "Change an earlier race"; Recorder alert and "Add swimmer to lane" (server rule: Recorder can fill or change lanes on races already sent). Then checks 1 to 3, staging first, then main.
+1. NEXT: Swim Opt 2.2 is on staging (2.25). Jordan runs the new supabase/01-setup.sql on the staging project, tests on staging, then check 2 in Chrome; then promote to main.
 2. Jordan tests 2.1 on the site; any changes as Swim Opt 2.x.
 3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
-5. Small known items: "Not on slip" placeholder cut to "Not on sl" in the Recorder time box (since 2.0); Time Slips "Check race" opens a box titled "Go to race" (since 2.0); the No signal practice button can overwrite a replaced slip within 8 seconds (practice only).
+5. (Done in 2.2) Small known items.
 6. When the records list arrives (question 36): load it in Carnival Organiser section 6.
 7. When the HY3 sample arrives (question 3): build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
 8. Privacy summary: update for kept years (problem 14) and send to the principal and ICT (question 1). Real names only once approved.
