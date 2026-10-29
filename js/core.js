@@ -260,7 +260,10 @@ function compute(S){
    "problems" lists lines that could not be used; "missed" lists lanes with a stop line but no time.
    A photo showing more than one slip (a second "LANE MODE" or "start", even on the same line, or any
    printed lane or time above the "LANE MODE" line) sets "twoSlips": the phone then asks for a photo of
-   one slip only, so another race's lanes are never mixed in. More than one number after the slash
+   one slip only, so another race's lanes are never mixed in. A real slip prints each lane once, one
+   time per line, in finish order, so a lane twice, two times on one line, or a time more than a second
+   faster than the one above it also mean two slips; a smaller dip makes both lanes unsure.
+   More than one number after the slash
    (for example a number written on the slip) makes the race number unsure.
    Input is the text, or the reader's lines with a confidence (0 to 100) for each word. */
 const SLIP_CONF=70;
@@ -294,7 +297,7 @@ function parseSlip(input,maxLanes){
   const noTime=()=>{if(lane!=null){problems.push("Lane "+lane+": no time read");if(!missed.includes(lane))missed.push(lane)}lane=null};
   for(const L of lines){
     const line=L.t;
-    heads+=(line.match(/M[O0]DE/gi)||[]).length;if((line.match(/\bs\s*t\s*[o0]\s*p\b/gi)||[]).length>1)starts+=2;starts+=Math.max(0,(line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length-1);
+    heads+=(line.match(/M[O0]DE/gi)||[]).length;if((line.match(/\bs\s*t\s*[o0]\s*p\b/gi)||[]).length>1||(line.match(/\d[.,]\d{2}\s*s/gi)||[]).length>1)starts+=2;starts+=Math.max(0,(line.match(/\bst\s*a\s*r?\s*t\b/gi)||[]).length-1);
     const rm=line.match(/M[O0]DE[^\/]*\/([\s\dOolI|]*)$/i);
     if(rm&&race==null){const ns=rm[1].trim().split(/\s+/).filter(Boolean);const n=ns[ns.length-1];if(n){race=+slipNum(n);raceLow=ns.length>1||slipLow(L,/\d|[OolI|]$/)&&(!L.w||(()=>{const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)})())}continue}
     if(/^st\s*a\s*r?\s*t\b/i.test(line)){starts++;if(starts===1)start=slipClock(line);continue}
@@ -306,7 +309,7 @@ function parseSlip(input,maxLanes){
     if(tm&&lane!=null){
       const cs=slipTime(tm[1]);
       if(cs==null){noTime();continue}
-      if(lanes[lane]!=null){problems.push("Lane "+lane+" twice");doubt(lane)}
+      if(lanes[lane]!=null){problems.push("Lane "+lane+" twice");doubt(lane);starts+=2}
       else{lanes[lane]=cs;order.push(lane);
         if(laneLow||slipLow(L,/\d[.,]\d/))doubt(lane);
         if(start==null||clock==null)doubt(lane);
@@ -317,6 +320,7 @@ function parseSlip(input,maxLanes){
     else if(/\bs\s*e\s*c\b/i.test(line)){problems.push("A time not read");noTime()}
   }
   noTime();
+  for(let i=1;i<order.length;i++){const d=lanes[order[i]]-lanes[order[i-1]];if(d<-100)starts+=2;else if(d<0){doubt(order[i]);doubt(order[i-1])}}
   return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,head:heads>0,twoSlips:heads>1||starts>1||(above&&heads>0)};
 }
 
