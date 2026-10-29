@@ -42,7 +42,7 @@ function slipImage(src){return new Promise((ok,bad)=>{const i=new Image();i.onlo
 function slipMerge(a,b){
   const r={race:null,raceUnsure:false,twoSlips:!!(a.twoSlips||b.twoSlips),lanes:{},order:[],unsure:[],problems:[],missed:[],text:a.text+"\n----\n"+b.text};
   if(a.race!=null&&b.race!=null){r.race=a.race;if(a.race!==b.race||(a.raceLow&&b.raceLow))r.raceUnsure=true}
-  else{const one=a.race!=null?a:b;r.race=one.race;if(one.race!=null&&one.raceLow)r.raceUnsure=true}
+  else{const one=a.race!=null?a:b,other=one===a?b:a;r.race=one.race;if(one.race!=null&&(one.raceLow||other.head))r.raceUnsure=true}
   const doubt=l=>{if(!r.unsure.includes(l))r.unsure.push(l)};
   for(const l of a.order.concat(b.order.filter(x=>!a.order.includes(x)))){
     const inA=a.lanes[l]!=null,inB=b.lanes[l]!=null;

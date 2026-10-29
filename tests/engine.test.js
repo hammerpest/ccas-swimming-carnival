@@ -78,3 +78,6 @@ sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 s
 a(sl.twoSlips&&sl.race===1,'slip: two slips in one photo are spotted');
 sl=C.parseSlip('LANE MODE 1/ 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\n.  sec',8);
 a(sl.problems.includes('A time not read'),'slip: a sec line with no time is a problem');
+a(C.parseSlip('LANE MODE 1/ 20   LANE MODE 1/ 21\nstart 09:00:00.000 start 09:03:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: two slips side by side are spotted');
+a(C.parseSlip('48.03 sec\nTIMING Time2\nLANE MODE 1/ 5\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).twoSlips,'slip: the end of the previous slip above the header is spotted');
+a(C.parseSlip('LANE MODE 1/ 21   12\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 sec',8).raceLow,'slip: a second number after the slash makes the race unsure');
