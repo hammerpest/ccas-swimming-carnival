@@ -73,7 +73,7 @@ function renderMarshalLanes(){
       const list=eligible(m.k,m.x,m.g);const q=m.filter.toLowerCase();
       const shown=q?list.filter(s=>(listName(s)).toLowerCase().includes(q)):list;
       pick=`<div class="picklist" role="listbox" aria-label="Swimmers for lane ${l}">
-        <div class="acts">${TYPE[m.k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:44px" autocomplete="off">`}
+        <div class="acts">${TYPE[m.k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:48px" autocomplete="off">`}
           ${TYPE[m.k].relay?"":`<button type="button" class="btn small" data-act="maddnew" data-l="${l}">+ Not on the list</button>`}
           <button type="button" class="btn small" data-act="mclear" data-l="${l}">Clear lane</button>
           <button type="button" class="btn small" data-act="mclose">Close</button></div>

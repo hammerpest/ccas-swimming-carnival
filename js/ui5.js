@@ -23,7 +23,7 @@ OSEC.details=()=>{const c=A.cfg;
   return `<h2>Carnival details</h2><div class="fields">
     <label style="grid-column:1/-1">Carnival name<input id="cName" value="${esc(c.name)}"></label>
     <label>Date<input id="cDate" type="date" value="${esc(c.date)}"></label>
-    <label style="justify-content:flex-end"><span class="row" style="gap:8px;color:var(--ink)"><input type="checkbox" id="cDateOk" ${c.dateConfirmed?"checked":""} style="width:22px;height:22px"> Date confirmed</span></label>
+    <label style="justify-content:flex-end"><span class="row" style="gap:8px;color:var(--ink);min-height:48px"><input type="checkbox" id="cDateOk" ${c.dateConfirmed?"checked":""} style="width:22px;height:22px"> Date confirmed</span></label>
     <label>Age as at<input id="cAge" type="date" value="${esc(c.ageDate)}"></label>
     <label>Pool<input id="cPool" value="${esc(c.pool)}"></label>
     <label>Pool length<select id="cLen"><option value="50" ${c.poolLen!=="25"?"selected":""}>50 m (LCM)</option><option value="25" ${c.poolLen==="25"?"selected":""}>25 m (SCM)</option></select></label>

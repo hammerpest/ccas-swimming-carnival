@@ -144,7 +144,7 @@ function renderSlips(){
     <div class="panel stack" style="gap:8px;background:var(--sunk);border-color:transparent">
       <span class="label">Slip reader: test mode</span>
       <p style="margin:0;font-size:.88rem">The reader for the Swiss Timing slip is built once real slip photos arrive. Until then the photo is saved and test times are made up, so the Recorder can be tried. Pick what the next photo should do:</p>
-      <div class="row" style="gap:6px">${[["good","Read OK"],["bad","Cannot read"],["wrong","Wrong slip"],["offline","No signal"]].map(([k,l])=>`<button type="button" class="choice" style="min-height:44px;min-width:0;font-size:.9rem" data-act="stest" data-v="${k}" aria-pressed="${A.s.test===k}">${l}</button>`).join("")}</div>
+      <div class="row" style="gap:6px">${[["good","Read OK"],["bad","Cannot read"],["wrong","Wrong slip"],["offline","No signal"]].map(([k,l])=>`<button type="button" class="choice" style="min-height:48px;min-width:0;font-size:.9rem" data-act="stest" data-v="${k}" aria-pressed="${A.s.test===k}">${l}</button>`).join("")}</div>
     </div>
   </div>
   ${A.s.flash?`<div class="flash ${A.s.flash.c}" role="status">${esc(A.s.flash.t)}</div>`:""}`;
