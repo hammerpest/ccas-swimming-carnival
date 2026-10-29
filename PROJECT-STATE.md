@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version f. Replaces 29 October version e and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version g. Replaces 29 October version f and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version g): Jordan asked for a way to change marshalling after a race is sent (decisions 113 and 114). Planned as Swim Opt 2.2, after 2.1 is approved. Checks 2 and 3 on 2.1 under way (check 2 waiting for Claude in Chrome to reconnect).
 
 Changes on 29 October 2026 (version f): Jordan approved the 48 px tap sizes (rest of question 55, decision 111), showed how to read the slip (question 30 answered with a simulated sample, decision 110) and asked for Slip added ticks and the slip photo on the Recorder (decision 112). All built as Swim Opt 2.1 on staging (2.20). Checks 2 and 3 on 2.1 still to run.
 
@@ -578,6 +580,8 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 110. (29 October 2026, answers question 30 for the layout) Reading the slip: "LANE MODE x/ N": ignore x; N is the race number for the day (1, 2, 3 all day). Ignore "start" and the clock times. Each "stop L" line gives lane L; the "sec" line under it is that lane's time. Lines are in finish order; a lane with no stop line is not on the slip. A time over a minute prints as 1:12.34. Claude also uses the clock times as a check (stop minus start should equal the time).
 111. (29 October 2026, answers the rest of question 55) Every tap target 48 px or more (S1.39 tap sizes).
 112. (29 October 2026) Time Slips Check race list and the Recorder's Go to race list show a big green tick and "Slip added" for every race with a slip. The Recorder shows the slip photo under Race overall, so times, result and slip are on one screen ("View slip photo" stays for a bigger view).
+113. (29 October 2026) Marshal start screen: a small, out-of-the-way "Change an earlier race" at the bottom. It lists every race already sent; picking one opens that race's pool screen to fill a missed lane, change a swimmer or clear a lane. Changes save straight away; the race keeps its number and is not sent to the starter again. A time already in a lane stays with the lane. A race already checked goes back to "To check". Swim Opt 2.2.
+114. (29 October 2026) Recorder alert when something does not add up, for example "Lane 7 has a time on the slip but no swimmer", with an "Add swimmer to lane 7" button that opens the Marshal's name list on the Recorder (option A). The time drops in and the alert clears. The server rule changes so the Recorder can fill or change lanes, but only on races already sent. The Carnival Organiser can do both (113 and 114). Swim Opt 2.2.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -663,7 +667,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 2. DONE (decision 108): main uses the staging Supabase project until the live project is made.
 3. DONE (2.16): Check 2, Claude in Chrome walk-through on the staging link. PASSED.
 4. DONE (2.17): Check 3, fresh-eyes review. PASSED.
-5. NEXT: Send Jordan the staging link, a one-page note of what changed, and the check results.
+5. Swim Opt 2.2 (decisions 113 and 114) once 2.1 is approved and promoted to main.
+6. NEXT: Send Jordan the staging link, a one-page note of what changed, and the check results.
 6. Try the app on real iPads and a phone at school (two marshals, two Recorders, the phone losing signal).
 7. When the slip photos arrive (question 30), build and test the real slip reader (Tesseract.js) to the Swiss Timing layout, easy to adjust.
 8. When the HY3 sample arrives (question 3), build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
