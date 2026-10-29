@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 29 October 2026, version h. Replaces 29 October version g and all earlier PROJECT-STATE files.
+Date: 29 October 2026, version i. Replaces 29 October version h and all earlier PROJECT-STATE files.
+
+Changes on 29 October 2026 (version i): Jordan accepted the reader limits it cannot see (decision 115) and said no time-of-day check (decision 116). Check 3 run 4: look PASS; reader gaps fixed except faded race digits (2.22). Main now deploys with version-stamped files too (main app still Swim Opt 2.0). Question 57 open.
 
 Changes on 29 October 2026 (version h): Checks 2 and 3 run on Swim Opt 2.1 (2.21). Check 2 passed. Check 3 ran three times: the look passed every time; the slip reader failed twice and was made much safer each time (2.21). Deploys now version-stamp the app files. Staging data cleared (620 test students kept). Waiting for Jordan to try 2.1 on staging and decide on the residual reader risks (question 56).
 
@@ -482,6 +484,14 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Speed: about 0.8 to 1.3 seconds per photo on the Mac (two readings). A phone will be slower; not yet measured.
 - Staging data cleared with the reset step of tests/supabase_live.py: no races, times, slips, records or kept years; 620 test students; race counter back to 1. PINs unchanged.
 
+### 2.22 Check 3, run 4, on Swim Opt 2.1 (29 October 2026)
+
+- New agent, test mode only, nothing written to the staging database. Look: PASS (DOM and style compared element by element with main: only the approved changes).
+- Reader: FAIL on 147 new attacks. Fixed: two slips side by side (joined on one line), or any printed lane or time above the "LANE MODE" line (a cut roll), are refused; a race number found by only one of the two readings, or with more than one number after the slash (a number written on the slip), asks for another photo. A start-time check was built, then removed at Jordan's request (decision 116).
+- Graded on all 355 hard slips from the four testers: 41 exact, 208 flagged, 85 refused, 3 lanes fully covered (accepted, decision 115; Times checked stays blocked), 5 lane digits half covered to look like another clean digit (lane-match warning fires), 13 faded or torn race digits read as another race (for example 23 read as 3). Those 13 are safe in the normal flow (the phone is on Race 23, so it says "Wrong slip?") and only a risk if the phone has been taken back to the misread race (question 57).
+- Found by the tester: main's deploy did not version-stamp the files. Fixed: .github/workflows/pages.yml is the same on main and staging now.
+- Engine tests 34 of 34; six-device flow in test mode no errors. Live slip test on staging not re-run (Jordan may be testing there).
+
 ---
 
 ## 3. Important decisions (all kept)
@@ -595,6 +605,8 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 112. (29 October 2026) Time Slips Check race list and the Recorder's Go to race list show a big green tick and "Slip added" for every race with a slip. The Recorder shows the slip photo under Race overall, so times, result and slip are on one screen ("View slip photo" stays for a bigger view).
 113. (29 October 2026) Marshal start screen: a small, out-of-the-way "Change an earlier race" at the bottom. It lists every race already sent; picking one opens that race's pool screen to fill a missed lane, change a swimmer or clear a lane. Changes save straight away; the race keeps its number and is not sent to the starter again. A time already in a lane stays with the lane. A race already checked goes back to "To check". Swim Opt 2.2.
 114. (29 October 2026) Recorder alert when something does not add up, for example "Lane 7 has a time on the slip but no swimmer", with an "Add swimmer to lane 7" button that opens the Marshal's name list on the Recorder (option A). The time drops in and the alert clears. The server rule changes so the Recorder can fill or change lanes, but only on races already sent. The Carnival Organiser can do both (113 and 114). Swim Opt 2.2.
+115. (29 October 2026, answers question 56) Accepted: the reader cannot see a lane whose lines are fully covered or cut off, a pen stroke that turns one digit into another clean digit, or a race digit torn off. Other safeguards cover them (Times checked blocked, lane-match warning, Wrong slip).
+116. (29 October 2026) No time-of-day check on slips: the slip's clock time is never compared with when the race was sent.
 105. (28 October 2026) Before a PIN is typed, the home screen header shows the default carnival name. That is fine.
 101. (Answers question 50, 28 October 2026) Check 1 runs against baseline-mac/: screenshots shot on Jordan's Mac from the untouched Swim Opt 1.5. baseline/ stays as the record of the approved look and is still used by check 3.
 98. (Answers question 49, 28 October 2026) Keep the current look. None of the four style options (2.10) is used for now.
@@ -667,7 +679,8 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 2. Confirmed carnival date (around 10 February 2027). Later.
 - 3. Sample HY3 file from the next level (decision 100).
 - 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
-- 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
+- (Closed by 115) 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
+- 57. A faded race digit can make a slip read as another race (23 read as 3). Safe in the normal flow; a risk only if the phone has gone back to that earlier race. Option: when a race already has a slip, a new photo asks "Replace the Race 3 slip?" first. Add that, or accept as is?
 - 39 (parked, 76). Parent live link. Ask again only if Jordan brings it back.
 - (Closed by 107) 54. Repo public or private? Free GitHub Pages needs a public repo. Everything in it is made-up data, but the test PINs (1111 and so on) are visible in these notes, so anyone could open the staging data. Private needs GitHub Pro (about $6 AUD a month). Suggest public now; change all six PINs before any real names go in.
 
