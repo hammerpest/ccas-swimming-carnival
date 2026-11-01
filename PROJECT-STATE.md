@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 30 October 2026, version b. Replaces 30 October version a and all earlier PROJECT-STATE files.
+Date: 2 November 2026, version a. Replaces 30 October version b and all earlier PROJECT-STATE files.
+
+Changes on 2 November 2026 (version a): Jordan tested Swim Opt 2.4 on the live link: the multitimer (100 m, 200 m, Next race back to a 50 m race), taps that scroll or slide not counting, two thumbs, placing and the Recorder, rotation mid-race, and the other jobs. All working. Next step 2 closed. No new decisions.
 
 Changes on 30 October 2026 (version b): Jordan confirmed the iPhone screen stayed on during a long multitimer race on Swim Opt 2.4 (decision 128 works; next step 1 closed). Out-of-date lines fixed at Jordan's request: section 0 (Swim Opt 2.0 build steps replaced by where things stand now), problems 1, 6, 7, 10 and 12a, the empty "Ask now" list, section 7 (Done line and step 2) and section 8 (version). No new decisions.
 
@@ -799,8 +801,8 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); Swim Opt 2.2 (change marshalling after sending, job order); Swim Opt 2.3 (multitimer); Swim Opt 2.4 (multitimer fixes, screen stays on, confirmed on Jordan's iPhone 30 October 2026). All on both links; checks 1 to 3 passed for each.
 
 1. (Done 30 October 2026) The iPhone screen stays on during a long multitimer race (decision 128). Still to do: fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
-2. NEXT: Jordan keeps testing Swim Opt 2.4 on the site; any changes as Swim Opt 2.5 and on.
-3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
+2. (Done 2 November 2026) Jordan tested Swim Opt 2.4 on the site: all working. Any later changes as Swim Opt 2.5 and on.
+3. NEXT: Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
 5. (Done in 2.2) Small known items.
 6. When the records list arrives (question 36): load it in Carnival Organiser section 6.
@@ -814,7 +816,7 @@ Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colour
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 30 October 2026 version b (this file; the latest)
+- PROJECT-STATE.md in the repo, 2 November 2026 version a (this file; the latest)
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
 - Handover package: handover/ in Project Knowledge and ccas-swimming-handover.zip
