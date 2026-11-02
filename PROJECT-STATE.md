@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version c. Replaces 3 November version b and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version d. Replaces 3 November version c and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version d): Jordan ran the new supabase/01-setup.sql on the staging project. Swim Opt 2.7 pushed to main (4841c48): both links now run 2.7 (checked). Ask now: none.
 
 Changes on 3 November 2026 (version c): Swim Opt 2.7 built (2.33): all of next step 13. Rules 143, 144, 145 and 138; A1 (Cancel this race, Re-swim this race, Set next race number), A2, A3, A4, A5 app parts, A6 (real downloads, full backup and restore), A7 (Clear practice data), A9, A11, A12, A13; B1 and B2. Checks 1 to 3 PASSED. Committed (c1d222a) and pushed to staging. Main waits until Jordan runs the new supabase/01-setup.sql on the staging project (ask now). Next step 13 done; new step 15.
 
@@ -125,7 +127,7 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - The look is approved and must not change (CLAUDE.md, decision 98). Design canvas COMPLETE at S1.38.
 - Six PINs, one per job (decision 88). Test PINs: Marshal 1111, Place Judge 2222, Recorder 3333, Time Slips 4444, Announcer 5555, Carnival Organiser 9999. Keep 4 digits (104).
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
-- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.4 is live on main (https://hammerpest.github.io/ccas-swimming-carnival/); Swim Opt 2.7 is on staging (/staging/); main goes to 2.7 once Jordan has run the new 01-setup.sql (ask now). Claude can push (token in the Keychain).
+- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.7 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 3 November 2026. Jordan ran the 2.7 01-setup.sql on the staging project. Claude can push (token in the Keychain).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
   - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
   - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule.
@@ -961,14 +963,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now:
-- Run the new supabase/01-setup.sql on the staging Supabase project. Steps:
-  1. Open supabase.com and sign in.
-  2. Open the project ccas-swimming-staging.
-  3. Click SQL Editor in the left menu, then New query.
-  4. On the Mac, open the file SWIM 2027- App/ccas-swimming/supabase/01-setup.sql in TextEdit. Select all (Cmd+A), copy (Cmd+C), paste it into the query box (Cmd+V).
-  5. Press Run. It should say Success. It is safe to run again.
-  6. Tell Claude. Main then gets Swim Opt 2.7.
+Ask now: none.
+- (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
 - (Closed by 145) 65. Runner up beside joint champions.
@@ -995,7 +991,7 @@ Closed: question 52 (106); questions 51 and 53 (102, 103); 4-digit PINs (104); h
 
 ## 7. Exact next steps
 
-Done: Swim Opt 2.6 on staging (3 November 2026: phone Place Judge and Announcer, no Dead heat). Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); Swim Opt 2.2 (change marshalling after sending, job order); Swim Opt 2.3 (multitimer); Swim Opt 2.4 (multitimer fixes, screen stays on, confirmed on Jordan's iPhone 30 October 2026). All on both links; checks 1 to 3 passed for each.
+Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix list, 2.33). Swim Opt 2.6 (phone Place Judge and Announcer, no Dead heat). Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colours, 48 px tap sizes, slip reader, Slip added ticks, slip photo on the Recorder, Replace slip box, odd slips sent in yellow); Swim Opt 2.2 (change marshalling after sending, job order); Swim Opt 2.3 (multitimer); Swim Opt 2.4 (multitimer fixes, screen stays on, confirmed on Jordan's iPhone 30 October 2026). All on both links; checks 1 to 3 passed for each.
 
 1. (Done 30 October 2026) The iPhone screen stays on during a long multitimer race (decision 128). Still to do: fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
 2. (Done 2 November 2026) Jordan tested Swim Opt 2.4 on the site: all working. Any later changes as Swim Opt 2.5 and on.
@@ -1016,7 +1012,7 @@ Done: Swim Opt 2.6 on staging (3 November 2026: phone Place Judge and Announcer,
    - A5 app parts: the photo queue waits for a signed-in job and never drops a slip; "Waiting to send" shows the real queue; "Sent" only when sent.
    - B1 (open on the first race that still needs work), B2 (keep the Marshal's unsent lanes on the device).
    - Later, with a design and Jordan's OK: A15, A17, B3, B6, and an offline copy of the page.
-15. NOW: Jordan runs the new supabase/01-setup.sql on the staging project (ask now). Then Claude pushes 2.7 to main (main jumps from 2.4 to 2.7, with 2.5 part 1 and 2.6). Then Jordan tries 2.7 on the staging link:
+15. NOW: (SQL run and 2.7 pushed to main, 3 November 2026.) Jordan tries 2.7 on either link:
    - the Place Judge and Announcer on an iPhone;
    - Clear practice data;
    - a full backup and restore.
