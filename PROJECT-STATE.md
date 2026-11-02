@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version b. Replaces 3 November version a and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version c. Replaces 3 November version b and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version c): Swim Opt 2.7 built (2.33): all of next step 13. Rules 143, 144, 145 and 138; A1 (Cancel this race, Re-swim this race, Set next race number), A2, A3, A4, A5 app parts, A6 (real downloads, full backup and restore), A7 (Clear practice data), A9, A11, A12, A13; B1 and B2. Checks 1 to 3 PASSED. Committed (c1d222a) and pushed to staging. Main waits until Jordan runs the new supabase/01-setup.sql on the staging project (ask now). Next step 13 done; new step 15.
 
 Changes on 3 November 2026 (version b): Jordan answered questions 63 to 67 (decisions 142 to 146). No swap check, and the Recorder will not sign off every race, so Times checked becomes optional (143, Claude's call). A swimmer with no time gets participation points (144). No runner up beside joint champions (145). Claude picks the 2.7 list (146): next step 13. Ask now: none.
 
@@ -123,9 +125,9 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - The look is approved and must not change (CLAUDE.md, decision 98). Design canvas COMPLETE at S1.38.
 - Six PINs, one per job (decision 88). Test PINs: Marshal 1111, Place Judge 2222, Recorder 3333, Time Slips 4444, Announcer 5555, Carnival Organiser 9999. Keep 4 digits (104).
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
-- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.4 is live on main (https://hammerpest.github.io/ccas-swimming-carnival/); Swim Opt 2.6 is on staging (/staging/). Claude can push (token in the Keychain).
+- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.4 is live on main (https://hammerpest.github.io/ccas-swimming-carnival/); Swim Opt 2.7 is on staging (/staging/); main goes to 2.7 once Jordan has run the new 01-setup.sql (ask now). Claude can push (token in the Keychain).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
-  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
+  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
   - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule.
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
 - Next level export: a HY3 file, not RE1 (decision 100). Writer built (2.30); Jordan to import the test file into Meet Manager.
@@ -555,6 +557,68 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.33 Swim Opt 2.7: the job review's must-fix list (3 November 2026, staging)
+
+Built (all of next step 13, no design change; new controls use the approved buttons, links, boxes and chips):
+- Rules (js/core.js):
+  - 143: Times checked is optional. A heat is done when every filled lane has a time or a status (DNS, DQ, No time) and the places are in (the top 4 of the swimmers with a time, or fewer that the Place Judge confirmed with Confirm), or the Recorder checked it. A group is Final when every heat is done. A late slip that differs (A3) holds the heat until the Recorder picks.
+  - 144: "No time" button on the Recorder (column now "DNS / DQ / No time"): no place, not on the HRIS list, 4th-and-below points for the swimmer and the house. Shows "No time" in Race overall, Results and the CSV.
+  - 145: joint age champions have no runner up (Houses, newsletter, CSV).
+  - 138: the HRIS Team List shows every swimmer tied for 1st or 2nd (one line each in the cell).
+- A1: on the Recorder (and the Organiser using the Recorder screen), two links under Times checked:
+  - "Cancel this race (not swum)", with a box. The race keeps its number but no longer counts; its swimmers can be marshalled again; the Place Judge, Time Slips and Next race skip it; "Bring this race back" undoes it.
+  - "Re-swim this race", with a box. It clears the places, times and slip and keeps the race number (134).
+  - Carnival Organiser, 1. Carnival details: "Set next race number", forward only (up to 50 ahead), to match the timing console.
+- A2: a place change after Times checked sends the race back to To check. The Place Judge's phone saves the Times checked it saw, so no clocks are compared.
+- A3 (136): a late slip never overwrites typed times or a status. The lane shows "Slip differs: 35.10" with Use slip and Keep typed. A checked race stays checked when the slip changes nothing. This is done on the phone and again on the server (new trigger in supabase/01-setup.sql), for photos that wait in the queue.
+- A4: on the real site the Time Slips practice buttons show only for the organiser PIN. Test mode is unchanged.
+- A5 app parts:
+  - The photo queue waits until the phone has a job again (after a flat phone or a closed tab) before sending, so a slip is never dropped for that.
+  - Queued photos are kept in IndexedDB, not localStorage.
+  - "Waiting to send" and the amber strip show the real queue.
+  - The green "Sent" flash shows only once the slip has gone; otherwise it shows the amber "Saved on this phone".
+- A6:
+  - Export CSV downloads a real file (local date in the name).
+  - Carnival Organiser, 7. Export: "Download full backup" saves one .json file with the students, races, places, times, slips with photos, records and settings.
+  - "Restore a backup" asks for the organiser PIN and puts it all back. Past years are not touched.
+- A7 (140): Carnival Organiser, 8. Lock and new carnival, a new box "Clear practice data" under Start a new carnival. It asks for the organiser PIN first.
+  - It clears every race with its places, times and slip photos, the swimmers added on the day, and the Not swum marks. The race number goes back to 1 and results are unlocked.
+  - It keeps the students, settings, PINs, program, points, odd-time limits and records. Nothing is kept as a year, so the real 2027 is not blocked.
+- A9: Carnival Organiser, 3. Program, "Groups not swum": mark a group with no heats sent as Not swum (Undo to take it off). It then counts as final. The HRIS Team List shows all 74 groups: "Spot open", and a "Not swum" or "Not started" chip for groups with no heats.
+- A11: the Announcer's "already read" list belongs to the carnival (cleared by Clear practice data and Start a new carnival) and is cleared on Sign out.
+- A12 (139): "In the water now" is the first race sent with no places and no times; "Waiting for the next race" when every sent race has results.
+- A13: Undo last puts back a removed place, or all the places after Start again; Start again asks first.
+- B1: a relief device or a reload opens where the job is up to:
+  - Place Judge: the race after the last one with places.
+  - Time Slips: the race after the last one with a slip.
+  - Recorder: the first race not done (a missing time, a yellow time or Slip differs), else the latest.
+- B2: the Marshal's unsent lanes are kept on the iPad (this tab) and come back after a reload.
+- Server (supabase/01-setup.sql, safe to run again):
+  - The Recorder may also cancel and re-swim a race (still only lanes otherwise).
+  - New trigger: a late slip photo keeps the Recorder's typed lanes.
+  - JORDAN MUST RUN IT on the staging project before the Recorder can cancel or re-swim there, and before main gets 2.7.
+
+Tests:
+- Engine: 25 new checks, 74 pass.
+- Server rules: 8 new checks, 63 pass.
+- New tests/flow27.py walks every item above: all checks pass, no console errors.
+- flow.py and baseline_shots.py now take the Recorder to Race 1 on purpose (B1). Flow PASSED. HY3 tests pass.
+
+Checks:
+- Check 1 against Swim Opt 2.6 shots made with the same script on this Mac: 140 of 376 screens changed, all expected. The changes are the Recorder links and No time column, the Organiser boxes, the HRIS list of 74 groups, and "In the water now".
+  - Two differ by timing only: a toast and a 13 px scroll offset.
+  - The iPad portrait dark set failed as a whole by text smoothing; re-shot, then clean.
+  - One fix made during check 1: the Multitimer button no longer hides while a slip sends, so the Time Slips screen scrolls as before. PASSED.
+- Check 2:
+  - Claude in Chrome at MacBook width: the full carnival flow, Marshal reload (B2), Undo and Start again, a slip, No time, Cancel and Bring back, the Announcer, the 74-group HRIS list, Set next race number, Not swum and Clear practice data. No console errors.
+  - Chrome served an old cached ui3.js at first; it was refreshed (on GitHub Pages the files are version-stamped).
+  - Chrome would not hold iPad or phone widths, and its screenshots timed out (problem 18). The built-in browser did 390 x 844 (light and dark), 820 x 1180 and 1180 x 820: no sideways scroll on any job. PASSED.
+- Check 3 (fresh-eyes agent): PASSED with 2 should-fix items, both fixed:
+  - The restore box and file names used UTC; now local time.
+  - A race with Slip differs counted as done; now it waits for the Recorder.
+  - Notes: the Recorder's lane table is a little wider (it already scrolled inside its box on a phone or iPad in 2.6); new tap targets are all 48 px or more; contrast fine; writing rules met.
+- Committed on staging (c1d222a) and pushed to staging 3 November 2026. Not on main yet.
+
 ### 2.32 Swim Opt 2.6: phone Place Judge and Announcer, no Dead heat (3 November 2026, staging)
 
 - Phone (window under 700 px wide; not the past-year view): the slim banner from S1.41 (signal dot and Job pill) and a bar fixed to the bottom of the screen (141).
@@ -860,7 +924,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ### 4.3 Writing style (chat, files, app text)
 - Australian spelling. Simple, direct language. No em dashes (en dashes fine in ranges). No emojis. Avoid Jordan's banned words.
 - Money in AUD, rounded to the nearest dollar.
-- Number every design change S X.Y (next is S1.42). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.7).
+- Number every design change S X.Y (next is S1.42). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.8).
 - Use the 620 test students for all testing and demo data (80).
 - Ask outstanding questions each time. Remind Jordan of the handover routine when a chat gets long.
 - Update PROJECT-STATE straight away after any decision and save it to Project Knowledge with today's date and a version letter.
@@ -888,7 +952,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 14. NEW (decision 95): keeping every year's student names and results goes further than the privacy summary (which says the list can be deleted after the carnival). The privacy summary must be updated and approved by the principal and ICT (question 1) before real names go in. Records holders' names were already kept.
 12a. SOLVED by Swim Opt 2.0 (Supabase and GitHub Pages): helpers no longer need a Claude account.
 15. SOLVED by 101 (28 October 2026): baseline/ was shot on a different machine. On Jordan's Mac, text is smoothed differently, so every screen is 0.25% to 3.71% off, even for the untouched Swim Opt 1.5. Check 1 cannot pass here against baseline/ as it is (question 50).
-16. NEW (3 November 2026): the job review's must-fix items (2.31, A1 to A17) are open.
+16. (3 November 2026) The job review's must-fix items: built in 2.7 (2.33) except A15 and A17 (need a design), A14 (dropped by 142) and A16 (nice to have). A5's non-app parts (signal test, offline copy of the page) are still open.
 17. NEW (3 November 2026): GitHub Pages and phone browsers keep old files for up to about 10 minutes, so a phone may run the old version straight after a push. Close and reopen the tab before testing.
 18. NEW (3 November 2026): Claude in Chrome cannot shrink the window below 500 px and its screenshots time out on this page (141).
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
@@ -897,7 +961,14 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: none.
+Ask now:
+- Run the new supabase/01-setup.sql on the staging Supabase project. Steps:
+  1. Open supabase.com and sign in.
+  2. Open the project ccas-swimming-staging.
+  3. Click SQL Editor in the left menu, then New query.
+  4. On the Mac, open the file SWIM 2027- App/ccas-swimming/supabase/01-setup.sql in TextEdit. Select all (Cmd+A), copy (Cmd+C), paste it into the query box (Cmd+V).
+  5. Press Run. It should say Success. It is safe to run again.
+  6. Tell Claude. Main then gets Swim Opt 2.7.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
 - (Closed by 145) 65. Runner up beside joint champions.
@@ -937,21 +1008,26 @@ Done: Swim Opt 2.6 on staging (3 November 2026: phone Place Judge and Announcer,
 9. Before real names: make the live Supabase project (SETUP.md), point main at it, change all six PINs (decisions 107 and 108).
 10. (Done 2 November 2026, decision 130) Carnival date: Wednesday 3 February 2027. Enter it in Carnival Organiser (date and Date confirmed tick) on the live project once it exists (step 9).
 11. Staff run-through in term 1, on the live site (140). Wake the free Supabase project the day before (it pauses after 7 days unused). Clear the practice data afterwards (A7).
-12. NOW: Jordan tests Swim Opt 2.6 on the staging link on an iPhone (Place Judge and Announcer upright and sideways). Then push to main.
-13. NEXT build, Swim Opt 2.7 (146), in a fresh session, no look change, checks 1 to 3 as always:
+12. (Replaced by 15) Jordan tests Swim Opt 2.6 on the staging link on an iPhone (Place Judge and Announcer upright and sideways). Then push to main.
+13. (Done 3 November 2026, 2.33) Swim Opt 2.7 (146), no look change, checks 1 to 3 as always:
    - Rules: 143 (Times checked optional, a heat is done when times or statuses and places are in), 144 ("No time" status with participation points), 145 (no runner up beside joint champions), 138 on the HRIS list (every tied swimmer).
    - A1: "Cancel this race (not swum)" for the Recorder and Organiser (135); "Re-swim this race" keeps the number and clears places and times (134); Organiser "Set next race number" (forward only).
    - A2 (a place change after Times checked sends the race back), A3 (136: typed times win, "Slip differs"), A4 (practice buttons for the organiser only), A6 (real CSV download and a full backup file with restore), A7 (140: Clear practice data), A9 (all 74 groups on the HRIS list, "Not swum" for a group with no swimmers), A11 (Announcer read list tied to the carnival, cleared on Sign out), A12 (139: In the water now = first sent heat with no places or times), A13 rest (Undo puts back a removed place; confirm Start again).
    - A5 app parts: the photo queue waits for a signed-in job and never drops a slip; "Waiting to send" shows the real queue; "Sent" only when sent.
    - B1 (open on the first race that still needs work), B2 (keep the Marshal's unsent lanes on the device).
    - Later, with a design and Jordan's OK: A15, A17, B3, B6, and an offline copy of the page.
+15. NOW: Jordan runs the new supabase/01-setup.sql on the staging project (ask now). Then Claude pushes 2.7 to main (main jumps from 2.4 to 2.7, with 2.5 part 1 and 2.6). Then Jordan tries 2.7 on the staging link:
+   - the Place Judge and Announcer on an iPhone;
+   - Clear practice data;
+   - a full backup and restore.
+   Close and reopen the tab first (problem 17).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 3 November 2026 version a (this file; the latest)
+- PROJECT-STATE.md in the repo, 3 November 2026 version c (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
