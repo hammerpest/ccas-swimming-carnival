@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version a. Replaces 2 November version h and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version b. Replaces 3 November version a and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version b): Jordan answered questions 63 to 67 (decisions 142 to 146). No swap check, and the Recorder will not sign off every race, so Times checked becomes optional (143, Claude's call). A swimmer with no time gets participation points (144). No runner up beside joint champions (145). Claude picks the 2.7 list (146): next step 13. Ask now: none.
 
 Changes on 3 November 2026 (version a): A review of the app by one reviewer per job plus a whole-day reviewer (2.31): 17 must-fix, 14 should-fix and a list of things to plan. Jordan answered the review's questions 1 to 9 (decisions 133 to 141). Swim Opt 2.6 built and pushed to staging (2.32): phone layouts for the Place Judge and Announcer, no Dead heat button, the Place Judge's order splits equal times in a heat. Checks 1 to 3 PASSED. Decision 94 replaced by 137 and 138. Devices changed: Announcer, Place Judge and Time Slips use iPhones (133; CLAUDE.md devices table updated). New questions 63 to 66. Main still on 2.4.
 
@@ -831,6 +833,11 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 139. (3 November 2026, review question 6) The Marshal sends each heat as soon as its names are in, often several heats ahead of the pool. "In the water now" must show the first sent heat with no places or times (A12).
 140. (3 November 2026, review questions 7 and 8) Security is not a concern on the day: all staff are approved to see this information, so helpers' own phones and iPads are fine ("Sign out every device" drops to nice to have). The staff practice run is on the live site and its data is thrown away: add "Clear practice data" to the Carnival Organiser (A7).
 141. (3 November 2026, review question 9) Build the phone layouts for the Place Judge and Announcer straight away, without a design board (Swim Opt 2.6). Check 2 for 2.6 ran in the built-in browser and partly in Claude in Chrome: Chrome would not hold a phone width (500 px at least, and the window widened by itself) and its screenshots timed out.
+142. (3 November 2026, answers question 63) No check on the size of a swap between the slip time and the judge's order, and a record stands on the swapped (pink) time like any other. A14's swap warning is dropped.
+143. (3 November 2026, from question 63; Claude's call, Jordan: "do whatever you think") The Recorder checks things but will not sign off every race. So Times checked becomes optional: a heat is done when every filled lane has a time or a status (DNS, DQ, No time) and the Place Judge's places are in (or the heat is checked). A group is Final when every heat is done. Times checked stays as a "reviewed" mark, and a change after it still sends the race back (113, A2). Replaces the "checked results only" part of 43 to 47 and 92 for going Final; the Announcer still reads only Final groups.
+144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
+145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
+146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
 
 ## 4. Rules and constraints
 
@@ -890,15 +897,12 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now (from the job review, 3 November 2026):
-- 63. How big a swap between the slip time and the judge's order should the Recorder have to confirm: 1 second, 2 seconds, or any? Can a record stand on a swapped (pink) time? (A14)
-- 64. A swimmer with no time at all (a stopwatch failed): a backup hand time, or placed by the judge's order with no time?
-- 65. Joint age champions: is there still a runner up?
-- 66. Equal times in one heat that the Place Judge did not place (5th and below) stay a tie. OK?
-- 67. Which must-fix items go in the next build (Swim Opt 2.7)? Suggested: the ones that need no look change (A1 to A4, A6, A7, A9, A11, A12, A13 rest, A14).
-- (Closed by 132) 62. What are the 5-digit and 3-digit numbers in the HY3 D1 lines?
-- (Closed: approved 30 October) 61. S1.41: OK as drawn?
-- (Closed by 123) 60. S1.40 multitimer design: OK as drawn?
+Ask now: none.
+- (Closed by 142, 143) 63. Swap check and records on swapped times.
+- (Closed by 144) 64. A swimmer with no time.
+- (Closed by 145) 65. Runner up beside joint champions.
+- (Closed by 146) 66. Untapped equal times in a heat stay a tie.
+- (Closed by 146) 67. The 2.7 list.
 
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
@@ -934,7 +938,13 @@ Done: Swim Opt 2.6 on staging (3 November 2026: phone Place Judge and Announcer,
 10. (Done 2 November 2026, decision 130) Carnival date: Wednesday 3 February 2027. Enter it in Carnival Organiser (date and Date confirmed tick) on the live project once it exists (step 9).
 11. Staff run-through in term 1, on the live site (140). Wake the free Supabase project the day before (it pauses after 7 days unused). Clear the practice data afterwards (A7).
 12. NOW: Jordan tests Swim Opt 2.6 on the staging link on an iPhone (Place Judge and Announcer upright and sideways). Then push to main.
-13. Next build, Swim Opt 2.7: the job review's must-fix items Jordan picks (question 67). LOOK items (A15, A17, B3, B6) need a design and Jordan's OK first.
+13. NEXT build, Swim Opt 2.7 (146), in a fresh session, no look change, checks 1 to 3 as always:
+   - Rules: 143 (Times checked optional, a heat is done when times or statuses and places are in), 144 ("No time" status with participation points), 145 (no runner up beside joint champions), 138 on the HRIS list (every tied swimmer).
+   - A1: "Cancel this race (not swum)" for the Recorder and Organiser (135); "Re-swim this race" keeps the number and clears places and times (134); Organiser "Set next race number" (forward only).
+   - A2 (a place change after Times checked sends the race back), A3 (136: typed times win, "Slip differs"), A4 (practice buttons for the organiser only), A6 (real CSV download and a full backup file with restore), A7 (140: Clear practice data), A9 (all 74 groups on the HRIS list, "Not swum" for a group with no swimmers), A11 (Announcer read list tied to the carnival, cleared on Sign out), A12 (139: In the water now = first sent heat with no places or times), A13 rest (Undo puts back a removed place; confirm Start again).
+   - A5 app parts: the photo queue waits for a signed-in job and never drops a slip; "Waiting to send" shows the real queue; "Sent" only when sent.
+   - B1 (open on the first race that still needs work), B2 (keep the Marshal's unsent lanes on the device).
+   - Later, with a design and Jordan's OK: A15, A17, B3, B6, and an offline copy of the page.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
