@@ -181,8 +181,20 @@ function compute(S){
     let i=0;
     while(i<ok.length){
       let j=i;while(j<ok.length&&ok[j].eff===ok[i].eff)j++;
-      const size=j-i;const pts=pointsFor(i+1,size,P,!!t.nopts);
-      for(let q=i;q<j;q++){ok[q].place=i+1;ok[q].pts=pts;ok[q].tie=size>1}
+      /* equal times: inside one heat the Place Judge's order splits them; across heats they stay a tie
+         (Swim Opt 2.6). A swimmer's rank among the equal times of their own heat sets the order, and
+         equal ranks from different heats share the place */
+      const blk=ok.slice(i,j);const jp=x=>x.judge||99;
+      const rank=new Map(blk.map(x=>[x,1+blk.filter(y=>y.race===x.race&&jp(y)<jp(x)).length]));
+      blk.sort((a,b)=>rank.get(a)-rank.get(b));
+      let q=0;
+      while(q<blk.length){
+        let e=q;while(e<blk.length&&rank.get(blk[e])===rank.get(blk[q]))e++;
+        const size=e-q;const pts=pointsFor(i+q+1,size,P,!!t.nopts);
+        for(let n=q;n<e;n++){blk[n].place=i+q+1;blk[n].pts=pts;blk[n].tie=size>1}
+        q=e;
+      }
+      ok.splice(i,j-i,...blk);
       i=j;
     }
     const others=rows.filter(x=>x.eff==null).sort((a,b)=>(a.st==="wait")-(b.st==="wait")||a.race-b.race||a.lane-b.lane);

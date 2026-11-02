@@ -234,8 +234,6 @@ const ACT={
   mnew:()=>{if(Object.keys(A.m.lanes).length){A.modal={t:"confirmHeat"};render()}else finishMarshalRace()},
   mconfirm:async()=>{A.modal=null;if(await sendHeat())finishMarshalRace();else render()},
   jtap:el=>{if(!locked())judgeTap(+el.dataset.l)},
-  jdh:()=>{if(A.j.dh){A.j.dh=false;render();return}A.modal={t:"deadHeat"};render()},
-  jdhok:()=>{A.j.dh=true;A.modal=null;render()},
   jundo:()=>judgeUndo(),
   jreset:()=>{const r=judgeRace();saveFinish(rid(r.race),[],[])},
   jnext:()=>judgeNext(false),
@@ -347,7 +345,7 @@ document.addEventListener("pointerup",e=>{
 let mtResize=0;
 window.addEventListener("resize",()=>{clearTimeout(mtResize);mtResize=setTimeout(()=>{
   const h=document.getElementById("hdr");
-  if(typeof mtSlim==="function"&&mtSlim()!==h.classList.contains("slim"))render();
+  if(slimHdr()!==h.classList.contains("slim"))render();
   else document.documentElement.style.setProperty("--hdrh",h.offsetHeight+"px");
 },150)});
 document.addEventListener("click",e=>{

@@ -100,3 +100,13 @@ sl=C.parseSlip('LANE MODE 1 9\nstart 09:00:00.000\nstop 1 09:00:30.000\n30.00 se
 a(sl.race===9&&!sl.raceLow,'slip: a lost slash still gives the race');
 sl=C.parseSlip('5top 5 13:11:01.015\n45.01 5ec',8);
 a(sl.race===null,'slip: no header, no race');
+// equal times (Swim Opt 2.6): the Place Judge splits a heat; across heats equal times stay a tie
+{const st=['a','b','c','d'].map(id=>({id,s:id,f:id,h:'B',x:'F',g:'14'}));
+ const S3={config:{},students:st,heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a',2:'b',3:'d'}},{race:2,k:'back50',x:'F',g:'14',heat:2,lanes:{1:'c'}}],
+  times:{r0001:{lanes:{1:{t:3500},2:{t:3500},3:{t:3600}},checked:true},r0002:{lanes:{1:{t:3500}},checked:true}},
+  finish:{r0001:{order:[[2],[1],[3]]}},records:[],openGroups:new Set()};
+ const rows=C.compute(S3).groups.get('back50|F|14').rows;const by=id=>rows.find(r=>r.id===id);
+ a(by('b').place===1&&by('c').place===1&&by('b').tie&&by('c').tie,'equal time across heats: joint 1st');
+ a(by('a').place===3&&!by('a').tie,'judge splits equal time in one heat: placed 2nd in heat is 3rd overall');
+ a(by('d').place===4,'next time after the split');
+ a(by('b').pts===17.5&&by('a').pts===10,'points follow the split');}

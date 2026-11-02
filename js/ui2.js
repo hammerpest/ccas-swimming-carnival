@@ -194,7 +194,7 @@ function renderJudge(){
   const placed=Object.keys(placeOf).length;const need=r.need;
   const max=raceList().slice(-1)[0].race;
   const done=placed>=need;
-  const nextPlace=A.j.dh&&order.length?placeOf[String(order[order.length-1][0])]:placed+1;
+  const nextPlace=placed+1;
   let lanes="";
   for(let l=1;l<=L;l++){
     const id=r.lanes[l];const p=id?A.R.who(id):null;const pl=placeOf[String(l)];
@@ -207,29 +207,40 @@ function renderJudge(){
     lanes+=`<div class="lane"><div class="blk">${l}</div><div class="body" style="cursor:default">${p?`<span class="nm">${hdot(p.h)}<span>${esc(pname(p))}</span></span>`:`<span class="empty">Empty</span>`}</div><div class="wall">${wall}</div></div>`;
   }
   const ord=["1st","2nd","3rd","4th"];
-  const prompt=done?`Top ${need} placed. Press Next race.`:A.j.dh?`Dead heat: tap the lane that tied for ${ord[nextPlace-1]||nextPlace+"th"}.`:`Tap the lane that touched ${ord[placed]||(placed+1)+"th"}${placed===0?" first":""}.`;
-  return `${lockBar()}<div class="racebar">${badge(r.race,"xl")}<div class="info"><b>${esc(r.label)}</b><span>Heat ${r.heat}${r.race<max?" · Earlier race: changes save straight away":""}</span></div>
-      <button type="button" class="btn" data-act="jgoto">Go to race</button>
-      ${r.race<max?`<button type="button" class="btn" data-act="jlatest">Back to latest</button>`:""}
-      ${A.R.races.has(r.race+1)?`<button type="button" class="btn navy big" data-act="jnext">Next race</button>`:`<button type="button" class="btn big" disabled>Waiting for marshal</button>`}
+  const prompt=done?`Top ${need} placed. Press Next race.`:`Tap the lane that touched ${ord[placed]||(placed+1)+"th"}${placed===0?" first":""}.`;
+  const off=!placed||locked()?"disabled":"";
+  const goto=`<button type="button" class="btn" data-act="jgoto">Go to race</button>
+      ${r.race<max?`<button type="button" class="btn" data-act="jlatest">Back to latest</button>`:""}`;
+  const next=A.R.races.has(r.race+1)?`<button type="button" class="btn navy big" data-act="jnext">Next race</button>`:`<button type="button" class="btn big" disabled>Waiting for marshal</button>`;
+  const undo=`<button type="button" class="btn" data-act="jundo" ${off}>Undo last</button>`;
+  const reset=`<button type="button" class="btn danger" data-act="jreset" ${off}>Start again</button>`;
+  const info=`<div class="info"><b>${esc(r.label)}</b><span>Heat ${r.heat}${r.race<max?(phoneJob()?" · Earlier race":" · Earlier race: changes save straight away"):""}</span></div>`;
+  /* phone: lanes, Undo last and Next race on one screen; Go to race and Start again below.
+     No Dead heat: the Place Judge always splits a heat; equal times across heats stay a tie */
+  if(phoneJob())return `${lockBar()}<div class="racebar ph">${badge(r.race,"sm")}${info}</div>
+    <div class="prompt ${done?"done":""}">${esc(prompt)}</div>
+    <div class="pool ph">${lanes}</div>
+    <div class="row" style="margin-top:12px">${goto}${reset}</div>
+    <div class="pbar"><div class="wrap">${undo}${next.replace(" big","")}</div></div>`;
+  return `${lockBar()}<div class="racebar">${badge(r.race,"xl")}${info}
+      ${goto}
+      ${next}
     </div>
     <div class="prompt ${done?"done":""}">${esc(prompt)}</div>
     <div class="pool">${lanes}</div>
     <div class="row" style="margin-top:12px">
-      <button type="button" class="btn" data-act="jdh" aria-pressed="${A.j.dh}" ${!placed||locked()?"disabled":""} style="${A.j.dh?"background:var(--sun);border-color:var(--sun);color:var(--sun-ink)":""}">Dead heat</button>
-      <button type="button" class="btn" data-act="jundo" ${!placed||locked()?"disabled":""}>Undo last</button>
-      <button type="button" class="btn danger" data-act="jreset" ${!placed||locked()?"disabled":""}>Start again</button>
+      ${undo}
+      ${reset}
     </div>`;
 }
-async function judgeTap(l){/* dead heat confirmed in MODALS.deadHeat */
+async function judgeTap(l){
   const r=judgeRace();const key=rid(r.race);
   const fin=A.finish[key]||{};let order=(fin.order||[]).map(g=>g.slice());let seq=(fin.seq||[]).slice();
   const at=order.findIndex(g=>g.includes(l));
   if(at>=0){order[at]=order[at].filter(x=>x!==l);order=order.filter(g=>g.length);seq=seq.filter(x=>x!==l)}
   else{
     const placed=order.reduce((t,g)=>t+g.length,0);if(placed>=r.need)return;
-    if(A.j.dh&&order.length)order[order.length-1].push(l);else order.push([l]);
-    seq.push(l);A.j.dh=false;
+    order.push([l]);seq.push(l);
   }
   await saveFinish(key,order,seq);
 }
@@ -244,7 +255,7 @@ function judgeNext(force){
   const r=judgeRace();
   if(!force){const placed=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;
     if(placed<r.need){A.modal={t:"confirmPlaces",race:r.race,heat:r.heat,placed,need:r.need};render();return}}
-  if(A.R.races.has(r.race+1)){A.j.race=r.race+1;A.j.dh=false}
+  if(A.R.races.has(r.race+1))A.j.race=r.race+1;
   A.modal=null;render();window.scrollTo(0,0);
 }
 MODALS.confirmPlaces=M=>`<h2>Confirm places</h2><p style="margin:0">Race ${M.race}, Heat ${M.heat}: ${M.placed} of ${M.need} places tapped. Times will decide any place not tapped.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back to lanes</button><button type="button" class="btn go" data-act="jconfirm">Confirm</button></div>`;
@@ -264,4 +275,3 @@ function slipTick(){return `<span class="sliptick"><span class="tk"><svg viewBox
 function waitingCard(t,s){return `<div class="panel stack" style="max-width:640px;margin:30px auto;text-align:center;align-items:center">${badge(null,"xl")}<h2>${esc(t)}</h2><p class="muted" style="margin:0">${esc(s)}</p></div>`}
 function lockBar(){if(A.past)return `<div class="lockbar">You are looking at the ${esc(A.past)} carnival. Look only: nothing can be changed. Use Change year to go back to ${esc(curYear())}.</div>`;return locked()?`<div class="lockbar">Results are locked. You can look, but nothing can be changed until the organiser unlocks them.</div>`:""}
 
-MODALS.deadHeat=M=>`<h2>Dead heat?</h2><p style="margin:0">Place judges must split the result. Only use Dead heat if two swimmers touched at exactly the same moment and the judges cannot separate them.</p><p style="margin:0">A dead heat is flagged for the Recorder to check.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">Cancel, we can split it</button><button type="button" class="btn" style="background:var(--sun);border-color:var(--sun);color:var(--sun-ink)" data-act="jdhok">Yes, a true dead heat</button></div>`;

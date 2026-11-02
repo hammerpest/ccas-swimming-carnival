@@ -53,7 +53,7 @@ async def main():
     for l in [5,4,1,2]: await J.click(f'[data-act=jtap][data-l="{l}"]'); await J.wait_for_timeout(50)
     await J.screenshot(path='s_j1.png')
     await J.click('[data-act=jnext]'); await J.wait_for_timeout(100)
-    await J.click('[data-act=jtap][data-l="2"]'); await J.click('[data-act=jdh]'); await J.screenshot(path='s_j_dhmodal.png'); await J.click('[data-act=jdhok]'); await J.click('[data-act=jtap][data-l="3"]')
+    await J.click('[data-act=jtap][data-l="2"]'); await J.click('[data-act=jtap][data-l="3"]')
     await J.screenshot(path='s_j2.png')
     S=await mk('slips')()
     await S.set_viewport_size({'width':390,'height':844})

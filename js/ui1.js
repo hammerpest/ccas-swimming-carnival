@@ -12,7 +12,7 @@ const A={
   peers:[],R:null,loaded:false,
   role:ssGet("swim_role",null),job:ssGet("swim_job",null),pin:"",pinErr:false,
   m:{phase:"start",k:null,x:null,g:null,lanes:{},heat:1,cur:1,open:null,filter:"",sent:[],msg:""},
-  j:{race:null,dh:false},r:{race:null,since:Date.now(),errs:{}},s:{race:null,test:null,flash:null,err:null},slipImg:{},
+  j:{race:null},r:{race:null,since:Date.now(),errs:{}},s:{race:null,test:null,flash:null,err:null},slipImg:{},
   a:{idx:null},res:{tab:"race",sex:"all",type:"all",age:"all"},o:{sec:"details",preview:null,text:""},
   menu:false,modal:null,renderPending:false,
   past:null,years:[],L:{},yearPicked:ssGet("swim_year",null)
@@ -105,6 +105,10 @@ async function w(fn){
 /* ---------- header ---------- */
 function curJob(){return A.job==="organiser"?ORG_JOB:JOBS.find(j=>j.k===A.job)||(A.job==="results"?{k:"results",badge:"RESULTS",name:"Announcer"}:A.job==="houses"?{k:"houses",badge:"HOUSES",name:"Announcer"}:null)}
 function pillName(){if(A.job==="results"||A.job==="houses")return "Announcer";const j=curJob();return j?j.name:""}
+/* Swim Opt 2.6: on a phone the Place Judge and Announcer keep their main buttons in a bar fixed to the
+   bottom of the screen, so all 8 lanes, or the next result, fit with no scrolling */
+function phoneJob(){return !A.past&&innerWidth<700&&(A.job==="judge"||A.job==="announcer")}
+function slimHdr(){return (typeof mtSlim==="function"&&mtSlim())||phoneJob()}
 function renderHeader(){
   const h=document.getElementById("hdr");
   const j=curJob();
@@ -119,8 +123,9 @@ function renderHeader(){
     :A.job==="results"?`<button type="button" class="hlink" data-act="goto" data-job="houses">Houses</button><button type="button" class="hlink" data-act="goto" data-job="announcer">Back to Announcer</button>`
     :A.job==="houses"?`<button type="button" class="hlink" data-act="goto" data-job="results">Results</button><button type="button" class="hlink" data-act="goto" data-job="announcer">Back to Announcer</button>`:"";
   const jobs=A.role==="org"?[...JOBS,ORG_JOB]:[];
-  /* slim banner on the phone multitimer (S1.41): only the signal dot and the Job pill */
-  const slim=typeof mtSlim==="function"&&mtSlim();h.classList.toggle("slim",slim);
+  /* slim banner on the phone multitimer (S1.41) and the phone Place Judge and Announcer (Swim Opt 2.6):
+     only the signal dot and the Job pill */
+  const slim=slimHdr();h.classList.toggle("slim",slim);
   if(slim){h.innerHTML=`<div class="wrap"><div class="topin"><span class="live ${cls}"><i></i>${esc(live)}</span>${jobPill(jobs,esc(pillName()))}</div></div>`;return}
   h.innerHTML=`<div class="wrap"><div class="topin">
     ${j?`<span class="jobbadge">${esc(j.badge)}</span>`:""}

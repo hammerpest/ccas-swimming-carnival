@@ -269,3 +269,15 @@ td.nmcell{white-space:nowrap}
 header.top.slim .topin{padding-block:4px;flex-wrap:nowrap;justify-content:space-between}
 header.top.slim .jobpill>button{padding:6px 14px}
 .clock.pin{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdrh,60px));z-index:5}
+/* Phone Place Judge and Announcer (Swim Opt 2.6): main buttons in a bar fixed to the bottom of the screen */
+.pbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:1px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 16px rgba(0,0,0,.08)}
+.pbar .wrap{display:flex;gap:8px}.pbar .btn{flex:1;padding-inline:8px;min-height:52px}
+main:has(.pbar){padding-top:10px;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+body:has(.pbar) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.racebar.ph{flex-wrap:nowrap;gap:10px;margin-bottom:8px}.racebar.ph .info{flex:1 1 auto}.racebar.ph .info b{font-size:1.1rem}.racebar.ph .info span{font-size:.85rem}
+.racebar.ph+.prompt{padding:8px 12px;margin-bottom:8px}
+.pool.ph .lane{min-height:48px}.pool.ph .lane .body{padding:2px 10px}.pool.ph .lane .nm{min-height:38px;padding:6px 12px}.pool.ph .spot{width:48px;height:48px;font-size:1.1rem}.pool.ph .lane .wall{padding:0 6px;min-width:70px}
+.ann.ph .phlinks .btn{flex:1}
+.ann.ph .water{padding:10px 14px;gap:6px 10px}.ann.ph .water .label{flex:0 0 100%}
+.ann.ph h2{font-size:1.2rem}.ann.ph .phmeta{gap:6px;flex-wrap:nowrap}.ann.ph .phmeta .muted{font-size:.85rem}.ann.ph .podium{gap:8px}
+.ann.ph .podium .pr{gap:10px;padding:10px 12px}.ann.ph .podium .pr b{font-size:1.15rem}.ann.ph .podium .pr .t{font-size:1.3rem}.ann.ph .podium .medal{width:40px;height:40px;font-size:1.1rem}

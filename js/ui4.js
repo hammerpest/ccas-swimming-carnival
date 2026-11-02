@@ -25,18 +25,26 @@ function renderAnnouncer(){
   if(A.a.idx==null||A.a.idx>=finals.length){const rs=readSet();const i=finals.findIndex(G=>!rs.has(G.key));A.a.idx=i<0?Math.max(0,finals.length-1):i}
   const G=finals[A.a.idx];
   const more=finals.length-1-A.a.idx;
+  const ph=phoneJob();
+  const prevBtn=`<button type="button" class="btn" data-act="aprev" ${G&&A.a.idx>0?"":"disabled"}>&lt; Earlier result</button>`;
+  const nextBtn=`<button type="button" class="btn navy big" data-act="anext" style="flex:1" ${more>0?"":"disabled"}>${more>0?"Next result":"Waiting for the next result"}</button>`;
   let card="";
   if(G){
     const top=G.rows.filter(r=>r.place&&r.place<=3);
     card=`<div class="panel stack"><div class="row" style="justify-content:space-between"><span class="label">Read out next</span><span class="chip ${more>0?"info":""}">${more>0?more+" more ready":"Up to date"}</span></div>
-      <div class="row">${G.raceNos.map(n=>badge(n,"sm")).join("")}<div style="flex:1;min-width:0"><h2>${esc(G.label)}</h2><div class="muted">${raceRange(G.raceNos)}, ${plural(G.heats.length,"heat")}, timed final</div></div><span class="chip final">Final</span></div>
+      ${ph?`<h2>${esc(G.label)}</h2><div class="row phmeta">${G.raceNos.map(n=>badge(n,"sm")).join("")}<span class="muted" style="flex:1;min-width:0">${raceRange(G.raceNos)}, ${plural(G.heats.length,"heat")}, timed final</span><span class="chip final">Final</span></div>`
+      :`<div class="row">${G.raceNos.map(n=>badge(n,"sm")).join("")}<div style="flex:1;min-width:0"><h2>${esc(G.label)}</h2><div class="muted">${raceRange(G.raceNos)}, ${plural(G.heats.length,"heat")}, timed final</div></div><span class="chip final">Final</span></div>`}
       <div class="podium">${top.map(r=>`<div class="pr">${medal(r.place)}<div style="min-width:0"><b>${esc(pname(r.p))}</b><span class="htag">${hdot(r.p.h)}${esc(houseName(r.p.h))}</span>${r.tag?` <span class="tag ${r.tag==="NEW RECORD"?"rec":"eq"}">${r.tag}</span>`:""}</div><span class="t">${fmtTime(r.eff)}</span></div>`).join("")||`<p class="muted">No finishers.</p>`}</div>
       ${G.record&&!G.recordNote?`<div class="muted" style="font-size:.9rem">${recordLine(G)}</div>`:""}
-      <div class="row"><button type="button" class="btn" data-act="aprev" ${A.a.idx>0?"":"disabled"}>&lt; Earlier result</button><button type="button" class="btn navy big" data-act="anext" style="flex:1" ${more>0?"":"disabled"}>${more>0?"Next result":"Waiting for the next result"}</button></div></div>`;
+      ${ph?"":`<div class="row">${prevBtn}${nextBtn}</div>`}</div>`;
   }else card=`<div class="panel stack"><span class="label">Read out next</span><p class="muted" style="margin:0">Waiting for the first checked result. A result appears when every heat of a group has its times checked.</p></div>`;
-  return `<div class="ann"><div class="stack">
-      <div class="water"><span class="label">In the water now</span>${last?badge(last.race,"xl")+`<div><b style="font:800 1.25rem var(--font-display)">${esc(last.label)}</b><br><span style="color:var(--navy-muted)">Heat ${last.heat}</span></div>`:`<span>Nothing sent yet</span>`}</div>
+  /* phone: Full results and Houses move out of the slim banner to just under the result; Earlier result
+     and Next result sit in a bar fixed to the bottom of the screen */
+  return `<div class="ann${ph?" ph":""}"><div class="stack">
+      <div class="water"><span class="label">In the water now</span>${last?badge(last.race,ph?"sm":"xl")+`<div><b style="font:800 ${ph?"1.05rem":"1.25rem"} var(--font-display)">${esc(last.label)}</b><br><span style="color:var(--navy-muted)">Heat ${last.heat}</span></div>`:`<span>Nothing sent yet</span>`}</div>
       ${card}
+      ${ph?`<div class="row phlinks"><button type="button" class="btn" data-act="goto" data-job="results">Full results</button><button type="button" class="btn" data-act="goto" data-job="houses">Houses</button></div>
+      <div class="pbar"><div class="wrap">${prevBtn}${nextBtn.replace(" big","")}</div></div>`:""}
     </div>
     <div class="stack"><div class="panel stack"><h3>Records broken today</h3>${brokenCards()}</div>
       <div class="panel stack"><div class="row" style="justify-content:space-between"><h3>House standings</h3>${statusChip()}</div>${standings()}</div>
