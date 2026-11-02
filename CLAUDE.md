@@ -81,8 +81,8 @@ No Homebrew or admin on Jordan's Mac. Tools live in `../.venv` (Python 3.9 with 
 
 | Job | Device and size |
 |---|---|
-| Marshal, Place Judge, Announcer | iPad, landscape 1180 x 820 or portrait 820 x 1180 |
+| Marshal | iPad, landscape 1180 x 820 or portrait 820 x 1180 |
 | Recorder, Results, Carnival Organiser | MacBook, 1512 x 982 |
-| Time Slips | Phone, 390 x 844 |
+| Place Judge, Time Slips, Announcer | iPhone, 390 x 844 (decision 133) |
 
 Every screen must also work on the other sizes.
