@@ -1,6 +1,20 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 2 November 2026, version a. Replaces 30 October version b and all earlier PROJECT-STATE files.
+Date: 2 November 2026, version h. Replaces 2 November version g and all earlier PROJECT-STATE files.
+
+Changes on 2 November 2026 (version h): Swim Opt 2.5 part 1 built on staging (2.30): the HY3 writer (no screen change). A test HY3 from the 620 test students is in the SWIM 2027- App folder for Jordan to import into Meet Manager. Checks 1 and 3 PASSED; check 2 not run (no screen changed). Next step 7 under way.
+
+Changes on 2 November 2026 (version g): Jordan answered question 62: HRIS (the next level) does not need a student ID. The app makes its own swimmer numbers at export (decision 132). Question 62 closed.
+
+Changes on 2 November 2026 (version f): Jordan corrected version e: the 5-digit HY3 number is not the school student ID, and Jordan does not know what it is. Decision 131 withdrawn. Question 62 rewritten.
+
+Changes on 2 November 2026 (version e): Jordan confirmed the HY3 swimmer ID is the school student ID (decision 131). The app's student list has no ID column today (Surname, First name, House, Sex, DOB), so how the ID gets in is question 62.
+
+Changes on 2 November 2026 (version d): Jordan made a 7-line anonymised copy of the real HY3 file (through the school's Copilot) at SWIM 2027- App/hy3-sample-anonymised.txt, outside the repo. Column map and checksum rule worked out and recorded in 2.29. Question 3 now answered for the layout; the swimmer ID source and the two D1 numbers still to confirm.
+
+Changes on 2 November 2026 (version c): Jordan sent two screenshots of a real HY3 file (the 2026 CCAS primary carnival's Merge Advancer Entries, opened in Excel). Read in 2.29. Question 3 partly answered: the plain .hy3 file itself is still needed for exact columns and the line checksum. No new decisions.
+
+Changes on 2 November 2026 (version b): Jordan confirmed the carnival date: Wednesday 3 February 2027 (decision 130). Question 2 and next step 10 closed. The app's built-in default (10 February) is left as is; the date is set in Carnival Organiser.
 
 Changes on 2 November 2026 (version a): Jordan tested Swim Opt 2.4 on the live link: the multitimer (100 m, 200 m, Next race back to a 50 m race), taps that scroll or slide not counting, two thumbs, placing and the Recorder, rotation mid-race, and the other jobs. All working. Next step 2 closed. No new decisions.
 
@@ -138,7 +152,7 @@ Build an easy web app to run the CCAS swimming carnival (February 2027), replaci
 Design doc (Claude doc): https://claude.ai/artifact/HZ925j4FKGWoxwPeJWE6cS, "CCAS Swimming Carnival App: Design". Updated 28 October 2026 with decisions 11 to 86: purpose, jobs and devices, how the day runs, entering results, points and records, screens, data and hosting, build plan, open questions. One old comment thread (on the timed finals line) was detached when that section was rewritten.
 
 **Venue:** Mingara pool, 8 lanes, 50 m (long course, LCM in MM). Both are Carnival Organiser settings.
-**Carnival date:** around 10 February 2027, NOT confirmed.
+**Carnival date:** Wednesday 3 February 2027, confirmed (decision 130).
 
 **Program (default; girls then boys within each event; 74 program events since the Year 12 novelty was removed, decision 91):**
 
@@ -535,6 +549,46 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.30 Swim Opt 2.5 part 1: HY3 writer (2 November 2026, staging, no screen change)
+
+- js/core.js: hy3File(R, cfg, dobOf) writes the HRIS Team List as a Merge Advancer Entries HY3 to the 2.29 column map: A1, B1, B2, then for each race in program order and each top-2 row, C1 (house as team) and D1 plus E1 for a swimmer, or F1 for a relay (no relay swimmer lines). Repeats C1 and D1 for each entry, as the sample does. Windows line ends, plain ASCII (accents removed, curly quotes made straight).
+- Numbers (132): swimmer number 10101 up, the two D1 numbers n and n-1 (n from 101). Event numbers are the app's program order (1 to 74). Course L for a 50 m pool, S for 25 m.
+- Age ranges: 13 and under 0–13, 14 to 17 single ages, 18 and over 18–109, Junior 0–14, Intermediate 15–16, Senior 17–109, Open 0–109 (109 is Meet Manager's "and over", to be confirmed by the import test). Strokes: A free, B back, C breast, D fly, E medley. Relays: 50 m legs.
+- DOB from dobOf(id) at export, never stored. Swimmers with no house or no clear DOB are left out and listed (missing); races not final are listed (provisional). The export screen must show both (not built yet).
+- tools/make_test_hy3.js: a made-up carnival with the 620 test students (140 races, top 2 in all 74), made-up DOBs to fit each age group. Test file: SWIM 2027- App/CCAS test HRIS 2027.hy3 (and .zip), 431 lines, 148 entries, 123 swimmers.
+- tests/hy3.test.js: 29 checks (checksum on real Meet Manager lines with no student details, every line type column by column from made-up values, ties, unfinished race, unknown swimmer, bad DOB, names, 25 m pool, the full file). Engine and flow PASSED.
+- Check 1: against Swim Opt 2.4 shots (baseline-mac is the untouched 1.5, so 368 screens differ there since 2.1's approved changes): 0 of 384 changed after re-running the iPad landscape dark set (text smoothing). PASSED.
+- Check 2: not run; no screen changed. To run when the export screen is built.
+- Check 3: run 1 FAILED (sample lines copied into the test; unfinished races, unknown swimmers and bad DOBs not reported; curly apostrophes dropped; test gaps). All fixed. Run 2 PASSED.
+- To find out from Jordan's Meet Manager import: whether the repeated D1 lines, the app's event numbers (1 to 74) and the age ranges (0–14, 18–109) are accepted.
+- Still to build (part 2, needs design S1.42 and Jordan's OK): the Export section's Meet Manager panel (load the student list with DOB, show missing and not final, write the file, rename the button from Write RE1 file).
+
+### 2.29 HY3 sample (2 November 2026, screenshots only)
+
+Jordan's sample: "Merge Advancer Entries" made by Meet Manager MM5 7.0Gb on 27 October 2026 from the CCAS Primary Swimming Carnival 2026 (12 February 2026, "PLC Location"). 313 lines. Excel collapsed the spaces, so exact column positions are not known yet. What it shows:
+- A1 (file header): type 08, "Merge Advancer Entries", Hy-Tek, Ltd, MM5 7.0Gb, date and time made, school name.
+- B1 (meet): carnival name, pool, start date, end date, age-up date 12312026 (31 December, same as the app's ageDate). B2: meet codes (040101L1) and course L.
+- C1 (team): the houses are the teams: BRA Bradman, JAC Jackson, NEW Newcombe. A C1 line comes before every swimmer and every relay.
+- D1 (swimmer): sex, swimmer number (5 digits), last and first names (shown as LastName and 1stNAME in the sample), two numbers that differ by one, DOB (MMDDYYYY), age, then N.
+- E1 (individual entry): sex, swimmer ID, first 5 letters of the last name, sex and group (FG girls, MB boys), distance and stroke (100A = 100 m freestyle), age range (0 8 = 8 and under, 9 9 = 9 years), event number, seed time in seconds with course (e.g. 75.12L), the same time again, and the carnival place (1 or 2).
+- F1 (relay entry): house code, relay letter A, group, 50A (50 m legs, freestyle), age range, event number, seed time, place. No F3 swimmer lines: relay swimmers are not named.
+- Every line ends with a 2-digit checksum.
+- Matches decisions 64 and 90: top 2 per event and top 2 relay teams, with their carnival times as seed times.
+- Still unknown: exact columns and widths, the checksum rule (to be checked against real lines), what the two D1 numbers are, where the 5-digit swimmer ID comes from, and the secondary event numbers and age ranges.
+- Privacy: the sample may hold real student details (DOBs, the start of surnames in E1 lines). Never commit it to the public repo; keep it outside ccas-swimming.
+
+Plain file read (version d): SWIM 2027- App/hy3-sample-anonymised.txt (7 lines, names, DOB and IDs replaced by X and 1; never copy it into the repo).
+- Every line is exactly 130 characters, spaces only (no tabs), Unix line ends in this copy. Columns below are 1-based.
+- Checksum (columns 129–130), confirmed on the 5 untouched lines: add the character codes of columns 1–128, counting odd columns once and even columns twice; divide by 21 (whole number), add 205; take the last two digits and swap them.
+- A1: 1–2 A1, 3–4 file type 08, 5–29 "Merge Advancer Entries", 30–44 "Hy-Tek, Ltd", 45–58 "MM5 7.0Gb", 59–66 date made MMDDYYYY, 67–75 time made (right aligned, e.g. "  9:05 AM"), 76 on school name.
+- B1: 3–47 meet name, 48–92 pool, 93–100 start date, 101–108 end date, 109–116 age-up date (all MMDDYYYY), 120 a 0.
+- B2: 93–100 040101L1 (meet codes, L = 50 m pool), 101–106 "  0.00".
+- C1: 3–7 team code (BRA, JAC, NEW, left aligned), 8 on team name (the house), 119 and 122 zeros.
+- D1: 3 sex, 4–8 swimmer ID (5 digits), 9–28 last name, 29–48 first name, 70–72 a 3-digit number, 86–88 a second 3-digit number, 89–96 DOB MMDDYYYY, 97–99 age (right aligned), 105 a 0, 125 N.
+- E1: 3 sex, 4–8 swimmer ID, 9–13 first 5 letters of last name, 14–15 sex and group (FG, MB), 18–22 distance right aligned plus stroke letter (100A), 23–25 lowest age, 26–28 highest age, 29–32 "  0U", 33–38 fee "  0.00", 39–42 event number (right aligned), 43–51 seed time and course ("   75.12L"), 52–60 the same again, 61–68 and 69–76 "    0.00", 77–81 "  0NN", 88 place (1 or 2).
+- F1: 3–7 house code, 8 relay letter A, 12 a 0, 14–15 group, 18–22 leg distance and stroke (50A), 23–25 and 26–28 lowest and highest age, then the same as E1 from column 29 (event number 39–42, time 43–51 and 52–60, place 88).
+- Seed times are in seconds with two decimals (134.56 = 2:14.56), right aligned.
+
 ### 2.28 Swim Opt 2.4: multitimer fixes from Jordan's phone tests (30 October 2026, staging)
 
 Built to S1.41 and decisions 125 to 128.
@@ -718,6 +772,9 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 127. (30 October 2026) Fix: a SPLIT, START or STOP only counts if the finger lifts without the page scrolling; the time is still taken when the finger lands.
 128. (30 October 2026) Keep the phone awake on iPhone (Chrome and Safari) while the clock runs: a tiny silent, hidden looping video, started by START and stopped by STOP, alongside the browser's keep-awake request. Backup on the day: Settings, Display and Brightness, Auto-Lock, Never.
 129. (30 October 2026) Check 2 for Swim Opt 2.4 ran in the desktop app's built-in browser, as Claude in Chrome was not connected; Jordan accepted it. Claude in Chrome stays the rule.
+130. (2 November 2026, answers question 2) The carnival is on Wednesday 3 February 2027 at Mingara pool. The date is set in Carnival Organiser, not in the code: the built-in default (10 February) stays so the approved screens do not change.
+131. (2 November 2026) WITHDRAWN the same day: the 5-digit HY3 number is not the school student ID. See question 62.
+132. (2 November 2026, answers question 62) HRIS does not need a student ID. At HY3 export the app makes its own numbers: a unique 5-digit swimmer number for each swimmer (the same in the D1 and E1 lines), and fills the two 3-digit D1 numbers to match the sample's pattern. No student ID is loaded or stored.
 
 ## 4. Rules and constraints
 
@@ -775,6 +832,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ## 6. Unresolved questions (ask Jordan)
 
 Ask now: none.
+- (Closed by 132) 62. What are the 5-digit and 3-digit numbers in the HY3 D1 lines?
 - (Closed: approved 30 October) 61. S1.41: OK as drawn?
 - (Closed by 123) 60. S1.40 multitimer design: OK as drawn?
 
@@ -782,8 +840,8 @@ Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
 - 30. (Partly answered, decision 110: the layout, from a simulated sample.) Still wanted: a few photos of real slips taken at the pool, to tune the reader.
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
-- 2. Confirmed carnival date (around 10 February 2027). Later.
-- 3. Sample HY3 file from the next level (decision 100).
+- (Closed by 130) 2. Confirmed carnival date.
+- 3. Sample HY3 file from the next level (decision 100). Layout answered (2.29, version d). The 5-digit and 3-digit numbers are made by the app at export (132).
 - 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
 - (Closed by 115) 56. The slip reader cannot see what is not in the photo (a fully covered lane, a pen stroke that changes a digit, a torn race digit). Each is covered by another safeguard (2.21). Accept these, run check 3 a fourth time on the last fixes, or both? Real slip photos at the pool remain the best test (question 30).
 - (Closed by 117) 57. A faded race digit can make a slip read as another race (23 read as 3). Safe in the normal flow; a risk only if the phone has gone back to that earlier race. Option: when a race already has a slip, a new photo asks "Replace the Race 3 slip?" first. Add that, or accept as is?
@@ -802,21 +860,21 @@ Done: Swim Opt 2.0 (port, Supabase, GitHub Pages); Swim Opt 2.1 (Option A colour
 
 1. (Done 30 October 2026) The iPhone screen stays on during a long multitimer race (decision 128). Still to do: fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
 2. (Done 2 November 2026) Jordan tested Swim Opt 2.4 on the site: all working. Any later changes as Swim Opt 2.5 and on.
-3. NEXT: Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
+3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
 5. (Done in 2.2) Small known items.
 6. When the records list arrives (question 36): load it in Carnival Organiser section 6.
-7. When the HY3 sample arrives (question 3): build the HY3 export to match it exactly (DOB matched on the organiser's computer, never stored).
+7. NEXT: HY3 export (2.29, 2.30). Part 1 done: the writer and a test file. Jordan imports SWIM 2027- App/CCAS test HRIS 2027.hy3 into Meet Manager and reports what happens. Then part 2: the export panel (design S1.42, Jordan's OK first).
 8. Privacy summary: update for kept years (problem 14) and send to the principal and ICT (question 1). Real names only once approved.
 9. Before real names: make the live Supabase project (SETUP.md), point main at it, change all six PINs (decisions 107 and 108).
-10. Confirm the carnival date (question 2).
+10. (Done 2 November 2026, decision 130) Carnival date: Wednesday 3 February 2027. Enter it in Carnival Organiser (date and Date confirmed tick) on the live project once it exists (step 9).
 11. Staff run-through in term 1. Wake the free Supabase project the day before (it pauses after 7 days unused).
 
 ---
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 2 November 2026 version a (this file; the latest)
+- PROJECT-STATE.md in the repo, 2 November 2026 version h (this file; the latest)
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
 - Handover package: handover/ in Project Knowledge and ccas-swimming-handover.zip

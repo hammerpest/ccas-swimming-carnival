@@ -399,4 +399,69 @@ function parseStudents(text,ageDate){
   return {ok,bad};
 }
 
-if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip};
+/* ===== HY3 file for HRIS (decisions 100, 132; layout in PROJECT-STATE 2.29) =====
+   Fixed width: every line is 130 characters, columns 129-130 are a checksum.
+   Top 2 in every race and group (the HRIS Team List), carnival times as seed times.
+   DOB comes from dobOf(id) on the organiser's computer and is never stored.
+   missing: swimmers left out (no house, no clear DOB). provisional: races not final yet. */
+const HY3_TEAM={B:"BRA",J:"JAC",N:"NEW"};
+const HY3_STROKE={Freestyle:"A",Backstroke:"B",Breaststroke:"C",Butterfly:"D",Medley:"E"};
+const HY3_AGES={"13":[0,13],"14":[14,14],"15":[15,15],"16":[16,16],"17":[17,17],"18":[18,109],J:[0,14],I:[15,16],S:[17,109],O:[0,109],Y12:[0,109]};
+function hy3Check(body){
+  let s=0;for(let i=0;i<128;i++)s+=body.charCodeAt(i)*(i%2?2:1);
+  const v=String(Math.floor(s/21)+205).slice(-2).padStart(2,"0");
+  return v[1]+v[0];
+}
+function hy3Line(code,parts){
+  const b=Array(128).fill(" ");b[0]=code[0];b[1]=code[1];
+  for(const [col,txt] of parts){const t=String(txt);for(let i=0;i<t.length;i++)if(col-1+i<128)b[col-1+i]=t[i]}
+  const body=b.join("");return body+hy3Check(body);
+}
+function hy3Ascii(v){return String(v||"").replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/[\u2013\u2014]/g,"-").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\x20-\x7e]/g,"")}
+function hy3Date(iso){const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[2]+m[3]+m[1]:"        "}
+function hy3Time(cs){return ((cs/100).toFixed(2)).padStart(8)}
+function hy3Event(G,ev,cfg,course,place,cs,pre){
+  const t=TYPE[G.k];const ag=HY3_AGES[G.g]||[0,109];const dist=t.relay?t.dist/4:t.dist;
+  return pre.concat([[14,G.x],[15,G.x==="F"?"G":"B"],[16,String(dist).padStart(6)],[22,HY3_STROKE[t.stroke]||"A"],
+    [23,String(ag[0]).padStart(3)],[26,String(ag[1]).padStart(3)],[29,"  0U"],[33,"  0.00"],[39,String(ev.no).padStart(4)],
+    [43,hy3Time(cs)+course],[52,hy3Time(cs)+course],[61,"    0.00"],[69,"    0.00"],[77,"  0NN"],[85,String(place).padStart(4)]]);
+}
+function hy3File(R,cfg,dobOf,now){
+  cfg=Object.assign({},DEFAULT_CONFIG,cfg||{});now=now||new Date();
+  const course=String(cfg.poolLen)==="25"?"S":"L";
+  const p2=n=>String(n).padStart(2,"0");
+  const made=p2(now.getMonth()+1)+p2(now.getDate())+now.getFullYear();
+  const hr=now.getHours(),clock=((hr%12)||12)+":"+p2(now.getMinutes())+(hr<12?" AM":" PM");
+  const day=hy3Date(cfg.date);
+  const out=[
+    hy3Line("A1",[[3,"08"],[5,"Merge Advancer Entries"],[30,"Hy-Tek, Ltd"],[45,"MM5 7.0Gb"],[59,made],[67,clock.padStart(9)],[76,"Central Coast Adventist School"]]),
+    hy3Line("B1",[[3,hy3Ascii(cfg.name).slice(0,45)],[48,hy3Ascii(cfg.pool).slice(0,45)],[93,day],[101,day],[109,hy3Date(cfg.ageDate)],[120,"0"]]),
+    hy3Line("B2",[[93,"040101"+course+"1"],[101,"  0.00"]])
+  ];
+  const team=h=>hy3Line("C1",[[3,(HY3_TEAM[h]||h).padEnd(5)],[8,houseName(h)],[119,"0"],[122,"0"]]);
+  const nums=new Map(),missing=[],provisional=[];let entries=0;
+  const evs=(R.events||[]).slice().sort((a,b)=>a.no-b.no);
+  for(const ev of evs){
+    const G=R.groups.get(ev.key);if(!G||TYPE[G.k].nopts)continue;
+    if(!G.final&&G.rows.some(r=>r.hris))provisional.push(groupLabel(G.k,G.x,G.g));
+    for(const r of G.rows.filter(r=>r.hris&&r.eff!=null).sort((a,b)=>a.place-b.place)){
+      const p=r.p;if(!p||!HY3_TEAM[p.h]){missing.push((p&&p.name)||"Unknown swimmer");continue}
+      if(p.team){
+        out.push(team(p.h));
+        out.push(hy3Line("F1",hy3Event(G,ev,cfg,course,r.place,r.eff,[[3,HY3_TEAM[p.h].padEnd(5)],[8,p.id.split("-")[1]||"A"],[12,"0"]])));
+        entries++;continue;
+      }
+      const dob=dobOf?dobOf(p.id):null;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(dob||"")||ageOn(dob,cfg.ageDate)==null){missing.push(p.name||p.id);continue}
+      if(!nums.has(p.id))nums.set(p.id,nums.size+101);
+      const n=nums.get(p.id),id=String(10000+n),sx=p.x||G.x;const age=ageOn(dob,cfg.ageDate);
+      out.push(team(p.h));
+      out.push(hy3Line("D1",[[3,sx],[4,id],[9,hy3Ascii(p.s).slice(0,20)],[29,hy3Ascii(p.f).slice(0,20)],[70,String(n).padStart(3)],[86,String(n-1).padStart(3)],[89,hy3Date(dob)],[97,String(age==null?"":age).padStart(3)],[105,"0"],[125,"N"]]));
+      out.push(hy3Line("E1",hy3Event(G,ev,cfg,course,r.place,r.eff,[[3,sx],[4,id],[9,hy3Ascii(p.s).slice(0,5)]])));
+      entries++;
+    }
+  }
+  return {text:out.join("\r\n")+"\r\n",entries,swimmers:nums.size,missing,provisional};
+}
+
+if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip,hy3File,hy3Line,hy3Check};
