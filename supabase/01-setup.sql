@@ -140,11 +140,14 @@ create policy "job can change" on public.heats for update to authenticated
   using (private.can_write('heats') or private.recorder_heat(id))
   with check (private.can_write('heats') or private.recorder_heat(id));
 -- The Recorder may change only the lanes (and the time of the change), nothing else in a race.
+-- Swim Opt 2.7 (A1, decisions 134 and 135): the Recorder may also cancel a race sent in error
+-- (cancelled, cancelAt) and clear it for a re-swim (gen).
 create or replace function private.heats_recorder_lanes_only() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
   if not private.can_write('heats') and private.my_role() = 'recorder'
-     and (new.doc - 'lanes' - 'edited') is distinct from (old.doc - 'lanes' - 'edited') then
+     and (new.doc - 'lanes' - 'edited' - 'cancelled' - 'cancelAt' - 'gen')
+         is distinct from (old.doc - 'lanes' - 'edited' - 'cancelled' - 'cancelAt' - 'gen') then
     raise exception 'The Recorder can only change lanes' using errcode = '42501';
   end if;
   return new;
@@ -152,6 +155,45 @@ end $$;
 drop trigger if exists heats_recorder_lanes_only on public.heats;
 create trigger heats_recorder_lanes_only before update on public.heats
   for each row execute function private.heats_recorder_lanes_only();
+
+-- Swim Opt 2.7 (decision 136): a slip photo never overwrites what the Recorder typed, even when it waits
+-- in the phone's queue and arrives late. A lane typed by the Recorder, or given a status (DNS, DQ,
+-- No time), keeps its value; a different slip time is kept beside it as "slip" for the Recorder to pick.
+-- A checked race stays checked when the slip changes nothing. The same as lateSlip() in js/core.js.
+create or replace function private.times_slip_merge() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare l text; o jsonb; n jsonb; ol jsonb; nl jsonb; lanes jsonb := '{}'::jsonb; changed boolean := false;
+begin
+  if private.my_role() is distinct from 'slips' or coalesce(new.doc->>'src', '') <> 'photo' then return new; end if;
+  if coalesce((old.doc->>'gen')::int, 0) <> coalesce((new.doc->>'gen')::int, 0) then return new; end if;
+  ol := case when jsonb_typeof(old.doc->'lanes') = 'object' then old.doc->'lanes' else '{}'::jsonb end;
+  nl := case when jsonb_typeof(new.doc->'lanes') = 'object' then new.doc->'lanes' else '{}'::jsonb end;
+  for l in select k from jsonb_object_keys(ol) k union select k from jsonb_object_keys(nl) k loop
+    o := ol->l; n := nl->l;
+    if o is not null and (o->>'src' = 'typed' or o->>'st' in ('DNS', 'DQ', 'NT')) then
+      if n is not null and jsonb_typeof(n->'t') = 'number' and (n->'t') is distinct from (o->'t') then
+        o := jsonb_set(o, '{slip}', n->'t');
+      else
+        o := o - 'slip';
+      end if;
+      lanes := lanes || jsonb_build_object(l, o);
+    elsif n is not null then
+      lanes := lanes || jsonb_build_object(l, n);
+      if o is null or (o->'t') is distinct from (n->'t') or (o->'st') is distinct from (n->'st') then changed := true; end if;
+    else
+      lanes := lanes || jsonb_build_object(l, o);
+    end if;
+  end loop;
+  new.doc := jsonb_set(new.doc, '{lanes}', lanes);
+  if not changed and coalesce((old.doc->>'checked')::boolean, false) then
+    new.doc := new.doc || jsonb_build_object('checked', true, 'checkedAt', old.doc->'checkedAt');
+    if old.doc ? 'checkedBy' then new.doc := new.doc || jsonb_build_object('checkedBy', old.doc->'checkedBy'); end if;
+  end if;
+  return new;
+end $$;
+drop trigger if exists times_slip_merge on public.times;
+create trigger times_slip_merge before update on public.times
+  for each row execute function private.times_slip_merge();
 
 -- ---------- PINs ----------
 -- Every wrong PIN is counted. More than 5 wrong in 5 minutes on one device,

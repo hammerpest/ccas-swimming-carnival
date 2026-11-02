@@ -86,7 +86,7 @@ function oddTime(k,cs,limits){
 function heatEffective(laneTimes,judgeOrder){
   /* laneTimes: {lane:{t,st}}; judgeOrder: [[lane,...],...] place groups */
   const ok={};
-  for(const ln in laneTimes){const v=laneTimes[ln];if(v&&v.st!=="DNS"&&v.st!=="DQ"&&v.t!=null)ok[ln]=v.t}
+  for(const ln in laneTimes){const v=laneTimes[ln];if(v&&!noTimeSt(v.st)&&v.t!=null)ok[ln]=v.t}
   const res={};
   const judged=[];const groupOf={};
   (judgeOrder||[]).forEach((grp,i)=>grp.forEach(ln=>{ln=String(ln);if(ok[ln]!=null){judged.push(ln);groupOf[ln]=i}}));
@@ -101,6 +101,30 @@ function heatEffective(laneTimes,judgeOrder){
   rest.forEach((ln,i)=>{res[ln]=left[i]});
   const out={};
   for(const ln in ok)out[ln]={rec:ok[ln],eff:res[ln],pink:res[ln]!==ok[ln]};
+  return out;
+}
+
+/* a lane status that means no time counts: DNS, DQ, or No time (decision 144) */
+function noTimeSt(st){return st==="DNS"||st==="DQ"||st==="NT"}
+function stName(st){return st==="NT"?"No time":st}
+/* A late slip never overwrites what the Recorder typed (decision 136). A lane typed by the Recorder, or
+   given a status (DNS, DQ, No time), keeps its value; where the slip has a different time, it is kept
+   beside the lane as "slip" so the Recorder sees "Slip differs" and picks. A checked race stays checked
+   when the slip changes nothing. A slip for an earlier run of a re-swum race (gen) starts fresh.
+   supabase/01-setup.sql does the same on the server for photos that wait in the queue. */
+function lateSlip(old,neu){
+  if(!old||(old.gen||0)!==(neu.gen||0))return neu;
+  const ol=old.lanes||{},nl=neu.lanes||{};const lanes={};let changed=false;
+  for(const l of new Set([...Object.keys(ol),...Object.keys(nl)])){
+    const o=ol[l],n=nl[l];
+    if(o&&(o.src==="typed"||noTimeSt(o.st))){
+      lanes[l]=Object.assign({},o);
+      if(n&&n.t!=null&&n.t!==o.t)lanes[l].slip=n.t;else delete lanes[l].slip;
+    }else if(n){lanes[l]=n;if(!o||o.t!==n.t||o.st!==n.st)changed=true}
+    else lanes[l]=o;
+  }
+  const out=Object.assign({},neu,{lanes});
+  if(!changed&&old.checked){out.checked=true;out.checkedAt=old.checkedAt;if(old.checkedBy)out.checkedBy=old.checkedBy}
   return out;
 }
 
@@ -144,29 +168,49 @@ function compute(S){
     if(!TYPE[h.k])continue;
     const key=groupKey(h.k,h.x,h.g);
     const id="r"+String(h.race).padStart(4,"0");
-    const T=(S.times||{})[id]||{};
-    const F=(S.finish||{})[id]||{};
+    /* a re-swum race keeps its number (decision 134): times, places and slips from an earlier run
+       (an older gen) no longer count */
+    const gen=h.gen||0;const cur=d=>d&&(d.gen||0)===gen?d:null;
+    const T=cur((S.times||{})[id])||{};
+    const F=cur((S.finish||{})[id])||{};
+    const slip=cur(S.slips&&S.slips[id]);
     const lanes=h.lanes||{};
-    const filled=Object.keys(lanes).filter(l=>lanes[l]);
+    /* a cancelled race keeps its lanes on screen, but none of them counts */
+    const filled=h.cancelled?[]:Object.keys(lanes).filter(l=>lanes[l]);
     const lt=T.lanes||{};
     /* only marshalled lanes count; a slip time for an empty lane is shown to the Recorder as "extra" */
     const ltIn={};for(const l of filled)if(lt[l])ltIn[l]=lt[l];
     const eff=heatEffective(ltIn,(F.order||[]).map(g=>g.filter(l=>lanes[l])).filter(g=>g.length));
-    const extra=Object.keys(lt).filter(l=>!lanes[l]&&lt[l]&&lt[l].t!=null&&lt[l].st!=="DNS"&&lt[l].st!=="DQ").map(Number).sort((a,b)=>a-b);
+    const extra=Object.keys(lt).filter(l=>!lanes[l]&&lt[l]&&lt[l].t!=null&&!noTimeSt(lt[l].st)).map(Number).sort((a,b)=>a-b);
     const placeTaps=finishOrderFromTaps(F.order);
-    const nTimes=filled.filter(l=>lt[l]&&(lt[l].t!=null||lt[l].st==="DNS"||lt[l].st==="DQ")).length;
-    const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep&&(oddTime(h.k,v.t,cfg.limits)||v.chk)}).length;
+    const nTimes=filled.filter(l=>lt[l]&&(lt[l].t!=null||noTimeSt(lt[l].st))).length;
+    const nOk=filled.filter(l=>lt[l]&&lt[l].t!=null&&!noTimeSt(lt[l].st)).length;
+    const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&!noTimeSt(v.st)&&!v.keep&&(oddTime(h.k,v.t,cfg.limits)||v.chk)}).length;
+    const differs=filled.filter(l=>lt[l]&&lt[l].slip!=null&&lt[l].slip!==lt[l].t).map(Number);
     const need=Math.min(4,filled.length);
     const dh=(F.order||[]).map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
     const tapped=Object.keys(placeTaps).filter(l=>lanes[l]).length;
     /* a lane changed after Times checked sends the race back to "To check" (decision 113); two minutes
        either way allows for device clocks that differ, so a doubtful change is checked again */
-    const checked=!!T.checked&&!(h.edited&&T.checkedAt&&h.edited>T.checkedAt-120000);
+    /* a place change after Times checked also sends the race back (A2). The Place Judge's device saves
+       the checkedAt it saw (ck), so no device clocks are compared */
+    const checked=!!T.checked&&!(h.edited&&T.checkedAt&&h.edited>T.checkedAt-120000)&&!(F.ck&&T.checkedAt&&F.ck>=T.checkedAt);
+    /* decision 143: Times checked is optional. A heat is done when every filled lane has a time or a status
+       and the places are in (top 4 of the swimmers with a time, or fewer confirmed by the Place Judge),
+       or when the Recorder has checked it */
+    const allIn=nTimes===filled.length;
+    const placesIn=!!F.ok||tapped>=Math.min(4,nOk);
+    /* a late slip that differs from a typed time waits for the Recorder to pick (decision 136) */
+    const done=!h.cancelled&&!differs.length&&(allIn&&(placesIn||checked));
     let tstatus="Waiting for slip";
-    if(nTimes)tstatus=checked?"Checked":"To check";
+    if(h.cancelled)tstatus="Cancelled";
+    else if(nTimes)tstatus=checked?"Checked":"To check";
+    const doneAt=Math.max(h.at||0,T.at||0,T.checkedAt||0,F.at||0,(slip&&slip.at)||0);
     const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,
-      tstatus,checked,checkedAt:T.checkedAt||0,nTimes,flagged,need,tapped,dh,extra,src:T.src||null,hasSlip:!!(S.slips&&S.slips[id])};
+      tstatus,checked,checkedAt:T.checkedAt||0,nTimes,nOk,flagged,need,tapped,placesIn,allIn,done,doneAt,differs,dh,extra,src:T.src||null,hasSlip:!!slip,
+      gen,T,F,slip,cancelled:!!h.cancelled};
     races.set(h.race,r);
+    if(h.cancelled)continue;
     const G=ensure(key);G.heats.push(r);
   }
   for(const G of groups.values()){
@@ -174,7 +218,7 @@ function compute(S){
     for(const r of G.heats){
       for(const ln of r.filled){
         const p=who(r.lanes[ln]);const v=r.times[ln]||{};const e=r.eff[ln];
-        rows.push({id:r.lanes[ln],p,race:r.race,heat:r.heat,lane:+ln,st:v.st||(v.t!=null?"ok":"wait"),rec:v.t!=null?v.t:null,eff:e?e.eff:null,pink:!!(e&&e.pink),judge:r.placeTaps[ln]||null,dh:r.dh.some(g=>g.includes(String(ln))),place:null,pts:0});
+        rows.push({id:r.lanes[ln],p,race:r.race,heat:r.heat,lane:+ln,st:v.st||(v.t!=null?"ok":"wait"),rec:v.t!=null&&v.st!=="NT"?v.t:null,eff:e?e.eff:null,pink:!!(e&&e.pink),judge:r.placeTaps[ln]||null,dh:r.dh.some(g=>g.includes(String(ln))),place:null,pts:0});
       }
     }
     const ok=rows.filter(x=>x.eff!=null).sort((a,b)=>a.eff-b.eff);
@@ -197,13 +241,17 @@ function compute(S){
       ok.splice(i,j-i,...blk);
       i=j;
     }
+    /* No time (decision 144): no place, but the 4th-and-below points for the swimmer and the house */
     const others=rows.filter(x=>x.eff==null).sort((a,b)=>(a.st==="wait")-(b.st==="wait")||a.race-b.race||a.lane-b.lane);
+    for(const x of others)if(x.st==="NT")x.pts=t.nopts?0:P.rest;
     G.rows=[...ok,...others];
     G.allChecked=G.heats.length>0&&G.heats.every(h=>h.checked);
+    G.allDone=G.heats.length>0&&G.heats.every(h=>h.done);
     G.open=!!(S.openGroups&&S.openGroups.has(G.key));
-    G.final=G.allChecked&&!G.open;
+    G.final=G.allDone&&!G.open;
     G.status=G.final?"Final":"Provisional";
-    G.checkedAt=Math.max(0,...G.heats.map(h=>h.checkedAt||0));
+    /* when the group became final: the latest change to any of its heats (keeps the Announcer's order) */
+    G.checkedAt=Math.max(0,...G.heats.map(h=>h.doneAt||0));
     G.raceNos=G.heats.map(h=>h.race);
   }
   /* records */
@@ -226,6 +274,9 @@ function compute(S){
     if(t.nopts)continue;
     G.rows.forEach(r=>{if(r.place&&r.place<=2)r.hris=true});
   }
+  /* a group nobody swam can be marked "Not swum" by the organiser (A9): it counts as final */
+  const notSwum=new Set(cfg.notSwum||[]);
+  function isFinal(key){const G=groups.get(key);return G?G.final:notSwum.has(key)}
   /* houses and champions */
   const house={};for(const h of HOUSES)house[h.c]={c:h.c,n:h.n,byAge:Object.fromEntries(AGE_GROUPS.map(a=>[a,0])),relay:0,indiv:0,total:0};
   const champ={};
@@ -251,16 +302,17 @@ function compute(S){
     const list=Object.entries(m).map(([id,pts])=>({id,pts,p:who(id)})).sort((a,b)=>b.pts-a.pts);
     const top=list.length?list[0].pts:null;
     const winners=list.filter(r=>r.pts===top);
-    const second=list.find(r=>r.pts<top);
+    /* joint champions: no runner up beside them (decision 145) */
+    const second=winners.length>1?null:list.find(r=>r.pts<top);
     const runners=second?list.filter(r=>r.pts===second.pts):[];
     /* races that count: 5 age races + 200 m band race */
     const counting=events.filter(e=>e.x===x&&((TYPE[e.k].gk==="age"&&e.g===ag)||(e.k==="free200"&&e.g===BAND_OF[ag])));
-    const done=counting.filter(e=>{const G=groups.get(e.key);return G&&G.final}).length;
+    const done=counting.filter(e=>isFinal(e.key)).length;
     champs[ck]={winners,runners,done,of:counting.length};
   }
-  const finalCount=events.filter(e=>{const G=groups.get(e.key);return G&&G.final}).length;
+  const finalCount=events.filter(e=>isFinal(e.key)).length;
   const maxRace=heats.length?heats[heats.length-1].race:0;
-  return {cfg,P,events,groups,races,heats,house,houseRank,champs,broken,finalCount,maxRace,who};
+  return {cfg,P,events,groups,races,heats,house,houseRank,champs,broken,finalCount,maxRace,who,isFinal,notSwum};
 }
 
 /* ---- time slip text (Swiss Timing printer, decision 110) ----
@@ -476,4 +528,4 @@ function hy3File(R,cfg,dobOf,now){
   return {text:out.join("\r\n")+"\r\n",entries,swimmers:nums.size,missing,provisional};
 }
 
-if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip,hy3File,hy3Line,hy3Check};
+if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,lateSlip,noTimeSt,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip,hy3File,hy3Line,hy3Check};

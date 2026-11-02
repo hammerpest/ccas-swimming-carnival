@@ -104,6 +104,11 @@ check(not r.ok("select doc_update('heats', 'r0001', '{\"race\":99}')"), "recorde
 check(m.ok("select doc_update('heats', 'r0001', '{\"heat\":1}')"), "marshal can still change the whole race (2.2)")
 check(not r.ok("select doc_update('pins', 'x', '{}')"), "doc_update refuses unknown collections")
 
+# Swim Opt 2.7 (A1): the Recorder cancels a race or clears it for a re-swim, nothing more
+check(r.ok("select doc_update('heats', 'r0001', '{\"cancelled\":true,\"cancelAt\":5}')"), "recorder can cancel a race (A1)")
+check(r.ok("select doc_update('heats', 'r0001', '{\"cancelled\":false,\"gen\":1}')"), "recorder can bring a race back and clear it for a re-swim (A1)")
+check(not r.ok("select doc_update('heats', 'r0001', '{\"k\":\"fly50\"}')"), "recorder still cannot change the event (A1)")
+
 # judge, slips, announcer
 j = Dev(); j.pin("judge")
 check(j.ok("insert into finish values ('r0001', '{}')"), "judge writes finish")
@@ -111,6 +116,18 @@ check(not j.ok("select doc_update('times', 'r0001', '{\"lanes\":{}}')"), "judge 
 s = Dev(); s.pin("slips")
 check(s.ok("insert into slips values ('r0001', '{}')") and s.ok("select doc_update('times', 'r0002', '{}')"), "time slips writes slips and times")
 check(s.ok("insert into finish values ('r0003', '{}')"), "time slips writes places from the multitimer (121)")
+# decision 136: a late slip keeps the Recorder's typed times
+r.ok("""insert into times values ('r0007', '{"lanes":{"1":{"t":3500,"st":"ok","src":"typed"},"2":{"st":"DNS","src":"typed"},"3":{"t":3700,"st":"ok","src":"photo"}},"checked":true,"checkedAt":9}')""")
+up = """insert into times values ('r0007', %s) on conflict (id) do update set doc = excluded.doc"""
+check(s.ok(up, ('{"lanes":{"1":{"t":3510,"st":"ok","src":"photo"},"2":{"t":3900,"st":"ok","src":"photo"},"3":{"t":3700,"st":"ok","src":"photo"}},"src":"photo","checked":false}',)), "late slip saved")
+d = r.q("select doc from times where id='r0007'")[0][0]
+check(d["lanes"]["1"]["t"] == 3500 and d["lanes"]["1"]["slip"] == 3510 and d["lanes"]["2"]["st"] == "DNS" and d["lanes"]["2"]["slip"] == 3900, "late slip: typed lanes kept, slip time beside them (136)")
+check(d["checked"] is True and d["checkedAt"] == 9, "late slip that changes nothing: still checked (136)")
+s.ok(up, ('{"lanes":{"3":{"t":3650,"st":"ok","src":"photo"}},"src":"photo","checked":false}',))
+d = r.q("select doc from times where id='r0007'")[0][0]
+check(d["lanes"]["3"]["t"] == 3650 and d["lanes"]["1"]["t"] == 3500 and d["checked"] is False, "late slip changes an untyped lane: To check (136)")
+s.ok(up, ('{"lanes":{"1":{"t":1,"st":"ok","src":"photo"}},"src":"photo","gen":1,"checked":false}',))
+check(r.q("select doc->'lanes'->'1'->>'t' from times where id='r0007'")[0][0] == "1", "slip for a re-swum race starts fresh (134)")
 check(s.ok("insert into storage.objects (bucket_id, name) values ('slips', 'r0001.jpg')"), "time slips uploads a photo")
 check(not m.ok("insert into storage.objects (bucket_id, name) values ('slips', 'r0002.jpg')"), "marshal cannot upload a photo")
 check(m.q("select count(*) from storage.objects")[0][0] == 1, "any job can see the photos")

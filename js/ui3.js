@@ -4,9 +4,11 @@ function lockedBy(race){
   const mine=A.job==="recorder"&&A.r.race===race?A.r.since:Infinity;
   return otherPeers().some(p=>p.job==="recorder"&&p.rec===race&&(p.recSince||0)<mine);
 }
+/* B1: a relief Recorder or a reload opens on the first race that still needs work (not done, a yellow
+   time, or a slip that differs), else the latest race. A cancelled race can still be opened from Go to race. */
 function recRace(){
-  const list=raceList();if(!list.length)return null;
-  if(A.r.race==null||!A.R.races.has(A.r.race)){A.r.race=list[0].race;A.r.since=Date.now();announce()}
+  const list=liveRaces();if(!list.length)return null;
+  if(A.r.race==null||!A.R.races.has(A.r.race)){const r=list.find(r=>!r.done||r.flagged||r.differs.length)||list[list.length-1];A.r.race=r.race;A.r.since=Date.now();announce()}
   return A.R.races.get(A.r.race);
 }
 function overallTable(G,opts){
@@ -14,36 +16,39 @@ function overallTable(G,opts){
   if(!G||!G.rows.length)return `<p class="muted">No swimmers yet.</p>`;
   return `<div class="tablewrap"><table><thead><tr><th class="num">Place</th><th>Swimmer</th><th>House</th><th class="num">Time</th><th class="num">Heat</th>${opts.pts===false?"":`<th class="num">Points</th>`}<th></th></tr></thead><tbody>
   ${G.rows.map(x=>`<tr class="${x.race===opts.hl?"":""}"><td class="num">${x.place?(x.place<=3?medal(x.place):x.place):"&ndash;"}</td><td>${esc(pname(x.p))}</td><td>${hdot(x.p&&x.p.h)}</td>
-    <td class="num ${x.pink&&opts.pink!==false?"pinkt":""}">${x.st==="DNS"||x.st==="DQ"?x.st:x.eff!=null?fmtTime(x.eff):`<span class="muted">waiting</span>`}</td><td class="num">${x.heat}</td>${opts.pts===false?"":`<td class="num">${x.place?x.pts:0}</td>`}
+    <td class="num ${x.pink&&opts.pink!==false?"pinkt":""}">${noTimeSt(x.st)?stName(x.st):x.eff!=null?fmtTime(x.eff):`<span class="muted">waiting</span>`}</td><td class="num">${x.heat}</td>${opts.pts===false?"":`<td class="num">${x.pts||0}</td>`}
     <td>${x.dh?`<span class="tag dh">DEAD HEAT</span> `:""}${x.tag?`<span class="tag ${x.tag==="NEW RECORD"?"rec":"eq"}">${x.tag}</span> `:""}${x.hris&&opts.hris!==false?`<span class="tag hris">HRIS</span>`:""}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 function renderRecorder(){
   const r=recRace();
   if(!r)return waitingCard("Waiting for the first race","Race 1 appears here once the marshal sends it. Times arrive from the time slip photo, or you can type them.");
-  const lk=lockedBy(r.race)||locked();
-  const max=raceList().slice(-1)[0].race;
+  const lk=lockedBy(r.race)||locked();const lkc=lk||r.cancelled;
+  const max=latestRace();
   const L=Number(A.cfg.lanes)||8;const G=A.R.groups.get(r.key);
   let rows="";
   for(let l=1;l<=L;l++){
     const id=r.lanes[l];if(!id)continue;
     const p=A.R.who(id);const v=r.times[l]||{};const e=r.eff[l];const jp=r.placeTaps[l];
-    const odd=v.t!=null&&v.st!=="DNS"&&v.st!=="DQ"&&!v.keep?(oddTime(r.k,v.t,A.cfg.limits)||(v.chk?"slip hard to read":null)):null;
+    const odd=v.t!=null&&!noTimeSt(v.st)&&!v.keep?(oddTime(r.k,v.t,A.cfg.limits)||(v.chk?"slip hard to read":null)):null;
+    /* decision 136: a late slip keeps the typed time; the Recorder picks */
+    const dif=r.differs.includes(l)?v.slip:null;
     const err=A.r.errs[r.race+"-"+l];
-    const notOnSlip=r.src==="photo"&&v.t==null&&!v.st;const sm=A.slips[rid(r.race)]||{};const notRead=notOnSlip&&(sm.miss||(sm.missed||[]).includes(l)||(sm.unsure||[]).length>0);
-    const val=err?err.raw:(v.t!=null?fmtTime(v.t):"");
+    const notOnSlip=r.src==="photo"&&v.t==null&&!v.st;const sm=r.slip||{};const notRead=notOnSlip&&(sm.miss||(sm.missed||[]).includes(l)||(sm.unsure||[]).length>0);
+    const val=err?err.raw:(v.t!=null&&v.st!=="NT"?fmtTime(v.t):"");
     rows+=`<tr class="${e&&e.pink?"pinkrow":odd?"flagrow":""}">
       <td class="num" style="font:800 1.1rem var(--font-display)">${l}</td>
       <td class="nmcell">${hdot(p.h)} <b>${esc(pname(p))}</b></td>
       <td>${jp?medal(jp)+(r.dh.some(g=>g.includes(String(l)))?` <span class="tag dh">DEAD HEAT</span>`:""):`<span class="muted">${r.tapped?"By time":"&ndash;"}</span>`}</td>
-      <td><input class="timein ${odd?"flag":""} ${notOnSlip?"nos":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lk||v.st==="DNS"?"disabled":""} aria-label="Time for lane ${l}">
-        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":v.src==="multi"?"From multitimer":"Typed"}</span>`:""}</td>
-      <td class="num">${e&&e.eff!=null&&v.st!=="DQ"?`<span class="${e.pink?"pinkt":""}" style="font:800 1.05rem var(--font-mono)">${fmtTime(e.eff)}</span>${e.pink?`<span class="under pinkn">Slip ${fmtTime(e.rec)}</span>`:""}`:""}</td>
-      <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DNS" aria-pressed="${v.st==="DNS"}" ${lk?"disabled":""}>DNS</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DQ" aria-pressed="${v.st==="DQ"}" ${lk?"disabled":""}>DQ</button></div></td>
-      <td>${odd?`<div style="min-width:150px"><span style="color:var(--warn);font-weight:700;font-size:.85rem">Check this time: ${esc(odd)}</span><div class="row" style="gap:6px;margin-top:4px"><button type="button" class="btn small" data-act="rkeep" data-l="${l}" ${lk?"disabled":""}>Keep</button><button type="button" class="btn small" data-act="rfix" data-l="${l}" ${lk?"disabled":""}>Fix</button></div></div>`:""}</td>
+      <td><input class="timein ${odd?"flag":""} ${notOnSlip?"nos":""}" id="t-${r.race}-${l}" data-time="${l}" inputmode="numeric" autocomplete="off" value="${esc(val)}" placeholder="${notRead?"Check photo":notOnSlip?"Not on slip":"Type time"}" ${lkc||v.st==="DNS"||v.st==="NT"?"disabled":""} aria-label="Time for lane ${l}">
+        ${err?`<span class="under" style="color:var(--bad);font-weight:700">${esc(err.msg)}</span>`:dif!=null?`<span class="under" style="color:var(--warn);font-weight:700">Slip differs: ${fmtTime(dif)}</span>`:notRead?`<span class="under" style="color:var(--warn);font-weight:700">Not read: check the photo</span>`:notOnSlip?`<span class="under">Not on slip</span>`:v.src?`<span class="under">${v.src==="photo"?"From slip":v.src==="multi"?"From multitimer":"Typed"}</span>`:""}</td>
+      <td class="num">${v.st==="NT"?`<span style="font:800 1.05rem var(--font-mono)">No time</span>`:e&&e.eff!=null&&v.st!=="DQ"?`<span class="${e.pink?"pinkt":""}" style="font:800 1.05rem var(--font-mono)">${fmtTime(e.eff)}</span>${e.pink?`<span class="under pinkn">Slip ${fmtTime(e.rec)}</span>`:""}`:""}</td>
+      <td><div class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DNS" aria-pressed="${v.st==="DNS"}" ${lkc?"disabled":""}>DNS</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="DQ" aria-pressed="${v.st==="DQ"}" ${lkc?"disabled":""}>DQ</button><button type="button" class="stbtn" data-act="rst" data-l="${l}" data-st="NT" aria-pressed="${v.st==="NT"}" ${lkc?"disabled":""}>No time</button></div></td>
+      <td>${dif!=null?`<div style="min-width:150px"><div class="row" style="gap:6px"><button type="button" class="btn small" data-act="rslipuse" data-l="${l}" ${lk?"disabled":""}>Use slip</button><button type="button" class="btn small" data-act="rslipkeep" data-l="${l}" ${lk?"disabled":""}>Keep typed</button></div></div>`:odd?`<div style="min-width:150px"><span style="color:var(--warn);font-weight:700;font-size:.85rem">Check this time: ${esc(odd)}</span><div class="row" style="gap:6px;margin-top:4px"><button type="button" class="btn small" data-act="rkeep" data-l="${l}" ${lk?"disabled":""}>Keep</button><button type="button" class="btn small" data-act="rfix" data-l="${l}" ${lk?"disabled":""}>Fix</button></div></div>`:""}</td>
     </tr>`;
   }
   const canCheck=r.nTimes>0&&!lk;
+  const nextNo=nextRaceAfter(r.race);
   return `${lockBar()}<div class="recgrid">
       <div class="stack">
         <div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div class="info" style="min-width:0"><b style="display:block;font:800 1.3rem var(--font-display)">${esc(r.label)}</b><span class="muted" style="font-weight:600">Heat ${r.heat} · <span class="chip ${r.checked?"final":r.nTimes?"prov":""}">${esc(r.tstatus)}</span></span></div></div>
@@ -51,19 +56,21 @@ function renderRecorder(){
           <button type="button" class="btn" data-act="rgoto">Go to race</button>
           <button type="button" class="btn" data-act="rslip" ${r.hasSlip&&!(A.slips[rid(r.race)]||{}).multi?"":"disabled"}>View slip photo</button>
           ${r.race<max?`<button type="button" class="btn" data-act="rlatest">Back to latest</button>`:""}
-          ${A.R.races.has(r.race+1)?`<button type="button" class="btn navy" data-act="rnext" style="margin-left:auto">Next race</button>`:`<button type="button" class="btn" disabled style="margin-left:auto">Waiting for marshal</button>`}
+          ${nextNo!=null?`<button type="button" class="btn navy" data-act="rnext" style="margin-left:auto">Next race</button>`:`<button type="button" class="btn" disabled style="margin-left:auto">Waiting for marshal</button>`}
         </div>
         ${r.dh.length?`<div class="msg warn">Dead heat: ${r.dh.map(g=>"lanes "+g.join(" and ")).join("; ")} were tapped as a tie by the Place Judge. Place judges must split the result if they can. Check with them before pressing Times checked.</div>`:""}
         ${r.extra.length?`<div class="msg warn">The slip has a time for ${r.extra.length>1?"lanes "+r.extra.slice(0,-1).join(", ")+" and "+r.extra.slice(-1):"lane "+r.extra[0]}, but no swimmer was marshalled ${r.extra.length>1?"in those lanes":"in that lane"}. A swimmer may have been missed: add them here or check with the marshal.
           <div class="row" style="gap:8px;margin-top:8px">${r.extra.map(l=>`<button type="button" class="btn small" data-act="raddlane" data-l="${l}" ${lk?"disabled":""}>Add swimmer to lane ${l}</button>`).join("")}</div></div>`:""}
+        ${r.cancelled?`<div class="msg warn">Race ${r.race} was cancelled (not swum). Its swimmers can be marshalled again.<div class="row" style="gap:8px;margin-top:8px"><button type="button" class="btn small" data-act="runcancel" ${lk?"disabled":""}>Bring this race back</button></div></div>`:""}
         ${lockedBy(r.race)?`<div class="msg warn">Being entered by another device. You can look, but times cannot be changed here until it is finished.</div>`:""}
         <div class="panel" style="padding:0;overflow:hidden"><div class="tablewrap"><table>
-          <thead><tr><th class="num">Lane</th><th>Swimmer</th><th>Place</th><th>Time</th><th class="num">Result</th><th>DNS / DQ</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="7" class="muted">No swimmers in this heat.</td></tr>`}</tbody></table></div></div>
+          <thead><tr><th class="num">Lane</th><th>Swimmer</th><th>Place</th><th>Time</th><th class="num">Result</th><th>DNS / DQ / No time</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="7" class="muted">No swimmers in this heat.</td></tr>`}</tbody></table></div></div>
         <p class="muted" style="margin:0;font-size:.88rem">Type digits only: 3412 is 34.12 and 10234 is 1:02.34. Press Enter to save and move down. Pink times were moved by the Place Judge's order; the slip time shows underneath.</p>
         <button type="button" class="btn big ${r.checked?"go":"navy"}" data-act="rcheck" ${canCheck&&!r.checked?"":"disabled"} style="width:100%">${r.checked?"Checked":"Times checked"}</button>
+        ${r.cancelled?"":`<div class="row" style="justify-content:center;gap:24px"><button type="button" class="linkbtn" data-act="rcancel" ${lk?"disabled":""}>Cancel this race (not swum)</button><button type="button" class="linkbtn" data-act="rreswim" ${lk?"disabled":""}>Re-swim this race</button></div>`}
       </div>
-      <div class="stack"><div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Race overall</h3><span class="chip ${G&&G.final?"final":"prov"}">${G?G.status:""}</span></div>
-        <div class="muted" style="font-size:.88rem">${esc(r.label)} · ${raceRange(G?G.raceNos:[])}, ${plural(G?G.heats.length:0,"heat")}, timed final</div>
+      <div class="stack"><div class="panel stack"><div class="row" style="justify-content:space-between"><h3>Race overall</h3>${G?`<span class="chip ${G.final?"final":"prov"}">${G.status}</span>`:""}</div>
+        <div class="muted" style="font-size:.88rem">${esc(r.label)} · ${G?`${raceRange(G.raceNos)}, ${plural(G.heats.length,"heat")}, timed final`:"no heats swum yet"}</div>
         ${overallTable(G,{hl:r.race})}</div>
         ${slipPanel(r)}</div>
     </div>`;
@@ -77,33 +84,35 @@ async function saveTime(l,raw){
   delete A.r.errs[key];
   const cur=r.times[l]||{};
   if(cur.t===p.cs&&cur.st!=="DNS")return true;
-  const lanes={};lanes[l]={t:p.cs,st:"ok",src:"typed",keep:false,chk:false};
-  const T=A.times[rid(r.race)]||{};
-  A.times[rid(r.race)]=Object.assign({},T,{lanes:Object.assign({},T.lanes||{},lanes),checked:false});
+  const lanes={};lanes[l]={t:p.cs,st:"ok",src:"typed",keep:false,chk:false,slip:null};
+  const T=r.T||{};
+  A.times[rid(r.race)]=Object.assign({},T,{lanes:Object.assign({},T.lanes||{},lanes),checked:false,gen:r.gen});
   recompute();
-  await w(()=>A.store.update("times/"+rid(r.race),{lanes,checked:false,by:DEV,at:Date.now()}));
+  await w(()=>A.store.update("times/"+rid(r.race),{lanes,checked:false,gen:r.gen,by:DEV,at:Date.now()}));
   return true;
 }
 async function setLane(l,patch){
   const r=recRace();if(!r||lockedBy(r.race)||locked())return;
-  const T=A.times[rid(r.race)]||{};const cur=(T.lanes||{})[l]||{};
+  const T=r.T||{};const cur=(T.lanes||{})[l]||{};
   const nv=Object.assign({},cur,patch);
   const lanes={};lanes[l]=nv;
-  A.times[rid(r.race)]=Object.assign({},T,{lanes:Object.assign({},T.lanes||{},lanes),checked:patch.keep&&Object.keys(patch).length===1?T.checked:false});
+  const same=Object.keys(patch).every(k=>k==="keep"||k==="slip");
+  A.times[rid(r.race)]=Object.assign({},T,{lanes:Object.assign({},T.lanes||{},lanes),checked:same?!!T.checked:false,gen:r.gen});
   recompute();render();
-  await w(()=>A.store.update("times/"+rid(r.race),{lanes,checked:A.times[rid(r.race)].checked,by:DEV,at:Date.now()}));
+  await w(()=>A.store.update("times/"+rid(r.race),{lanes,checked:A.times[rid(r.race)].checked,gen:r.gen,by:DEV,at:Date.now()}));
 }
 function recNextToCheck(from){
-  const list=raceList().filter(x=>x.race>from&&!x.checked);
-  return list.length?list[0].race:(A.R.races.has(from+1)?from+1:from);
+  const list=liveRaces().filter(x=>x.race>from&&!x.checked);
+  const nx=nextRaceAfter(from);
+  return list.length?list[0].race:(nx!=null?nx:from);
 }
 async function timesChecked(force){
   const r=recRace();if(!r)return;
-  const missing=r.filled.filter(l=>{const v=r.times[l]||{};return v.t==null&&v.st!=="DNS"&&v.st!=="DQ"});
-  if(missing.length){A.modal={t:"info",title:"A lane has no time",body:`<p style="margin:0">${missing.length===1?"Lane "+missing[0]+" has":"Lanes "+missing.join(", ")+" have"} no time yet. ${r.src==="multi"?"Type the time":"Type the time from the paper slip"}, or mark DNS or DQ, then press Times checked.</p>`,ok:"< Back to times"};render();return}
+  const missing=r.filled.filter(l=>{const v=r.times[l]||{};return v.t==null&&!noTimeSt(v.st)});
+  if(missing.length){A.modal={t:"info",title:"A lane has no time",body:`<p style="margin:0">${missing.length===1?"Lane "+missing[0]+" has":"Lanes "+missing.join(", ")+" have"} no time yet. ${r.src==="multi"?"Type the time":"Type the time from the paper slip"}, or mark DNS, DQ or No time, then press Times checked.</p>`,ok:"< Back to times"};render();return}
   if(!force&&(r.flagged||r.dh.length)){A.modal={t:"flagged",n:r.flagged,dh:r.dh};render();return}
-  const key=rid(r.race);const T=A.times[key]||{};
-  const patch={checked:true,checkedAt:Date.now(),checkedBy:DEV};
+  const key=rid(r.race);const T=r.T||{};
+  const patch={checked:true,checkedAt:Date.now(),checkedBy:DEV,gen:r.gen};
   if(force){const lanes={};for(const l in (T.lanes||{})){const v=T.lanes[l];if(v.t!=null&&oddTime(r.k,v.t,A.cfg.limits))lanes[l]=Object.assign({},v,{keep:true})}patch.lanes=lanes}
   A.times[key]=Object.assign({},T,patch,{lanes:Object.assign({},T.lanes||{},patch.lanes||{})});
   A.modal=null;
@@ -111,19 +120,42 @@ async function timesChecked(force){
   if(ok){A.r.race=recNextToCheck(r.race);A.r.since=Date.now();announce()}
   recompute();render();
 }
+/* A1 (decisions 134 and 135): the Recorder or the Organiser cancels a race sent in error, or clears a
+   race for a re-swim. A re-swim keeps the number (the timing printer prints it as the same race); the
+   race's gen goes up, so the old places, times and slip no longer count anywhere. */
+async function cancelRace(race,on){
+  const H=A.heats.find(h=>h.race===race);if(!H)return;
+  if(locked()){toast("Results are locked.");return}
+  const was={cancelled:H.cancelled};H.cancelled=on;A.modal=null;recompute();render();
+  const ok=await w(()=>A.store.update("heats/"+rid(race),{cancelled:on,cancelAt:Date.now()}));
+  if(!ok){H.cancelled=was.cancelled;recompute();render();return}
+  toast(on?`Race ${race} cancelled (not swum)`:`Race ${race} is back`);
+}
+async function reswimRace(race){
+  const H=A.heats.find(h=>h.race===race);if(!H)return;
+  if(locked()){toast("Results are locked.");return}
+  const gen=(H.gen||0)+1;const was=H.gen;
+  H.gen=gen;A.times[rid(race)]={lanes:{},gen,checked:false};A.modal=null;recompute();render();
+  const ok=await w(()=>A.store.update("heats/"+rid(race),{gen}));
+  if(!ok){H.gen=was;recompute();render();return}
+  await w(()=>A.store.set("times/"+rid(race),{lanes:{},gen,checked:false,by:DEV,at:Date.now()}));
+  toast(`Race ${race} cleared for the re-swim`);
+}
+MODALS.cancelRace=M=>`<h2>Cancel Race ${M.race}?</h2><p style="margin:0">Only for a race sent in error that will not be swum. Its swimmers can be marshalled again, and its group no longer waits for it.</p><p style="margin:0">Race numbers do not change. Check the timing console's next race number still matches the app's.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn redfill" data-act="rcancelok">Cancel the race</button></div>`;
+MODALS.reswimRace=M=>`<h2>Re-swim Race ${M.race}?</h2><p style="margin:0">Clears the places, times and slip for Race ${M.race}. The swimmers stay in their lanes and the race keeps its number, as the timing printer prints the re-swim as Race ${M.race}.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn redfill" data-act="rreswimok">Clear for the re-swim</button></div>`;
 MODALS.flagged=M=>`<h2>${M.n?"A time still needs a check":"Dead heat in this race"}</h2>${M.n?`<p style="margin:0">${plural(M.n,"time is","times are")} marked yellow because ${M.n===1?"it looks":"they look"} odd for this race.</p>`:""}${M.dh&&M.dh.length?`<p style="margin:0"><b>Dead heat:</b> ${M.dh.map(g=>"lanes "+g.join(" and ")).join("; ")} were tapped as a tie. Place judges must split the result if they can. Only keep it if they confirm it was a true dead heat.</p>`:""}<div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back to times</button><button type="button" class="btn go" data-act="rforce">${M.n?"Times are right":"Keep the dead heat"}</button></div>`;
 MODALS.slip=M=>`<h2>Slip photo: Race ${M.race}</h2>${M.img?`<img src="${M.img}" alt="Time slip photo for race ${M.race}" style="border-radius:10px;border:1px solid var(--line)">`:`<p class="muted">${M.loading?"Loading the photo...":"No photo stored for this race."}</p>`}
   ${M.read?`<div class="label">What was read</div><table><tbody>${Object.keys(M.read).sort((a,b)=>a-b).map(l=>`<tr><td>Lane ${l}</td><td class="num">${fmtTime(M.read[l])}</td></tr>`).join("")}</tbody></table>`:""}
   <div class="acts"><button type="button" class="btn primary" data-act="closemodal">Close</button></div>`;
 async function viewSlip(race){
-  const key=rid(race);const meta=A.slips[key]||{};
+  const key=rid(race);const meta=(A.R.races.get(race)||{}).slip||{};
   A.modal={t:"slip",race,loading:true,read:meta.read||null};render();
   try{const d=await A.store.get("photos/"+(A.past?"y"+A.past+"-":"")+key);if(A.modal&&A.modal.t==="slip"){A.modal.img=d&&d.img;A.modal.loading=false;render()}}catch(e){if(A.modal){A.modal.loading=false;render()}}
 }
 
 /* the slip photo under Race overall, so times, result and slip are on one screen */
 function slipPanel(r){
-  const key=rid(r.race);const meta=A.slips[key];
+  const key=rid(r.race);const meta=r.slip;
   if(!meta)return `<div class="panel stack"><h3>Time slip</h3><p class="muted" style="margin:0">No slip yet for Race ${r.race}.</p></div>`;
   if(meta.multi)return `<div class="panel stack"><h3>Multitimer</h3><p class="muted" style="margin:0">Timed on the phone multitimer: no slip photo. Splits in finish order:</p>${mtSplitList(meta.splits||[])}</div>`;
   const ck=key+"@"+(meta.at||0);
@@ -135,40 +167,47 @@ function slipPanel(r){
 }
 
 /* ---------- Time Slips (phone) ---------- */
+/* B1: a relief phone or a reload opens on the first race after the last one with a slip */
 function slipRace(){
-  const list=raceList();if(!list.length)return null;
+  const list=liveRaces();if(!list.length)return null;
   if(A.mt&&(A.mt.phase==="run"||A.mt.phase==="place")&&A.R.races.has(A.mt.race))A.s.race=A.mt.race;
-  if(A.s.race==null||!A.R.races.has(A.s.race)){const first=list.find(r=>!A.slips[rid(r.race)]);A.s.race=(first||list[list.length-1]).race}
+  if(A.s.race==null||!A.R.races.has(A.s.race)){let i=-1;list.forEach((r,n)=>{if(r.hasSlip)i=n});A.s.race=(list[i+1]||list[Math.max(i,0)]).race}
+  A.s.race=liveRaceNo(A.s.race);
   return A.R.races.get(A.s.race);
 }
+/* A5: "Waiting to send" comes from the real queue on this phone (and the No signal practice button) */
+function slipQueued(){return (A.s.queued||0)+(A.store&&A.store.queued?A.store.queued("slips/"):0)}
+function slipWaiting(race){return !!((A.s.waiting&&A.s.waiting[race])||(A.store&&A.store.queued&&A.store.queued("slips/"+rid(race))))}
+/* A4: the practice buttons make up times, so on the real site only the organiser sees them */
+function slipPractice(){return !realReader()||A.role==="org"}
 function renderSlips(){
   const r=slipRace();
-  const waiting=A.s.queued||0;
+  const waiting=slipQueued();
   const top=waiting?`<div class="msg warn">No signal. ${plural(waiting,"photo")} waiting to send. It sends by itself when there is signal.</div>`:"";
   if(!r)return `<div class="phone">${top}${waitingCard("Waiting for the marshal","Race 1 appears here once it is sent.")}</div>`;
   if(mtWanted(r))return renderMulti(r,top);
-  const done=!!A.slips[rid(r.race)];const t=slipMode();
+  const done=r.hasSlip;const t=slipMode();
   if(realReader()&&innerWidth<700)slipOcrLoad().catch(()=>{});
   const showNext=done&&!A.s.err&&!A.s.flash;
-  const hasNext=A.R.races.has(r.race+1);
+  const hasNext=nextRaceAfter(r.race)!=null;
   return `${lockBar()}<div class="phone">${top}
     <div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div style="min-width:0"><b style="font:800 1.15rem var(--font-display);display:block">${esc(r.label)}</b><span class="muted">Heat ${r.heat}</span></div></div>
     ${A.s.err?`<div class="msg bad" role="alert">${A.s.err}</div>`:""}
-    ${showNext?`<div class="msg ok">${A.slips[rid(r.race)].multi?`Race ${r.race} multitimer times sent to the Recorder.`:`Race ${r.race} slip read and sent to the Recorder.`}</div>
+    ${showNext?`<div class="msg ${slipWaiting(r.race)?"warn":"ok"}">${slipWaiting(r.race)?`Race ${r.race} slip saved on this phone. It sends by itself when there is signal.`:r.slip.multi?`Race ${r.race} multitimer times sent to the Recorder.`:`Race ${r.race} slip read and sent to the Recorder.`}</div>
        ${hasNext?`<button type="button" class="btn navy big" data-act="snext" style="width:100%">Next race</button>`:`<button type="button" class="btn big" disabled style="width:100%">Waiting for marshal</button>`}
        <label class="btn" for="camin" style="width:100%">Replace this slip with a new photo</label>`
-     :A.s.reading?`<div class="cam" role="status">Reading the slip...</div>`
+     :A.s.reading||A.s.sending?`<div class="cam" role="status">${A.s.sending?"Sending the slip...":"Reading the slip..."}</div>`
      :`<label class="cam" for="camin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>${A.s.err?"Take again":"Take photo of slip"}</label>`}
     <input id="camin" type="file" accept="image/*" capture="environment" hidden ${locked()?"disabled":""}>
     ${A.s.reading?"":`<button type="button" class="btn big mtopen" data-act="mtopen">${MT_ICON}Multitimer</button>`}
     <div class="row"><button type="button" class="btn" data-act="sgoto" style="flex:1">Check race</button><button type="button" class="btn" data-act="soverall" style="flex:1">Race overall</button></div>
-    <div class="panel stack" style="gap:8px;background:var(--sunk);border-color:transparent">
+    ${slipPractice()?`<div class="panel stack" style="gap:8px;background:var(--sunk);border-color:transparent">
       ${realReader()?`<span class="label">Slip reader</span>
       <p style="margin:0;font-size:.88rem">Read the photo reads the race number, lanes and times from the slip. For practice without a slip, the other buttons make up test times instead:</p>`
       :`<span class="label">Slip reader: test mode</span>
       <p style="margin:0;font-size:.88rem">The reader for the Swiss Timing slip is built once real slip photos arrive. Until then the photo is saved and test times are made up, so the Recorder can be tried. Pick what the next photo should do:</p>`}
       <div class="row" style="gap:6px">${(realReader()?[["real","Read the photo"]]:[]).concat([["good","Read OK"],["bad","Cannot read"],["wrong","Wrong slip"],["offline","No signal"]]).map(([k,l])=>`<button type="button" class="choice" style="min-height:48px;min-width:0;font-size:.9rem" data-act="stest" data-v="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>
-    </div>
+    </div>`:""}
   </div>
   ${A.s.flash?`<div class="flash ${A.s.flash.c}" role="status">${esc(A.s.flash.t)}</div>`:""}`;
 }
@@ -194,7 +233,7 @@ function testRead(r){
 }
 /* live mode reads the photo for real (decision 110); test mode and the practice buttons make up times */
 function realReader(){return !!(A.store&&A.store.mode!=="local")}
-function slipMode(){return A.s.test||(realReader()?"real":"good")}
+function slipMode(){return (slipPractice()&&A.s.test)||(realReader()?"real":"good")}
 async function onPhoto(file){
   const r=slipRace();if(!r||!file)return;
   const t=slipMode();
@@ -215,7 +254,7 @@ async function onPhoto(file){
   const key=rid(r.race);
   /* a race that already has a slip asks before the new photo replaces it (decision 117), so a slip
      read as the wrong race after going back can never overwrite a good one without a yes */
-  if(A.slips[key]){A.modal={t:"replaceSlip",race:r.race,go:()=>keepPhoto(r,t,key,read,unsure,miss,missed,img,two)};render();return}
+  if(r.hasSlip){A.modal={t:"replaceSlip",race:r.race,go:()=>keepPhoto(r,t,key,read,unsure,miss,missed,img,two)};render();return}
   await keepPhoto(r,t,key,read,unsure,miss,missed,img,two);
 }
 /* anything odd is sent, never held up: doubtful lanes go yellow for the Recorder to check against the
@@ -228,9 +267,9 @@ async function keepPhoto(r,t,key,read,unsure,miss,missed,img,two){
   const mism=t==="real"&&Object.keys(read.lanes).some(l=>!r.lanes[l])&&r.filled.some(l=>read.lanes[l]==null);
   if(mism)miss=true;
   const lanes={};for(const l in read.lanes)lanes[l]={t:read.lanes[l],st:"ok",src:"photo",keep:false,chk:unsure.includes(+l)};
-  const meta={race:r.race,read:read.lanes,unsure,miss,missed,mism,two:!!two,at:Date.now(),dev:DEV,test:t!=="real"};
+  const meta={race:r.race,read:read.lanes,unsure,miss,missed,mism,two:!!two,gen:r.gen,at:Date.now(),dev:DEV,test:t!=="real"};
   A.slips[key]=meta;
-  A.times[key]={lanes,src:"photo",checked:false};recompute();
+  A.times[key]=lateSlip(r.gen===((A.times[key]||{}).gen||0)?A.times[key]:null,{lanes,src:"photo",checked:false,gen:r.gen});recompute();
   if(t==="offline"){
     A.s.queued=(A.s.queued||0)+1;A.s.waiting=Object.assign(A.s.waiting||{},{[r.race]:true});
     A.s.flash={c:"amber",t:"Saved on this phone. Sends when there is signal"};render();
@@ -238,14 +277,23 @@ async function keepPhoto(r,t,key,read,unsure,miss,missed,img,two){
     A.s.pend[key]=setTimeout(async()=>{delete A.s.pend[key];await sendSlip(key,img,meta,lanes);A.s.queued=Math.max(0,(A.s.queued||1)-1);delete A.s.waiting[r.race];render()},8000);
     return;
   }
+  /* "Sent" shows only once the slip has gone; a slip that waits in the queue says so (A5) */
+  A.s.sending=true;render();
+  const queued=await sendSlip(key,img,meta,lanes);
+  A.s.sending=false;
+  if(queued){A.s.flash={c:"amber",t:"Saved on this phone. Sends when there is signal"};render();setTimeout(()=>{A.s.flash=null;render()},1300);return}
   A.s.flash=two?{c:"amber",t:`Race ${r.race} sent, but the photo may show more than one slip. The Recorder will check it.`}:mism?{c:"amber",t:`Race ${r.race} sent, but the slip's lanes do not match the marshalled lanes. Check it is the Race ${r.race} slip.`}:miss||unsure.length?{c:"amber",t:`Race ${r.race} sent, but some of the slip was hard to read. Retake it if you can.`}:{c:"green",t:`Race ${r.race} read. Sent to the Recorder`};render();
   setTimeout(()=>{A.s.flash=null;render()},miss||unsure.length?3500:1100);
-  await sendSlip(key,img,meta,lanes);
 }
+/* the slip's times never overwrite what the Recorder typed (decision 136): merged with the latest copy
+   here, and on the server again when a queued photo arrives late. Returns true when it is waiting to send. */
 async function sendSlip(key,img,meta,lanes){
-  await w(()=>A.store.set("photos/"+key,{img,at:Date.now()}));
-  await w(()=>A.store.set("slips/"+key,meta));
-  await w(()=>A.store.set("times/"+key,{lanes,src:"photo",checked:false,by:DEV,at:Date.now()}));
+  const r1=await w(()=>A.store.set("photos/"+key,{img,at:Date.now()}));
+  const r2=await w(()=>A.store.set("slips/"+key,meta));
+  let cur=null;try{cur=await withTimeout(A.store.get("times/"+key),4000)}catch(e){cur=A.times[key]||null}
+  const doc=lateSlip(cur,{lanes,src:"photo",checked:false,gen:meta.gen||0,by:DEV,at:Date.now()});
+  const r3=await w(()=>A.store.set("times/"+key,doc));
+  return [r1,r2,r3].some(x=>!x||x.queued);
 }
 MODALS.pickLane=M=>{const r=A.R.races.get(M.race);if(!r)return `<p>Race not found.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">Close</button></div>`;
   const H=A.heats.find(h=>h.race===M.race)||{};const t=(r.times||{})[M.l];
@@ -262,7 +310,8 @@ MODALS.overall=M=>{const r=A.R.races.get(M.race);const G=r&&A.R.groups.get(r.key
 const MT_ICON=`<svg class="mtico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 10v4l2 2M10 3h4M12 3v4"/></svg>`;
 const CAM_ICON=`<svg class="mtico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>`;
 function mtBlank(race,sig){return {race,sig:sig||"",phase:"ready",t0:0,stopAt:0,splits:[],taps:[]}}
-function mtSig(r){return r.key+"/"+r.heat}
+/* a re-swum race (gen) or a cleared carnival (runId) starts a fresh clock */
+function mtSig(r){return r.key+"/"+r.heat+(r.gen?"/"+r.gen:"")+(A.cfg.runId?"/"+A.cfg.runId:"")}
 /* kept on the phone so a reload mid-race keeps the clock and splits */
 const MT_KEY="swim_mt_"+(/[?&]mode=local\b/.test(location.search)?"test":"live");
 function mtSave(){try{localStorage.setItem(MT_KEY,JSON.stringify({ov:A.s.mtov||{},mt:A.mt}))}catch(e){}}
@@ -294,13 +343,13 @@ function mtSplitList(sp){return `<ol class="splits">${sp.map((t,i)=>`<li><b>${i+
 function mtLimit(r){return Math.min(A.mt.splits.length,r.filled.length)}
 function renderMulti(r,top){
   const M=mtFor(r);const n=r.filled.length;const lk=locked();
-  const hasNext=A.R.races.has(r.race+1);
+  const hasNext=nextRaceAfter(r.race)!=null;
   const head=`<div class="row" style="flex-wrap:nowrap">${badge(r.race,"xl")}<div style="min-width:0"><b style="font:800 1.15rem var(--font-display);display:block">${esc(r.label)}</b><span class="muted">Heat ${r.heat}</span></div></div>`;
   const nav=`<div class="row"><button type="button" class="btn" data-act="sgoto" style="flex:1">Check race</button><button type="button" class="btn" data-act="soverall" style="flex:1">Race overall</button></div>`;
   const back=`<button type="button" class="btn" data-act="mtclose" style="width:100%">${CAM_ICON}Back to slip photo</button>`;
   let body="";
   if(M.phase==="ready"){
-    const has=!!A.slips[rid(r.race)]||r.nTimes>0||r.tapped>0;
+    const has=r.hasSlip||r.nTimes>0||r.tapped>0;
     body=`<div class="clock pin" id="mtclock" role="timer">0:00.00</div>
       <div class="mtbtns"><button type="button" class="btn mtgo" data-act="mtgo" data-mt ${lk||!n?"disabled":""}>START</button><button type="button" class="btn mtsplit" disabled>SPLIT</button></div>
       ${has?`<div class="msg info">Race ${r.race} already has ${r.tapped&&!r.nTimes?"places":"times"}. Sending replaces them.</div>`:""}
@@ -370,19 +419,19 @@ function mtTap(l){
 async function mtSend(force){
   const r=slipRace();const M=A.mt;if(!r||M.phase!=="place"||locked())return;
   const key=rid(r.race);
-  if(!force&&(A.slips[key]||r.nTimes>0||r.tapped>0)){A.modal={t:"mtReplace",race:r.race,judge:r.tapped>0};render();return}
+  if(!force&&(r.hasSlip||r.nTimes>0||r.tapped>0)){A.modal={t:"mtReplace",race:r.race,judge:r.tapped>0};render();return}
   A.modal=null;
   const lanes={},read={};
   M.taps.forEach((l,i)=>{lanes[l]={t:M.splits[i],st:"ok",src:"multi",keep:false,chk:false};read[l]=M.splits[i]});
   const top=M.taps.slice(0,Math.min(4,r.filled.length));
-  const fin={order:top.map(l=>[l]),seq:top.slice(),at:Date.now(),dev:DEV};
-  const meta={race:r.race,multi:true,splits:M.splits.slice(),read,unsure:[],miss:false,missed:[],mism:false,two:false,at:Date.now(),dev:DEV,test:false};
-  A.slips[key]=meta;A.times[key]={lanes,src:"multi",checked:false};A.finish[key]=fin;recompute();
+  const fin={order:top.map(l=>[l]),seq:top.slice(),ok:true,gen:r.gen,at:Date.now(),dev:DEV};
+  const meta={race:r.race,multi:true,splits:M.splits.slice(),read,unsure:[],miss:false,missed:[],mism:false,two:false,gen:r.gen,at:Date.now(),dev:DEV,test:false};
+  A.slips[key]=meta;A.times[key]={lanes,src:"multi",checked:false,gen:r.gen};A.finish[key]=fin;recompute();
   M.phase="sent";mtSave();
   A.s.flash={c:"green",t:`Race ${r.race} sent to the Recorder`};render();
   setTimeout(()=>{A.s.flash=null;render()},1100);
   await w(()=>A.store.set("slips/"+key,meta));
-  await w(()=>A.store.set("times/"+key,{lanes,src:"multi",checked:false,by:DEV,at:Date.now()}));
+  await w(()=>A.store.set("times/"+key,{lanes,src:"multi",checked:false,gen:r.gen,by:DEV,at:Date.now()}));
   await w(()=>A.store.set("finish/"+key,fin));
 }
 /* Fix splits: delete a double tap, add a missed time, or clear and time again */

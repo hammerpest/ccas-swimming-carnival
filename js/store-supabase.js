@@ -50,7 +50,7 @@ async function supabaseStore(onQueue){
     if(r.error)throw err(r.error);
     return {ok:true};
   }
-  const queue=makeQueue(write,onQueue);
+  const queue=makeQueue(write,onQueue,()=>{try{return !!role}catch(e){return false}});
 
   /* local copy of each table, kept live by Realtime; writes show straight away, even offline */
   const cache=new Map(),docSubs=new Map(),colSubs=new Map();
@@ -122,7 +122,7 @@ async function supabaseStore(onQueue){
 
   await signIn();
   try{const r=await sb.rpc("my_role");role=r.error?null:r.data||null}catch(e){}
-  if(role)join();
+  if(role){join();queue.flush()}
 
   return {
     mode:"supabase",
@@ -150,13 +150,13 @@ async function supabaseStore(onQueue){
     presence(obj){myPres=Object.assign(myPres,obj);if(ch){ch.track(Object.assign({dev:DEV},myPres)).catch(()=>{})}},
     onPeers(cb){peersCb.push(cb)},
     hasRoom:true,
-    pending:()=>queue.size(),flush:()=>queue.flush(),
+    pending:()=>queue.size(),queued:pre=>queue.count(pre),flush:()=>queue.flush(),
     /* PINs are checked on the server; the page never sees the PIN table */
     async claimRole(hash){
       await signIn();const r=await sb.rpc("claim_role",{pin_hash:hash});
       if(r.error)throw err(r.error);
       role=r.data||null;
-      if(role){await join();await loadAll()}
+      if(role){await join();await loadAll();queue.flush()}
       return role;
     },
     async releaseRole(){role=null;await join();try{await sb.rpc("release_role")}catch(e){}},

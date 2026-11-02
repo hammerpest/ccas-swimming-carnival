@@ -7,15 +7,36 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej({code:"timeout"}),ms))])}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* --- offline queue shared by both stores --- */
-function makeQueue(write,onChange){
+/* photos waiting to send are kept in IndexedDB, not in the queue: a slip photo is about 180 KB, and
+   localStorage fills after 15 to 25 of them (A5) */
+const IDB=(()=>{let dbp=null;
+  const open=()=>dbp||(dbp=new Promise((ok,no)=>{try{const r=indexedDB.open("swim_queue",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}));
+  const tx=(mode,fn)=>open().then(db=>new Promise((ok,no)=>{const t=db.transaction("photos",mode);const r=fn(t.objectStore("photos"));t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)}));
+  return {put:(k,v)=>tx("readwrite",st=>st.put(v,k)),get:k=>tx("readonly",st=>st.get(k)),del:k=>tx("readwrite",st=>st.delete(k))};
+})();
+
+/* --- offline queue shared by both stores ---
+   canFlush: the queue waits until this device has a job again (after a flat phone or a closed tab the
+   page signs in as a new device, and the server would refuse the writes), so a queued slip is never
+   dropped for that (A5) */
+function makeQueue(write,onChange,canFlush){
   let q=lsGet("swim_queue",[]);let busy=false;
   const save=()=>{lsSet("swim_queue",q);onChange&&onChange(q.length)};
+  async function load(w){
+    if(!(w.data&&w.data.idb))return w;
+    let img=null;try{img=await IDB.get(w.data.idb)}catch(e){}
+    return img?Object.assign({},w,{data:{img,at:w.data.at}}):null;
+  }
+  async function hold(w){
+    if(!(w.op==="set"&&w.data&&typeof w.data.img==="string"&&w.data.img.length>2000))return w;
+    const k=w.path+"@"+Date.now();
+    try{await IDB.put(k,w.data.img);return Object.assign({},w,{data:{idb:k,at:w.data.at}})}catch(e){return w}
+  }
   async function flush(){
-    if(busy||!q.length)return;busy=true;
+    if(busy||!q.length||(canFlush&&!canFlush()))return;busy=true;
     while(q.length){
-      const w=q[0];
-      try{await withTimeout(write(w),8000);q.shift();save()}
+      const w=q[0];const full=await load(w);
+      try{if(full)await withTimeout(write(full),8000);q.shift();save();if(w.data&&w.data.idb)IDB.del(w.data.idb).catch(()=>{})}
       catch(e){if(e&&e.code==="invalid_argument"){q.shift();save();continue}break}
     }
     busy=false;
@@ -24,11 +45,11 @@ function makeQueue(write,onChange){
   if(typeof window!=="undefined")window.addEventListener("online",flush);
   return {
     async run(w){
-      if(q.length){q.push(w);save();flush();return {queued:true}}
+      if(q.length){q.push(await hold(w));save();flush();return {queued:true}}
       try{await withTimeout(write(w),8000);return {ok:true}}
-      catch(e){if(e&&e.code==="invalid_argument")throw e;q.push(w);save();return {queued:true}}
+      catch(e){if(e&&e.code==="invalid_argument")throw e;q.push(await hold(w));save();return {queued:true}}
     },
-    size:()=>q.length,flush
+    size:()=>q.length,count:pre=>q.filter(w=>String(w.path).startsWith(pre)).length,flush
   };
 }
 

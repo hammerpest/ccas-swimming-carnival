@@ -23,12 +23,13 @@ function mMissing(){
   if(!m.g)miss.push(t&&t.gk!=="age"?"the group":"the age");
   return miss;
 }
+/* a race cancelled as not swum (A1) frees its swimmers to be marshalled again */
 function usedInGroup(){
   const m=A.m;const key=groupKey(m.k,m.x,m.g);const used=new Set();
-  for(const h of A.heats)if(groupKey(h.k,h.x,h.g)===key)for(const l in (h.lanes||{}))if(h.lanes[l])used.add(h.lanes[l]);
+  for(const h of A.heats)if(!h.cancelled&&groupKey(h.k,h.x,h.g)===key)for(const l in (h.lanes||{}))if(h.lanes[l])used.add(h.lanes[l]);
   return used;
 }
-function heatsSentFor(key){return A.heats.filter(h=>groupKey(h.k,h.x,h.g)===key).length}
+function heatsSentFor(key){return Math.max(0,...A.heats.filter(h=>!h.cancelled&&groupKey(h.k,h.x,h.g)===key).map(h=>Number(h.heat)||0))}
 
 function renderMarshal(){
   const m=A.m;
@@ -102,7 +103,7 @@ function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct,usedLabel){
    away; a time already in the lane stays with the lane; a race already checked goes back to "To check". */
 function heatUsed(H){
   const key=groupKey(H.k,H.x,H.g);const used=new Set();
-  for(const h of A.heats)if(h.race!==H.race&&groupKey(h.k,h.x,h.g)===key)for(const l in (h.lanes||{}))if(h.lanes[l])used.add(h.lanes[l]);
+  for(const h of A.heats)if(h.race!==H.race&&!h.cancelled&&groupKey(h.k,h.x,h.g)===key)for(const l in (h.lanes||{}))if(h.lanes[l])used.add(h.lanes[l]);
   return used;
 }
 async function setHeatLane(race,l,id){
@@ -136,6 +137,16 @@ function renderMarshalEdit(){
     <div class="msg warn" style="margin-bottom:12px">Changing Race ${H.race}. Changes save straight away. A time already in a lane stays with that lane.</div>
     <div class="pool">${lanes}</div>`;
 }
+/* B2: the heat being filled is kept on this device (this tab), so a reload or a dropped Safari tab
+   brings the lanes back. Cleared when the heat is sent or left. */
+const M_KEY="swim_marshal";
+function mSave(){
+  const m=A.m;
+  const v=A.job==="marshal"&&m.phase==="lanes"&&!A.past?JSON.stringify({k:m.k,x:m.x,g:m.g,lanes:m.lanes,heat:m.heat,cur:m.cur,sent:m.sent,bar:m.bar}):null;
+  if(v!==mSave.last){mSave.last=v;ssSet(M_KEY,v)}
+}
+(function(){let d=null;try{d=JSON.parse(ssGet(M_KEY,"null"))}catch(e){}
+  if(d&&TYPE[d.k]&&A.job==="marshal")Object.assign(A.m,{phase:"lanes",k:d.k,x:d.x,g:d.g,lanes:d.lanes||{},heat:d.heat||1,cur:d.cur||1,open:null,filter:"",sent:d.sent||[],bar:d.bar||"",msg:""})})();
 function nextEmpty(from){const L=Number(A.cfg.lanes)||8;for(let i=1;i<=L;i++){const l=((from-1+i)%L)+1;if(!A.m.lanes[l])return l}return null}
 async function sendHeat(){
   const m=A.m;
@@ -181,18 +192,24 @@ async function addSwimmer(l){
 }
 
 /* ---------- Place Judge ---------- */
+/* B1: a relief judge or a reload opens on the first race after the last one with places */
 function judgeRace(){
-  const list=raceList();if(!list.length)return null;
-  if(A.j.race==null||!A.R.races.has(A.j.race))A.j.race=list[0].race;
+  const list=liveRaces();if(!list.length)return null;
+  if(A.j.race==null||!A.R.races.has(A.j.race)){
+    let i=-1;list.forEach((r,n)=>{if(r.tapped||r.F.ok)i=n});
+    A.j.race=(list[i+1]||list[Math.max(i,0)]).race;
+  }
+  A.j.race=liveRaceNo(A.j.race);
   return A.R.races.get(A.j.race);
 }
+function judgeFin(r){return r.F||{}}
 function renderJudge(){
   const r=judgeRace();
   if(!r)return waitingCard("Waiting for the marshal","The first race appears here as soon as the marshal sends it.");
-  const L=Number(A.cfg.lanes)||8;const fin=A.finish[rid(r.race)]||{};const order=fin.order||[];
+  const L=Number(A.cfg.lanes)||8;const fin=judgeFin(r);const order=fin.order||[];
   const placeOf=finishOrderFromTaps(order);
   const placed=Object.keys(placeOf).length;const need=r.need;
-  const max=raceList().slice(-1)[0].race;
+  const max=latestRace();
   const done=placed>=need;
   const nextPlace=placed+1;
   let lanes="";
@@ -209,10 +226,11 @@ function renderJudge(){
   const ord=["1st","2nd","3rd","4th"];
   const prompt=done?`Top ${need} placed. Press Next race.`:`Tap the lane that touched ${ord[placed]||(placed+1)+"th"}${placed===0?" first":""}.`;
   const off=!placed||locked()?"disabled":"";
+  const undoOff=!((fin.undo||[]).length||(fin.seq||[]).length)||locked()?"disabled":"";
   const goto=`<button type="button" class="btn" data-act="jgoto">Go to race</button>
       ${r.race<max?`<button type="button" class="btn" data-act="jlatest">Back to latest</button>`:""}`;
-  const next=A.R.races.has(r.race+1)?`<button type="button" class="btn navy big" data-act="jnext">Next race</button>`:`<button type="button" class="btn big" disabled>Waiting for marshal</button>`;
-  const undo=`<button type="button" class="btn" data-act="jundo" ${off}>Undo last</button>`;
+  const next=nextRaceAfter(r.race)!=null?`<button type="button" class="btn navy big" data-act="jnext">Next race</button>`:`<button type="button" class="btn big" disabled>Waiting for marshal</button>`;
+  const undo=`<button type="button" class="btn" data-act="jundo" ${undoOff}>Undo last</button>`;
   const reset=`<button type="button" class="btn danger" data-act="jreset" ${off}>Start again</button>`;
   const info=`<div class="info"><b>${esc(r.label)}</b><span>Heat ${r.heat}${r.race<max?(phoneJob()?" · Earlier race":" · Earlier race: changes save straight away"):""}</span></div>`;
   /* phone: lanes, Undo last and Next race on one screen; Go to race and Start again below.
@@ -234,40 +252,53 @@ function renderJudge(){
     </div>`;
 }
 async function judgeTap(l){
-  const r=judgeRace();const key=rid(r.race);
-  const fin=A.finish[key]||{};let order=(fin.order||[]).map(g=>g.slice());let seq=(fin.seq||[]).slice();
+  const r=judgeRace();const fin=judgeFin(r);
+  let order=(fin.order||[]).map(g=>g.slice());
   const at=order.findIndex(g=>g.includes(l));
-  if(at>=0){order[at]=order[at].filter(x=>x!==l);order=order.filter(g=>g.length);seq=seq.filter(x=>x!==l)}
+  if(at>=0){order[at]=order[at].filter(x=>x!==l);order=order.filter(g=>g.length)}
   else{
     const placed=order.reduce((t,g)=>t+g.length,0);if(placed>=r.need)return;
-    order.push([l]);seq.push(l);
+    order.push([l]);
   }
-  await saveFinish(key,order,seq);
+  await saveFinish(r,order,true);
 }
-async function saveFinish(key,order,seq){
-  const doc={order,seq,at:Date.now(),dev:DEV};
+/* every change keeps the order before it, so Undo last puts back a removed place or a Start again (A13).
+   ck is the Times checked the judge saw: a change after it sends the race back to "To check" (A2) */
+async function saveFinish(r,order,undoable,extra){
+  const key=rid(r.race);const fin=judgeFin(r);
+  const undo=(fin.undo||[]).slice();if(undoable)undo.push(fin.order||[]);
+  const T=r.T||{};
+  const doc=Object.assign({order,seq:order.flat(),undo:undo.slice(-20),gen:r.gen||0,ck:T.checked?T.checkedAt||0:0,ok:!!fin.ok,at:Date.now(),dev:DEV},extra||{});
   A.finish[key]=doc;recompute();render();
   await w(()=>A.store.set("finish/"+key,doc));
 }
-function judgeUndo(){const r=judgeRace();const key=rid(r.race);const fin=A.finish[key]||{};const seq=(fin.seq||[]).slice();const last=seq.pop();if(last==null)return;
-  let order=(fin.order||[]).map(g=>g.filter(x=>x!==last)).filter(g=>g.length);saveFinish(key,order,seq)}
+function judgeUndo(){const r=judgeRace();const fin=judgeFin(r);const undo=(fin.undo||[]).slice();
+  if(undo.length){const prev=undo.pop();saveFinish(r,prev,false,{undo});return}
+  /* places saved before Swim Opt 2.7 have no undo list: take off the last tap */
+  const seq=(fin.seq||[]).slice();const last=seq.pop();if(last==null)return;
+  saveFinish(r,(fin.order||[]).map(g=>g.filter(x=>x!==last)).filter(g=>g.length),false)}
 function judgeNext(force){
   const r=judgeRace();
-  if(!force){const placed=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;
+  if(!force){const placed=Object.keys(finishOrderFromTaps(judgeFin(r).order)).length;
     if(placed<r.need){A.modal={t:"confirmPlaces",race:r.race,heat:r.heat,placed,need:r.need};render();return}}
-  if(A.R.races.has(r.race+1))A.j.race=r.race+1;
+  /* fewer places confirmed: the heat's places are in, times decide the rest (decision 143) */
+  else if(!judgeFin(r).ok)saveFinish(r,judgeFin(r).order||[],false,{ok:true});
+  const nx=nextRaceAfter(r.race);if(nx!=null)A.j.race=nx;
   A.modal=null;render();window.scrollTo(0,0);
 }
+MODALS.judgeReset=M=>`<h2>Start again?</h2><p style="margin:0">Race ${M.race}: this clears all ${plural(M.placed,"place")} tapped. Undo last puts them back.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back to lanes</button><button type="button" class="btn redfill" data-act="jresetok">Start again</button></div>`;
 MODALS.confirmPlaces=M=>`<h2>Confirm places</h2><p style="margin:0">Race ${M.race}, Heat ${M.heat}: ${M.placed} of ${M.need} places tapped. Times will decide any place not tapped.</p><div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back to lanes</button><button type="button" class="btn go" data-act="jconfirm">Confirm</button></div>`;
 MODALS.goRace=M=>{
-  const list=raceList();
+  const list=M.job==="judge"||M.job==="slips"?liveRaces():raceList();
   return `<h2>${M.job==="slips"?"Check race":M.job==="medit"?"Change an earlier race":"Go to race"}</h2><div class="stack" style="gap:6px">${list.length?list.slice().reverse().map(r=>{
     let st="";
-    if(M.job==="medit"){const n=Object.values(r.lanes||{}).filter(Boolean).length;st=plural(n,"lane")+" filled"}
-    else if(M.job==="judge"){const p=Object.keys(finishOrderFromTaps((A.finish[rid(r.race)]||{}).order)).length;st=p>=r.need?`Top ${r.need} done`:p?`${p} of ${r.need} placed`:"Not started"}
-    else if(M.job==="recorder"){st=lockedBy(r.race)?"On another device":r.tstatus}
-    else{st=A.slips[rid(r.race)]?(A.s.waiting&&A.s.waiting[r.race]?"Waiting to send":""):"No slip yet"}
-    const tick=(M.job==="slips"||M.job==="recorder")&&A.slips[rid(r.race)]&&!(M.job==="slips"&&A.s.waiting&&A.s.waiting[r.race]);
+    const H=A.heats.find(h=>h.race===r.race)||{};
+    if(r.cancelled)st="Cancelled";
+    else if(M.job==="medit"){const n=Object.values(H.lanes||{}).filter(Boolean).length;st=plural(n,"lane")+" filled"}
+    else if(M.job==="judge"){const p=Object.keys(finishOrderFromTaps(judgeFin(r).order)).length;st=p>=r.need?`Top ${r.need} done`:p?`${p} of ${r.need} placed`:"Not started"}
+    else if(M.job==="recorder"){st=lockedBy(r.race)?"On another device":r.differs.length?"Slip differs":r.tstatus}
+    else{st=r.hasSlip?(slipWaiting(r.race)?"Waiting to send":""):"No slip yet"}
+    const tick=(M.job==="slips"||M.job==="recorder")&&r.hasSlip&&!(M.job==="slips"&&slipWaiting(r.race));
     return `<button type="button" class="btn" style="justify-content:flex-start;gap:12px" data-act="pickrace" data-race="${r.race}" data-job="${M.job}">${badge(r.race,"sm")}<span style="flex:1;text-align:left">${esc(r.label)}<br><span class="muted" style="font-weight:600;font-size:.85rem">Heat ${r.heat}</span></span>${st?`<span class="chip">${esc(st)}</span>`:""}${tick?slipTick():""}</button>`}).join(""):`<p class="muted">No races sent yet.</p>`}</div>
   <div class="acts"><button type="button" class="btn" data-act="closemodal">Close</button></div>`;
 };

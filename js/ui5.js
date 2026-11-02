@@ -33,7 +33,8 @@ OSEC.details=()=>{const c=A.cfg;
   <h3>PINs</h3><p class="muted" style="margin:0">Each job has its own PIN and opens only that job. The Announcer PIN also opens Results and Houses. The Carnival Organiser PIN opens every job. Every PIN must be different.</p>
   <div class="tablewrap"><table><thead><tr><th>Job</th><th>PIN now</th><th>New PIN</th></tr></thead><tbody>${PIN_ROLES.map(([k,n,d])=>{const changed=c.pins&&c.pins[k]&&c.pins[k]!==DEFAULT_PINS[k];return `<tr><td><b>${esc(n)}</b></td><td>${changed?`<span class="chip final">Changed</span>`:`<span class="chip prov">Test PIN ${d}</span>`}</td><td><span class="row" style="gap:6px;flex-wrap:nowrap"><input id="pin-${k}" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="New PIN for ${esc(n)}" style="width:7em"><button type="button" class="btn small" data-act="opin" data-v="${k}">Change</button></span></td></tr>`}).join("")}</tbody></table></div>
   <hr style="border:0;border-top:1px solid var(--line);width:100%">
-  <div class="row">${badge(A.counter)}<span class="muted">Next race number. It only goes back to 1 with Start a new carnival.</span></div>`};
+  <div class="row">${badge(A.counter)}<span class="muted">Next race number. It only goes back to 1 with Start a new carnival.</span></div>
+  <div class="row"><input id="cNext" inputmode="numeric" autocomplete="off" aria-label="New next race number" style="width:7em"><button type="button" class="btn small" data-act="onext">Set next race number</button><span class="muted" style="font-size:.88rem">Forward only, to match the timing console.</span></div>`};
 OSEC.students=()=>{
   const all=students();const cnt={};for(const s of all){cnt[s.x+s.g]=(cnt[s.x+s.g]||0)+1}
   const pv=A.o.preview;
@@ -56,7 +57,17 @@ OSEC.program=()=>{const prog=progList();
     <td>${esc(t.start)}</td><td><b>${esc(t.name)}</b>${t.optional?` <span class="muted">(if time allows)</span>`:""}</td><td>${esc(GROUPS[t.gk].map(grpName).join(", "))}</td><td class="num">${n}</td>
     <td><button type="button" class="switch" role="switch" aria-checked="${p.on}" data-act="oswitch" data-i="${i}" aria-label="${esc(t.name)} on or off"></button></td></tr>`}).join("")}
   </tbody></table></div><p style="margin:0"><b>${A.R.events.length} races on the program</b></p>
+  ${notSwumPanel()}
   <p class="muted" style="margin:0;font-size:.88rem">Printing the program and blank lane cards comes with the GitHub version; the Claude page cannot open the print dialog.</p>`};
+/* A9: a group nobody swam (no heats sent) can be marked "Not swum", so the carnival can go final */
+function notSwumPanel(){
+  const marked=A.cfg.notSwum||[];
+  const open=A.R.events.filter(e=>!A.R.groups.has(e.key)&&!marked.includes(e.key));
+  const gone=marked.filter(k=>A.R.events.some(e=>e.key===k));
+  return `<h3>Groups not swum</h3><p class="muted" style="margin:0">A group with no heats sent keeps the results provisional. Mark it "Not swum" if it will not be swum today.</p>
+  <div class="row"><select id="oNotSwum" aria-label="Group not swum" style="flex:1 1 260px">${open.map(e=>`<option value="${esc(e.key)}">${esc(groupLabel(e.k,e.x,e.g))}</option>`).join("")||`<option value="">Every group has a heat sent</option>`}</select><button type="button" class="btn" data-act="onotswum" ${open.length?"":"disabled"}>Mark not swum</button></div>
+  ${gone.length?`<div class="stack" style="gap:6px">${gone.map(k=>{const {k:t,x,g}=splitKey(k);return `<div class="row" style="justify-content:space-between"><span>${esc(groupLabel(t,x,g))} <span class="chip">Not swum</span>${A.R.groups.has(k)?` <span class="muted" style="font-size:.85rem">(a heat has been sent, so it counts as swum)</span>`:""}</span><button type="button" class="btn small" data-act="onotswumundo" data-k="${esc(k)}">Undo</button></div>`}).join("")}</div>`:""}`;
+}
 OSEC.points=()=>{const P=Object.assign({},DEFAULT_CONFIG.points,A.cfg.points||{});
   return `<h2>Points</h2><div class="fields">
     <label>1st<input id="pt1" type="number" min="0" value="${P.p1}"></label><label>2nd<input id="pt2" type="number" min="0" value="${P.p2}"></label>
@@ -91,6 +102,8 @@ OSEC.records=()=>{
   <textarea id="rcPaste" style="min-height:100px"></textarea><div><button type="button" class="btn" data-act="orecpaste">Add these records</button></div>`};
 OSEC.export=()=>`<h2>Export</h2>
   <div class="panel stack" style="background:var(--sunk);border-color:transparent"><h3>Results backup (CSV)</h3><p class="muted" style="margin:0">Every heat, time, place and points, house totals and age champions. There are no automatic backups, so export after the carnival.</p><div><button type="button" class="btn primary" data-act="csv">Export CSV</button></div></div>
+  <div class="panel stack" style="background:var(--sunk);border-color:transparent"><h3>Full backup</h3><p class="muted" style="margin:0">One file with everything for this carnival: students, races, places, times, slips with their photos, records and settings. Restore puts it all back, for example after a practice run or if something goes wrong.</p>
+    <div class="row"><button type="button" class="btn primary" data-act="obackup">Download full backup</button><label class="btn" for="oRestore">Restore a backup</label><input id="oRestore" type="file" accept=".json,application/json" hidden></div></div>
   <div class="panel stack" style="background:var(--sunk);border-color:transparent"><h3>Meet Manager file (RE1)</h3><p class="muted" style="margin:0">Load the original student list with DOB on this computer, then write the RE1 file. DOB is matched here and nothing is kept.</p><div><button type="button" class="btn" disabled>Write RE1 file</button></div><p class="muted" style="margin:0;font-size:.88rem">Waiting for the sample RE1 file from the next level, so the layout matches exactly.</p></div>`;
 OSEC.lock=()=>`<h2>Lock and new carnival</h2>
   <div class="row" style="justify-content:space-between"><div><b>Lock results</b><p class="muted" style="margin:0">Locked: every job can look but nothing can be changed. Unlock to undo.</p></div><button type="button" class="switch" role="switch" aria-checked="${!!A.cfg.locked}" data-act="olock" aria-label="Lock results"></button></div>
@@ -98,6 +111,9 @@ OSEC.lock=()=>`<h2>Lock and new carnival</h2>
    <p style="margin:0">Keeps this whole year (students, heats, places, times, slip photos and results) as a look-only past year, then starts next year empty with the race number back to 1. Settings, PINs, program, points, limits and records carry over.</p>
    <p style="margin:0;font-weight:700">Export the CSV as well, as a backup.</p>
    <div><button type="button" class="btn redfill" data-act="onew">Start a new carnival</button></div></div>
+  <div class="panel stack" style="border:2px solid var(--warn)"><h3>Clear practice data</h3>
+   <p style="margin:0">After the staff practice run: clears every race, place, time, slip and swimmer added on the day, and puts the race number back to 1. Students, settings, PINs, program, points, limits and records stay. Nothing is kept as a year.</p>
+   <div><button type="button" class="btn danger" data-act="oclear">Clear practice data</button></div></div>
   ${A.o.newMsg?`<div class="msg ok">${esc(A.o.newMsg)}</div>`:""}`;
 MODALS.newCarnival=M=>M.step===1?`<h2>Start a new carnival</h2>
   <div><b>Kept as the ${esc((A.cfg.date||"2027").slice(0,4))} carnival (look only):</b> all ${students().length} students, ${A.heats.length} heats with their places, times and slip photos, results and records. Open it any time from Change year.</div>
@@ -107,6 +123,81 @@ MODALS.newCarnival=M=>M.step===1?`<h2>Start a new carnival</h2>
   <div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn redfill" data-act="onew1">Keep this year and continue</button></div>`
  :`<h2>Bring in the updated records?</h2>${M.list.length?`<p style="margin:0">Records broken or equalled this carnival:</p><ul style="margin:0">${M.list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:`<p style="margin:0">No records were broken or equalled this carnival.</p>`}
   <div class="acts"><button type="button" class="btn" data-act="onew2" data-v="no">No, I will upload a list</button><button type="button" class="btn primary" data-act="onew2" data-v="yes">Yes, bring them in</button></div>`;
+MODALS.orgPin=M=>`<h2>${esc(M.title)}</h2>${M.body}
+  <label class="stack" style="gap:4px;font-weight:600">Type the organiser PIN<input id="opPin" inputmode="numeric" maxlength="4" autocomplete="off" style="width:8em"></label>
+  ${M.err?`<div class="msg bad">${esc(M.err)}</div>`:""}
+  <div class="acts"><button type="button" class="btn" data-act="closemodal">&lt; Back</button><button type="button" class="btn redfill" data-act="oorgpinok">${esc(M.ok)}</button></div>`;
+async function orgPinOk(p){
+  /* Supabase: the organiser PIN is checked on the server */
+  if(A.store&&A.store.checkPin){try{return await A.store.checkPin("org",pinHash(p))}catch(e){toast("No connection. Try again.");return null}}
+  return pinHash(p)===pins().org;
+}
+function newRunId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+/* A7 (decision 140): clear the practice run; students and settings stay, nothing is kept as a year */
+async function clearPractice(){
+  if(A.past){toast("Past years are look only.");return}
+  const jobs=[];
+  for(const h of A.heats){const id=h._id||rid(h.race);jobs.push("heats/"+id,"times/"+id,"finish/"+id,"slips/"+id,"photos/"+id)}
+  for(const id of Object.keys(A.times))jobs.push("times/"+id);
+  for(const id of Object.keys(A.finish))jobs.push("finish/"+id);
+  for(const id of Object.keys(A.slips))jobs.push("slips/"+id,"photos/"+id);
+  for(const e of A.extras)jobs.push("extras/"+e.id);
+  toast("Clearing...");
+  for(const p of new Set(jobs)){try{await A.store.del(p)}catch(e){}}
+  await w0(()=>A.store.set("counter/race",{next:1,at:Date.now()}));
+  await saveCfg({locked:false,lockedAt:null,runId:newRunId(),notSwum:[]},"Practice data cleared");
+  A.heats=[];A.times={};A.finish={};A.slips={};A.extras=[];A.counter=1;A.s.mtov={};mtSave();
+  A.o.newMsg="Practice data cleared. Race number back to 1. Students, settings and records are kept.";
+  A.modal=null;recompute();render();
+}
+/* A6: a full backup file, and a restore that puts it all back */
+async function downloadBackup(){
+  toast("Making the backup...");
+  const photos={};
+  for(const id of Object.keys(A.slips)){try{const ph=await A.store.get("photos/"+id);if(ph&&ph.img)photos[id]=ph.img}catch(e){}}
+  const strip=o=>JSON.parse(JSON.stringify(o));
+  const b={app:"CCAS Swimming Carnival",kind:"full backup",version:"Swim Opt 2.7",savedAt:localStamp(),year:curYear(),
+    config:strip(A.cfg),roster:{F:strip(A.roster.F),M:strip(A.roster.M)},extras:strip(A.extras),heats:strip(A.heats),times:strip(A.times),
+    finish:strip(A.finish),slips:strip(A.slips),records:strip(A.records),counter:A.counter,photos};
+  await saveFile("CCAS swimming backup "+localStamp().replace(":","")+".json",JSON.stringify(b),"application/json");
+}
+function readBackup(text){
+  let b=null;try{b=JSON.parse(text)}catch(e){}
+  if(!b||b.kind!=="full backup"||!b.config||!Array.isArray(b.heats))return null;
+  return b;
+}
+async function restoreBackup(b){
+  if(A.past){toast("Past years are look only.");return}
+  const clean=o=>{const c=Object.assign({},o);delete c._id;return c};
+  toast("Restoring...");
+  const jobs=[];
+  for(const h of A.heats){const id=h._id||rid(h.race);jobs.push("heats/"+id,"times/"+id,"finish/"+id,"slips/"+id,"photos/"+id)}
+  for(const id of Object.keys(A.times))jobs.push("times/"+id);
+  for(const id of Object.keys(A.finish))jobs.push("finish/"+id);
+  for(const id of Object.keys(A.slips))jobs.push("slips/"+id,"photos/"+id);
+  for(const e of A.extras)jobs.push("extras/"+e.id);
+  for(const p of new Set(jobs)){try{await A.store.del(p)}catch(e){}}
+  let bad=0;const put=async(p,d)=>{if(!await w0(()=>A.store.set(p,d)))bad++};
+  await put("config/main",Object.assign({},b.config,{runId:newRunId()}));
+  await put("roster/F",{students:(b.roster&&b.roster.F)||[],at:Date.now()});
+  await put("roster/M",{students:(b.roster&&b.roster.M)||[],at:Date.now()});
+  for(const e of b.extras||[])await put("extras/"+e.id,clean(e));
+  for(const h of b.heats)await put("heats/"+(h._id||rid(h.race)),clean(h));
+  for(const k of ["times","finish","slips"])for(const id in (b[k]||{}))await put(k+"/"+id,clean(b[k][id]));
+  for(const id in (b.photos||{}))await put("photos/"+id,{img:b.photos[id],at:Date.now()});
+  await put("records/all",{list:b.records||[]});
+  await put("counter/race",{next:Number(b.counter)||1,at:Date.now()});
+  A.modal=null;
+  A.o.newMsg=bad?"Restore finished, but "+plural(bad,"item")+" could not be saved. Check the connection and restore again.":"Backup from "+String(b.savedAt||"").slice(0,16)+" restored.";
+  render();
+}
+async function setNextRace(){
+  const v=Number(String(document.getElementById("cNext").value).replace(/[^0-9]/g,""));
+  if(!v||v<=A.counter){toast("The next race number only goes forward. Type a number above "+A.counter+".");return}
+  if(v>A.counter+50){toast("That is more than 50 races ahead. Check the number.");return}
+  const r=await w0(()=>A.store.set("counter/race",{next:v,by:DEV,at:Date.now()}));
+  if(r){A.counter=v;toast("Next race number is now "+v);render()}
+}
 async function saveCfg(patch,msg){
   const c=Object.assign({},A.cfg,patch);
   A.cfg=c;recompute();
@@ -142,7 +233,7 @@ async function newCarnival(bring){
   await A.store.set("counter/race",{next:1,at:Date.now()});
   await A.store.set("records/all",{list:recs});
   const ny=String(+yr+1);
-  await A.store.set("config/main",Object.assign({},A.cfg,{locked:false,lockedAt:null,date:ny+(A.cfg.date||"2027-02-10").slice(4),dateConfirmed:false,ageDate:yr+"-12-31",name:String(A.cfg.name||"").includes(yr)?A.cfg.name.replace(yr,ny):A.cfg.name}));
+  await A.store.set("config/main",Object.assign({},A.cfg,{runId:newRunId(),notSwum:[],locked:false,lockedAt:null,date:ny+(A.cfg.date||"2027-02-10").slice(4),dateConfirmed:false,ageDate:yr+"-12-31",name:String(A.cfg.name||"").includes(yr)?A.cfg.name.replace(yr,ny):A.cfg.name}));
   A.heats=[];A.times={};A.finish={};A.slips={};A.extras=[];A.roster={F:[],M:[]};A.records=recs;A.counter=1;A.s.mtov={};mtSave();
   A.o.newMsg="The "+yr+" carnival is kept (look only, open it from Change year). The "+ny+" carnival is ready. Race number back to 1. Load the new student list in section 2 and check the date in section 1.";
   A.modal=null;recompute();render();
@@ -193,6 +284,7 @@ function renderInner(){
   const fid=document.activeElement&&document.activeElement.id;
   main.innerHTML=`<div class="wrap">${html}</div>`;
   document.getElementById("mod").innerHTML=modalHtml();
+  mSave();
   if(fid){const el=document.getElementById(fid);if(el&&el.focus){el.focus();if(el.setSelectionRange&&el.type!=="number")try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
   window.scrollTo(sx,sy);
   wireInputs();
@@ -209,6 +301,10 @@ function wireInputs(){
   const a=document.getElementById("rfAge");if(a)a.onchange=()=>{A.res.age=a.value;render()};
   const nt=document.getElementById("newsText");if(nt)nt.oninput=()=>{A.newsEdit=nt.value};
   const ot=document.getElementById("oText");if(ot)ot.oninput=()=>{A.o.text=ot.value;A.o.preview=null};
+  const rf=document.getElementById("oRestore");if(rf)rf.onchange=e=>{const file=e.target.files[0];e.target.value="";if(!file)return;const fr=new FileReader();
+    fr.onload=()=>{const b=readBackup(String(fr.result));if(!b){toast("That file is not a full backup from this app.");return}
+      A.modal={t:"orgPin",title:"Restore this backup?",ok:"Restore the backup",go:"restore",b,body:`<p style="margin:0">Backup saved ${esc(String(b.savedAt||"").slice(0,16))}: ${plural(b.heats.length,"race")}, ${((b.roster&&b.roster.F||[]).length+(b.roster&&b.roster.M||[]).length)} students, ${(b.records||[]).length} records.</p><p style="margin:0;font-weight:700">It replaces everything in the current carnival. Past years are not changed.</p>`};render()};
+    fr.readAsText(file)};
   const of=document.getElementById("oFile");if(of)of.onchange=e=>{const file=e.target.files[0];if(!file)return;const fr=new FileReader();fr.onload=()=>{A.o.text=String(fr.result);A.o.preview=parseStudents(A.o.text,A.cfg.ageDate);render()};fr.readAsText(file)};
 }
 const ACT={
@@ -235,10 +331,11 @@ const ACT={
   mconfirm:async()=>{A.modal=null;if(await sendHeat())finishMarshalRace();else render()},
   jtap:el=>{if(!locked())judgeTap(+el.dataset.l)},
   jundo:()=>judgeUndo(),
-  jreset:()=>{const r=judgeRace();saveFinish(rid(r.race),[],[])},
+  jreset:()=>{const r=judgeRace();const n=Object.keys(finishOrderFromTaps(judgeFin(r).order)).length;if(!n)return;A.modal={t:"judgeReset",race:r.race,placed:n};render()},
+  jresetok:()=>{const r=judgeRace();A.modal=null;saveFinish(r,[],true)},
   jnext:()=>judgeNext(false),
   jconfirm:()=>judgeNext(true),
-  jlatest:()=>{A.j.race=raceList().slice(-1)[0].race;render()},
+  jlatest:()=>{A.j.race=latestRace();render()},
   jgoto:()=>{A.modal={t:"goRace",job:"judge"};render()},
   rgoto:()=>{A.modal={t:"goRace",job:"recorder"};render()},
   sgoto:()=>{A.modal={t:"goRace",job:"slips"};render()},
@@ -249,8 +346,15 @@ const ACT={
   raddlane:el=>{A.m.filter="";A.modal={t:"pickLane",race:recRace().race,l:+el.dataset.l};render()},
   rsetlane:async el=>{const M=A.modal;if(!M)return;const p=A.R.who(el.dataset.id);A.modal=null;A.m.filter="";if(await setHeatLane(M.race,M.l,el.dataset.id))toast(`Lane ${M.l}: ${pname(p)} added`);render()},
   pickrace:el=>{const n=+el.dataset.race;const j=el.dataset.job;if(j==="medit"){const H=A.heats.find(h=>h.race===n);if(H){Object.assign(A.m,{phase:"edit",edit:n,k:H.k,x:H.x,g:H.g,open:null,filter:""})}A.modal=null;render();window.scrollTo(0,0);return}if(j==="judge")A.j.race=n;else if(j==="recorder"){A.r.race=n;A.r.since=Date.now();announce()}else{A.s.race=n;A.s.err=null}A.modal=null;render()},
-  rnext:()=>{A.r.race=A.r.race+1;A.r.since=Date.now();announce();render()},
-  rlatest:()=>{A.r.race=raceList().slice(-1)[0].race;A.r.since=Date.now();announce();render()},
+  rnext:()=>{const n=nextRaceAfter(A.r.race);if(n==null)return;A.r.race=n;A.r.since=Date.now();announce();render()},
+  rlatest:()=>{A.r.race=latestRace();A.r.since=Date.now();announce();render()},
+  rcancel:()=>{A.modal={t:"cancelRace",race:A.r.race};render()},
+  rcancelok:()=>cancelRace(A.modal.race,true),
+  runcancel:()=>cancelRace(A.r.race,false),
+  rreswim:()=>{A.modal={t:"reswimRace",race:A.r.race};render()},
+  rreswimok:()=>reswimRace(A.modal.race),
+  rslipuse:el=>{const r=recRace();const v=r.times[el.dataset.l]||{};setLane(el.dataset.l,{t:v.slip,st:"ok",src:"photo",keep:false,chk:false,slip:null})},
+  rslipkeep:el=>setLane(el.dataset.l,{slip:null}),
   rslip:()=>viewSlip(A.r.race),
   sreplace:()=>{const go=A.modal&&A.modal.go;A.modal=null;render();if(go)go()},
   rst:el=>{const r=recRace();const cur=(r.times[el.dataset.l]||{});const st=el.dataset.st;setLane(el.dataset.l,cur.st===st?{st:cur.t!=null?"ok":null}:{st,src:cur.src||"typed"})},
@@ -258,7 +362,7 @@ const ACT={
   rfix:el=>{const r=recRace();const i=document.getElementById("t-"+r.race+"-"+el.dataset.l);if(i)i.focus()},
   rcheck:()=>timesChecked(false),
   rforce:()=>timesChecked(true),
-  snext:()=>{A.s.race=A.s.race+1;A.s.err=null;render()},
+  snext:()=>{const n=nextRaceAfter(A.s.race);if(n!=null)A.s.race=n;A.s.err=null;render()},
   stest:el=>{A.s.test=el.dataset.v;render()},
   soverall:()=>{const r=slipRace();if(r){A.modal={t:"overall",race:r.race};render()}},
   mtopen:()=>{const r=slipRace();if(r)A.s.mtov[mtOvKey(r)]=true;A.s.err=null;mtSave();render();window.scrollTo(0,0)},
@@ -279,9 +383,9 @@ const ACT={
   mtclear:()=>{const r=slipRace();A.modal=null;A.mt=mtBlank(r?r.race:null);mtSave();mtWake(false);render()},
   mtsend:()=>mtSend(false),
   mtsendok:()=>mtSend(true),
-  mtnext:()=>{A.s.race=A.s.race+1;A.s.err=null;render();window.scrollTo(0,0)},
-  aprev:()=>{A.a.idx=Math.max(0,A.a.idx-1);render()},
-  anext:()=>{const f=finalsInOrder();if(f[A.a.idx])markRead(f[A.a.idx].key);A.a.idx=Math.min(f.length-1,A.a.idx+1);render()},
+  mtnext:()=>{const n=nextRaceAfter(A.s.race);if(n!=null)A.s.race=n;A.s.err=null;render();window.scrollTo(0,0)},
+  aprev:()=>{const f=finalsInOrder();const i=Math.max(0,A.a.idx-1);A.a.key=f[i]?f[i].key:null;render()},
+  anext:()=>{const f=finalsInOrder();if(f[A.a.idx])markRead(f[A.a.idx].key);const i=Math.min(f.length-1,A.a.idx+1);A.a.key=f[i]?f[i].key:null;render()},
   rtab:el=>{A.res.tab=el.dataset.v;render()},
   rf:el=>{A.res[el.dataset.f]=el.dataset.v;render()},
   csv:()=>exportCsv(),
@@ -315,6 +419,14 @@ const ACT={
     for(const k of ["fly50","back50","free50","breast50"])for(const g of GROUPS.age)for(const x of ["F","M"]){const base={fly50:3500,back50:3600,free50:3000,breast50:4000}[k]-(+g-13)*120-(x==="M"?150:0);list.push({key:groupKey(k,x,g),t:base,holders:[{n:"Test: "+names[i++%names.length],h:HOUSES[i%3].c,y:String(2015+(i%10))}]})}
     addRecords(list)},
   orecpaste:()=>{const p=parseRecordRows(document.getElementById("rcPaste").value);if(p.bad.length)toast("Rows not understood: "+p.bad.join(", "));if(p.out.length)addRecords(p.out)},
+  onext:()=>setNextRace(),
+  onotswum:()=>{const k=document.getElementById("oNotSwum").value;if(!k)return;saveCfg({notSwum:[...new Set([...(A.cfg.notSwum||[]),k])]},"Marked not swum")},
+  onotswumundo:el=>saveCfg({notSwum:(A.cfg.notSwum||[]).filter(k=>k!==el.dataset.k)},"Not swum taken off"),
+  obackup:()=>downloadBackup(),
+  oclear:()=>{if(A.past){toast("Past years are look only.");return}A.o.newMsg="";A.modal={t:"orgPin",title:"Clear practice data?",ok:"Clear practice data",go:"clear",body:`<p style="margin:0"><b>Cleared:</b> ${plural(A.heats.length,"race")} with their places, times and slip photos${A.extras.length?", and "+plural(A.extras.length,"swimmer")+" added on the day":""}. Race number back to 1.</p><p style="margin:0"><b>Kept:</b> ${students().length-A.extras.length} students, settings, PINs, program, points, limits and records.</p><p style="margin:0;font-weight:700">This cannot be undone. Download a full backup first if you may need it.</p>`};render()},
+  oorgpinok:async()=>{const M=A.modal;if(!M)return;const ok=await orgPinOk(document.getElementById("opPin").value.trim());if(ok==null)return;
+    if(!ok){M.err="That PIN is not right. Try again.";render();return}
+    if(M.go==="clear")clearPractice();else if(M.go==="restore")restoreBackup(M.b)},
   olock:()=>saveCfg({locked:!A.cfg.locked,lockedAt:A.cfg.locked?null:Date.now()},A.cfg.locked?"Results unlocked":"Results locked"),
   onew:()=>{if(A.past){toast("Past years are look only.");return}const yr=(A.cfg.date||"2027").slice(0,4);if(A.years.some(y=>String(y.year)===yr)){A.modal={t:"info",title:"Year already kept",body:`<p style="margin:0">The ${esc(yr)} carnival has already been kept. Change the carnival date in section 1 to the right year first.</p>`};render();return}A.modal={t:"newCarnival",step:1};A.o.newMsg="";render()},
   onew1:async()=>{const p=document.getElementById("ncPin").value.trim();

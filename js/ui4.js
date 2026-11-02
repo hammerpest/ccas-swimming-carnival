@@ -1,7 +1,14 @@
 /* ===== Announcer, Results, Houses ===== */
 function finalsInOrder(){return [...A.R.groups.values()].filter(G=>G.final).sort((a,b)=>a.checkedAt-b.checkedAt)}
-function readSet(){try{return new Set(JSON.parse(localStorage.getItem("swim_read")||"[]"))}catch(e){return new Set()}}
-function markRead(key){try{const s=readSet();s.add(key);localStorage.setItem("swim_read",JSON.stringify([...s]))}catch(e){}}
+/* A11: the results already read out belong to this carnival (its year and run, which Clear practice data
+   and Start a new carnival change), and are forgotten on Sign out */
+function readKey(){return "swim_read:"+curYear()+":"+(A.cfg.runId||"")}
+function readSet(){try{return new Set(JSON.parse(localStorage.getItem(readKey())||"[]"))}catch(e){return new Set()}}
+function markRead(key){try{const s=readSet();s.add(key);localStorage.setItem(readKey(),JSON.stringify([...s]))}catch(e){}}
+function clearReadLists(){try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith("swim_read"))localStorage.removeItem(k)}}catch(e){}A.a.key=null;A.a.idx=null}
+/* A12 (decision 139): the Marshal sends heats ahead of the pool, so "In the water now" is the first race
+   sent that has no places and no times yet */
+function waterRace(){return liveRaces().find(r=>r.filled.length&&!r.tapped&&!r.nTimes&&!r.hasSlip)||null}
 function recordLine(G){
   if(!G.record)return "";
   const h=G.record.holders||[];
@@ -20,9 +27,12 @@ function brokenCards(){
     <div style="font-size:.92rem">${n.rows.map(r=>`${esc(pname(r.p))} (${esc(houseName(r.p.h))}) ${fmtTime(r.eff)}`).join(", ")}. ${n.kind==="new"?`Old record ${fmtTime(n.old.t)}, ${esc((n.old.holders||[]).map(x=>x.n).join(" and "))} ${(n.old.holders||[])[0]?.y||""}`:`Shares the record with ${esc((n.old.holders||[]).map(x=>x.n+" "+(x.y||"")).join(" and "))}`}${G.final?"":" (provisional)"}</div></div>`}).join("");
 }
 function renderAnnouncer(){
-  const list=raceList();const last=list[list.length-1];
+  const last=waterRace();
   const finals=finalsInOrder();
-  if(A.a.idx==null||A.a.idx>=finals.length){const rs=readSet();const i=finals.findIndex(G=>!rs.has(G.key));A.a.idx=i<0?Math.max(0,finals.length-1):i}
+  /* the result on screen is kept by its group, so a result that turns final earlier in the list never moves it */
+  let at=A.a.key?finals.findIndex(G=>G.key===A.a.key):-1;
+  if(at<0){const rs=readSet();const i=finals.findIndex(G=>!rs.has(G.key));at=i<0?Math.max(0,finals.length-1):i}
+  A.a.idx=at;A.a.key=finals[at]?finals[at].key:null;
   const G=finals[A.a.idx];
   const more=finals.length-1-A.a.idx;
   const ph=phoneJob();
@@ -37,11 +47,11 @@ function renderAnnouncer(){
       <div class="podium">${top.map(r=>`<div class="pr">${medal(r.place)}<div style="min-width:0"><b>${esc(pname(r.p))}</b><span class="htag">${hdot(r.p.h)}${esc(houseName(r.p.h))}</span>${r.tag?` <span class="tag ${r.tag==="NEW RECORD"?"rec":"eq"}">${r.tag}</span>`:""}</div><span class="t">${fmtTime(r.eff)}</span></div>`).join("")||`<p class="muted">No finishers.</p>`}</div>
       ${G.record&&!G.recordNote?`<div class="muted" style="font-size:.9rem">${recordLine(G)}</div>`:""}
       ${ph?"":`<div class="row">${prevBtn}${nextBtn}</div>`}</div>`;
-  }else card=`<div class="panel stack"><span class="label">Read out next</span><p class="muted" style="margin:0">Waiting for the first checked result. A result appears when every heat of a group has its times checked.</p></div>`;
+  }else card=`<div class="panel stack"><span class="label">Read out next</span><p class="muted" style="margin:0">Waiting for the first final result. A result appears when every heat of a group has its times and places in.</p></div>`;
   /* phone: Full results and Houses move out of the slim banner to just under the result; Earlier result
      and Next result sit in a bar fixed to the bottom of the screen */
   return `<div class="ann${ph?" ph":""}"><div class="stack">
-      <div class="water"><span class="label">In the water now</span>${last?badge(last.race,ph?"sm":"xl")+`<div><b style="font:800 ${ph?"1.05rem":"1.25rem"} var(--font-display)">${esc(last.label)}</b><br><span style="color:var(--navy-muted)">Heat ${last.heat}</span></div>`:`<span>Nothing sent yet</span>`}</div>
+      <div class="water"><span class="label">In the water now</span>${last?badge(last.race,ph?"sm":"xl")+`<div><b style="font:800 ${ph?"1.05rem":"1.25rem"} var(--font-display)">${esc(last.label)}</b><br><span style="color:var(--navy-muted)">Heat ${last.heat}</span></div>`:`<span>${liveRaces().length?"Waiting for the next race":"Nothing sent yet"}</span>`}</div>
       ${card}
       ${ph?`<div class="row phlinks"><button type="button" class="btn" data-act="goto" data-job="results">Full results</button><button type="button" class="btn" data-act="goto" data-job="houses">Houses</button></div>
       <div class="pbar"><div class="wrap">${prevBtn}${nextBtn.replace(" big","")}</div></div>`:""}
@@ -53,10 +63,11 @@ function renderAnnouncer(){
 }
 
 /* ---------- Results ---------- */
-function resultGroups(){
+function R0(){return A.R}
+function resultGroups(all){
   const f=A.res;const out=[];
   for(const e of A.R.events){
-    const G=A.R.groups.get(e.key);if(!G)continue;
+    const G=A.R.groups.get(e.key)||(all?{key:e.key,k:e.k,x:e.x,g:e.g,label:groupLabel(e.k,e.x,e.g),rows:[],empty:true}:null);if(!G)continue;
     if(f.sex!=="all"&&e.x!==f.sex&&e.x!=="X")continue;
     if(f.type!=="all"&&e.k!==f.type)continue;
     if(f.age!=="all"&&!(e.g===f.age||(TYPE[e.k].gk==="band"&&BAND_OF[f.age]===e.g)))continue;
@@ -79,14 +90,19 @@ function renderResults(){
   if(f.tab==="news")return tabs+renderNews();
   const gs=resultGroups();
   if(f.tab==="hris"){
-    const ind=gs.filter(G=>!TYPE[G.k].nopts);
+    /* A9: every group on the program, swum or not; every swimmer tied for 1st or 2nd (decision 138) */
+    const ind=resultGroups(true).filter(G=>!TYPE[G.k].nopts);
+    const one=r=>`${hdot(r.p.h)} ${esc(pname(r.p))} <span class="muted">${fmtTime(r.eff)}</span>`;
+    const open=`<span class="muted">Spot open</span>`;
     return tabs+filtersBar()+`<div class="panel" style="padding:0;overflow:hidden"><div class="tablewrap"><table><thead><tr><th>Race</th><th>1st</th><th>2nd</th><th>Status</th></tr></thead><tbody>
-    ${ind.length?ind.map(G=>{const top=G.rows.filter(r=>r.hris);const cell=i=>top[i]?`${hdot(top[i].p.h)} ${esc(pname(top[i].p))} <span class="muted">${fmtTime(top[i].eff)}</span>`:`<span class="muted">Spot open</span>`;
-      return `<tr><td><b>${esc(G.label)}</b></td><td>${cell(0)}</td><td>${cell(1)}</td><td><span class="chip ${G.final?"final":"prov"}">${G.status}</span></td></tr>`}).join(""):`<tr><td colspan="4" class="muted">No results yet.</td></tr>`}
+    ${ind.length?ind.map(G=>{const top=(G.rows||[]).filter(r=>r.hris);const p1=top.filter(r=>r.place===1),p2=top.filter(r=>r.place===2);
+      const c1=p1.length?p1.map(one).join("<br>"):open;const c2=p2.length?p2.map(one).join("<br>"):p1.length>1?`<span class="muted">Tie for 1st</span>`:open;
+      const chip=G.empty?`<span class="chip">${R0().notSwum.has(G.key)?"Not swum":"Not started"}</span>`:`<span class="chip ${G.final?"final":"prov"}">${G.status}</span>`;
+      return `<tr><td><b>${esc(G.label)}</b></td><td>${c1}</td><td>${c2}</td><td>${chip}</td></tr>`}).join(""):`<tr><td colspan="4" class="muted">No results yet.</td></tr>`}
     </tbody></table></div></div><p class="muted" style="font-size:.88rem">Top 2 in every race and group, relays included (top 2 teams). Their times are the seed times.</p>`;
   }
   return tabs+filtersBar()+`<div class="stack">${gs.length?gs.map(G=>`<article class="gcard"><div class="ghead"><h3>${esc(G.label)}</h3><span class="meta">${raceRange(G.raceNos)}, ${plural(G.heats.length,"heat")}, timed final${G.record?" · "+recordLine(G):""}</span><span class="chip ${G.final?"final":"prov"}">${G.status}</span></div>
-     ${G.recordNote?`<div class="recbox"><b>Records broken or equalled in this race:</b> ${G.recordNote.rows.map(r=>`${esc(pname(r.p))} (${esc(houseName(r.p.h))}) ${fmtTime(r.eff)}`).join(", ")}. ${G.recordNote.kind==="new"?`Old record ${fmtTime(G.recordNote.old.t)}, ${esc((G.recordNote.old.holders||[]).map(x=>x.n+" "+(x.y||"")).join(" and "))}.`:`Shares the record with ${esc((G.recordNote.old.holders||[]).map(x=>x.n+" "+(x.y||"")).join(" and "))}.`}${G.final?"":" Provisional until all heats are checked."}</div>`:G.record?`<div class="recbox" style="border-left-color:var(--line);background:var(--sunk)">No records broken</div>`:""}
+     ${G.recordNote?`<div class="recbox"><b>Records broken or equalled in this race:</b> ${G.recordNote.rows.map(r=>`${esc(pname(r.p))} (${esc(houseName(r.p.h))}) ${fmtTime(r.eff)}`).join(", ")}. ${G.recordNote.kind==="new"?`Old record ${fmtTime(G.recordNote.old.t)}, ${esc((G.recordNote.old.holders||[]).map(x=>x.n+" "+(x.y||"")).join(" and "))}.`:`Shares the record with ${esc((G.recordNote.old.holders||[]).map(x=>x.n+" "+(x.y||"")).join(" and "))}.`}${G.final?"":" Provisional until all heats are in."}</div>`:G.record?`<div class="recbox" style="border-left-color:var(--line);background:var(--sunk)">No records broken</div>`:""}
      ${overallTable(G,{pink:false})}</article>`).join(""):`<div class="panel muted">No results match these filters yet.</div>`}</div>`;
 }
 function newsText(){
@@ -117,16 +133,26 @@ async function exportCsv(){
   const lines=[["Race","Heat","Lane","Event","Sex","Group","Surname","First name","House","Recorded time","Result time","Status","Place","Points","HRIS","Record"].join(",")];
   for(const G of R.groups.values())for(const r of G.rows){
     const t=TYPE[G.k];
-    lines.push([r.race,r.heat,r.lane,t.name,sexName(G.x)||"Mixed",grpName(G.g),r.p.team?r.p.name:r.p.s,r.p.team?"":r.p.f,houseName(r.p.h),fmtTime(r.rec),fmtTime(r.eff),r.st,r.place||"",r.place?r.pts:0,r.hris?"Yes":"",r.tag||""].map(cell).join(","));
+    lines.push([r.race,r.heat,r.lane,t.name,sexName(G.x)||"Mixed",grpName(G.g),r.p.team?r.p.name:r.p.s,r.p.team?"":r.p.f,houseName(r.p.h),fmtTime(r.rec),fmtTime(r.eff),stName(r.st),r.place||"",r.pts||0,r.hris?"Yes":"",r.tag||""].map(cell).join(","));
   }
   lines.push("");lines.push("House,Individual,Relays,Total");
   for(const h of R.houseRank)lines.push([h.n,h.indiv,h.relay,h.total].join(","));
   lines.push("");lines.push("Age group,Sex,Champion,Points,Runner up,Points");
   for(const ag of AGE_GROUPS)for(const x of ["F","M"]){const c=R.champs[ag+"|"+x];lines.push([grpName(ag),sexName(x),c.winners.map(w=>pname(w.p)).join(" and "),c.winners[0]?c.winners[0].pts:"",c.runners.map(w=>pname(w.p)).join(" and "),c.runners[0]?c.runners[0].pts:""].map(cell).join(","))}
-  const data=lines.join("\n");const name="CCAS swimming results "+new Date().toISOString().slice(0,10)+".csv";
-  let dl=null;try{dl=await window.claude.use("downloads")}catch(e){}
-  if(dl){try{await dl.save({filename:name,data});return}catch(e){if(e&&e.code==="cancelled")return}}
+  const data=lines.join("\n");const name="CCAS swimming results "+localStamp().slice(0,10)+".csv";
+  await saveFile(name,data,"text/csv");
+}
+/* A6: a real file download (the page used to copy to the clipboard only) */
+async function saveFile(name,data,type){
+  let dl=null;try{if(window.claude&&window.claude.use)dl=await window.claude.use("downloads")}catch(e){}
+  if(dl){try{await dl.save({filename:name,data});return true}catch(e){if(e&&e.code==="cancelled")return false}}
+  try{
+    const url=URL.createObjectURL(new Blob([data],{type:(type||"text/plain")+";charset=utf-8"}));
+    const a=document.createElement("a");a.href=url;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},4000);toast("Saved to Downloads: "+name);return true;
+  }catch(e){}
   try{await navigator.clipboard.writeText(data);toast("Results copied. Paste them into Excel.")}catch(e){toast("Export is not available in this view.")}
+  return false;
 }
 
 /* ---------- Houses ---------- */
@@ -155,7 +181,7 @@ function renderHouses(){
 function programPanel(last){
   const R=A.R;const prog=(A.cfg.program||DEFAULT_CONFIG.program).filter(p=>TYPE[p.k]&&p.on);
   const rows=prog.map(p=>{const t=TYPE[p.k];const evs=R.events.filter(e=>e.k===p.k);
-    const fin=evs.filter(e=>{const G=R.groups.get(e.key);return G&&G.final}).length;
+    const fin=evs.filter(e=>R.isFinal(e.key)).length;
     const started=evs.some(e=>R.groups.has(e.key));
     const now=last&&last.k===p.k;
     const st=now?`<span class="chip info">In the water</span>`:fin===evs.length&&evs.length?`<span class="chip final">Done</span>`:started?`<span class="chip prov">${fin} of ${evs.length} final</span>`:`<span class="chip">To come</span>`;

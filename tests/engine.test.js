@@ -110,3 +110,65 @@ a(sl.race===null,'slip: no header, no race');
  a(by('a').place===3&&!by('a').tie,'judge splits equal time in one heat: placed 2nd in heat is 3rd overall');
  a(by('d').place===4,'next time after the split');
  a(by('b').pts===17.5&&by('a').pts===10,'points follow the split');}
+// Swim Opt 2.7 rules
+{const st=['a','b','c','d','e','f'].map((id,i)=>({id,s:id,f:id,h:['B','J','N'][i%3],x:'F',g:'14'}));
+ const base=()=>({config:{},students:st,heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a',2:'b',3:'c'}}],
+  times:{r0001:{lanes:{1:{t:3500},2:{t:3600},3:{t:3700}}}},finish:{r0001:{order:[[1],[2],[3]]}},records:[],openGroups:new Set()});
+ // 143: Times checked is optional
+ let S4=base();let R4=C.compute(S4);
+ a(R4.races.get(1).done&&R4.groups.get('back50|F|14').final,'143: times and places in, not checked: final');
+ S4=base();S4.finish={r0001:{order:[[1],[2]]}};R4=C.compute(S4);
+ a(!R4.races.get(1).done&&!R4.groups.get('back50|F|14').final,'143: a place missing: not final');
+ S4.finish.r0001.ok=true;R4=C.compute(S4);
+ a(R4.races.get(1).done,'143: fewer places confirmed by the Place Judge: done');
+ S4=base();S4.finish={};S4.times.r0001.checked=true;R4=C.compute(S4);
+ a(R4.races.get(1).done,'143: no places but checked: done');
+ S4=base();delete S4.times.r0001.lanes[3];R4=C.compute(S4);
+ a(!R4.races.get(1).done,'143: a lane with no time or status: not done');
+ S4.times.r0001.lanes[3]={st:'DNS'};S4.finish={r0001:{order:[[1],[2]]}};R4=C.compute(S4);
+ a(R4.races.get(1).done,'143: DNS lane counts; places needed only for swimmers with a time');
+ a(R4.finalCount===1,'143: final count');
+ // 144: No time
+ S4=base();S4.times.r0001.lanes[3]={t:3700,st:'NT'};S4.finish={r0001:{order:[[1],[2]]}};R4=C.compute(S4);
+ let rows=R4.groups.get('back50|F|14').rows;let c=rows.find(r=>r.id==='c');
+ a(c.place==null&&c.pts===5&&!c.hris&&c.eff==null&&c.rec==null,'144: No time: no place, participation points, not on HRIS');
+ a(R4.house.N.total===5&&R4.champs['14|F'].winners[0].id==='a','144: No time points count for the house');
+ a(R4.races.get(1).done,'144: No time lane counts as in');
+ // 145: no runner up beside joint champions
+ S4={config:{},students:st,heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a'}},{race:2,k:'back50',x:'F',g:'14',heat:2,lanes:{1:'b',2:'c'}}],
+  times:{r0001:{lanes:{1:{t:3500}}},r0002:{lanes:{1:{t:3500},2:{t:3600}}}},finish:{r0001:{order:[[1]]},r0002:{order:[[1],[2]]}},records:[],openGroups:new Set()};
+ R4=C.compute(S4);const ch=R4.champs['14|F'];
+ a(ch.winners.length===2&&ch.runners.length===0,'145: joint champions, no runner up');
+ // 138: every tied swimmer in the top 2 is on the HRIS Team List
+ S4={config:{},students:st,heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a',2:'b'}},{race:2,k:'back50',x:'F',g:'14',heat:2,lanes:{1:'c'}},{race:3,k:'back50',x:'F',g:'14',heat:3,lanes:{1:'d'}}],
+  times:{r0001:{lanes:{1:{t:3400},2:{t:3500}}},r0002:{lanes:{1:{t:3500}}},r0003:{lanes:{1:{t:3500}}}},finish:{r0001:{order:[[1],[2]]},r0002:{order:[[1]]},r0003:{order:[[1]]}},records:[],openGroups:new Set()};
+ rows=C.compute(S4).groups.get('back50|F|14').rows;
+ a(rows.filter(r=>r.hris).length===4&&rows.filter(r=>r.place===2).length===3,'138: 3-way tie for 2nd: all three on the HRIS list');
+ // A2: a place change after Times checked sends the race back
+ S4=base();S4.times.r0001.checked=true;S4.times.r0001.checkedAt=1000;R4=C.compute(S4);
+ a(R4.races.get(1).checked,'A2: checked');
+ S4.finish.r0001.ck=1000;R4=C.compute(S4);
+ a(!R4.races.get(1).checked&&R4.races.get(1).tstatus==='To check','A2: place changed after the check: To check');
+ S4.times.r0001.checkedAt=2000;R4=C.compute(S4);
+ a(R4.races.get(1).checked,'A2: checked again after the change');
+ // A1: cancel and re-swim
+ S4=base();S4.heats.push({race:2,k:'back50',x:'F',g:'14',heat:2,lanes:{1:'d'},cancelled:true});R4=C.compute(S4);
+ a(R4.groups.get('back50|F|14').final&&R4.races.get(2).cancelled&&R4.groups.get('back50|F|14').heats.length===1,'A1: a cancelled race does not hold the group up');
+ S4=base();S4.heats[0].gen=1;R4=C.compute(S4);
+ a(R4.races.get(1).nTimes===0&&R4.races.get(1).tapped===0&&!R4.groups.get('back50|F|14').final,'A1: re-swim: old times and places no longer count');
+ S4.times.r0001.gen=1;S4.finish.r0001.gen=1;R4=C.compute(S4);
+ a(R4.races.get(1).done,'A1: re-swim: new times and places count');
+ // A9: Not swum
+ S4=base();S4.config={notSwum:['fly50|F|13']};R4=C.compute(S4);
+ a(R4.isFinal('fly50|F|13')&&R4.finalCount===2,'A9: a group marked Not swum counts as final');
+ // 136: a late slip never overwrites typed times
+ const old={lanes:{1:{t:3500,st:'ok',src:'typed'},2:{t:3600,st:'ok',src:'photo'},3:{st:'DNS',src:'typed'}},checked:true,checkedAt:5};
+ let m=C.lateSlip(old,{lanes:{1:{t:3510,st:'ok',src:'photo'},2:{t:3600,st:'ok',src:'photo'},3:{t:3900,st:'ok',src:'photo'}},src:'photo',checked:false});
+ a(m.lanes[1].t===3500&&m.lanes[1].slip===3510&&m.lanes[3].st==='DNS'&&m.lanes[3].slip===3900,'136: typed lanes kept, slip time kept beside them');
+ a(m.checked===true&&m.checkedAt===5,'136: a checked race stays checked when the slip changes nothing');
+ m=C.lateSlip(old,{lanes:{2:{t:3650,st:'ok',src:'photo'}},src:'photo',checked:false});
+ a(m.lanes[2].t===3650&&!m.checked,'136: an untyped lane takes the slip time and the race goes back to To check');
+ a(C.lateSlip(Object.assign({gen:0},old),{gen:1,lanes:{1:{t:1}}}).lanes[1].t===1,'136: re-swum race starts fresh');
+ S4=base();S4.times.r0001.lanes[1].slip=3510;R4=C.compute(S4);
+ a(JSON.stringify(R4.races.get(1).differs)==='[1]','136: Slip differs lane listed');
+ a(!R4.races.get(1).done&&!R4.groups.get('back50|F|14').final,'136: a race with Slip differs is not done until the Recorder picks');}

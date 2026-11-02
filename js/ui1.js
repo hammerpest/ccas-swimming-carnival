@@ -37,6 +37,8 @@ function medal(p){return `<span class="medal m${Math.min(p,4)}">${p}</span>`}
 function pname(p){return p?(p.team?p.name:(p.f+" "+p.s)):"Empty"}
 function listName(st){return st.team?st.name:st.s+", "+st.f}
 function locked(){if(A.past)return true;return !!A.cfg.locked&&A.job!=="organiser"}
+/* local date and time for file names and messages (toISOString would give UTC: yesterday before 11 am in Sydney) */
+function localStamp(d){d=d||new Date();const p=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
 function curYear(){return (A.L.cfg&&A.L.cfg.date||A.cfg.date||"2027").slice(0,4)}
 let toastT=null;
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3000)}
@@ -45,6 +47,12 @@ function studentById(id){return students().find(s=>s.id===id)}
 function otherPeers(){return A.peers.filter(p=>p&&p.dev&&p.dev!==DEV)}
 function openGroups(){const s=new Set();if(A.past)return s;for(const p of otherPeers())if(p.mk)s.add(p.mk);if(A.job==="marshal"&&A.m.phase==="lanes")s.add(groupKey(A.m.k,A.m.x,A.m.g));return s}
 function raceList(){return A.R?[...A.R.races.values()].sort((a,b)=>a.race-b.race):[]}
+/* races still on: a race cancelled as not swum (A1) is skipped by Next race and Back to latest */
+function liveRaces(){return raceList().filter(r=>!r.cancelled)}
+function nextRaceAfter(n){const r=liveRaces().find(r=>r.race>n);return r?r.race:null}
+function latestRace(){const l=liveRaces();return l.length?l[l.length-1].race:null}
+/* a race the job is on that was cancelled moves on to the next race still on (or back to the latest) */
+function liveRaceNo(n){const r=n!=null&&A.R.races.get(n);if(!r||!r.cancelled)return n;const nx=nextRaceAfter(n);return nx!=null?nx:latestRace()}
 function plural(n,w,ws){return n+" "+(n===1?w:(ws||w+"s"))}
 function raceRange(nos){if(!nos.length)return "";if(nos.length===1)return "Race "+nos[0];if(nos.length===2)return "Races "+nos[0]+" and "+nos[1];return "Races "+nos[0]+" to "+nos[nos.length-1]}
 
@@ -63,7 +71,9 @@ function schedule(){
 document.addEventListener("focusout",()=>{if(A.dirty){A.dirty=false;setTimeout(()=>{const ae=document.activeElement;if(!(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName)))render();else A.dirty=true},50)}});
 async function connect(){
   let st=null;
-  try{if(typeof supabaseStore==="function")st=await supabaseStore(()=>renderHeader())}catch(e){}
+  /* the Time Slips screen shows the real photo queue (A5), so it redraws when the queue changes */
+  const onQueue=()=>{if(A.job==="slips")schedule();else renderHeader()};
+  try{if(typeof supabaseStore==="function")st=await supabaseStore(onQueue)}catch(e){}
   if(!st)try{st=await claudeStore(()=>renderHeader())}catch(e){}
   if(!st)st=localStore(()=>renderHeader());
   A.store=st;
@@ -219,7 +229,7 @@ function goJob(k){
   if(k==="recorder")A.r.since=Date.now();
   announce();render();window.scrollTo(0,0);
 }
-function signOut(){if(A.past)enterYear("current");if(A.store&&A.store.releaseRole)A.store.releaseRole().catch(()=>{});A.yearPicked=null;ssSet("swim_year",null);A.role=null;A.job=null;ssSet("swim_role",null);ssSet("swim_job",null);A.menu=false;A.m.phase="start";if(A.s.mtov){A.s.mtov={};mtSave()}announce();render()}
+function signOut(){if(A.past)enterYear("current");clearReadLists();if(A.store&&A.store.releaseRole)A.store.releaseRole().catch(()=>{});A.yearPicked=null;ssSet("swim_year",null);A.role=null;A.job=null;ssSet("swim_role",null);ssSet("swim_job",null);A.menu=false;A.m.phase="start";if(A.s.mtov){A.s.mtov={};mtSave()}announce();render()}
 
 /* ---------- modal ---------- */
 function modalHtml(){

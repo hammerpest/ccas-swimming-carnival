@@ -65,6 +65,8 @@ async def main():
     await S.click('[data-act=stest][data-v=good]'); await S.set_input_files('#camin',os.path.join(os.path.dirname(os.path.abspath(__file__)),'slip.jpg')); await S.wait_for_timeout(1500)
     R=await mk('rec')()
     await pin(R,'3333'); await R.wait_for_timeout(300)
+    # B1: a Recorder opens on the first race that needs work; go to Race 1 for these steps
+    await R.click('[data-act=rgoto]'); await R.click('[data-act=pickrace][data-race="1"]'); await R.wait_for_timeout(100)
     await R.fill('#t-1-3','7512'); await R.press('#t-1-3','Enter'); await R.wait_for_timeout(100)
     await R.screenshot(path='s_r_err.png',full_page=True)
     await R.fill('#t-1-3','2100'); await R.press('#t-1-3','Enter'); await R.wait_for_timeout(200)
