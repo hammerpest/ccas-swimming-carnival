@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version h. Replaces 3 November version g and all earlier PROJECT-STATE files.
+Date: 4 November 2026, version a. Replaces 3 November version h and all earlier PROJECT-STATE files.
+
+Changes on 4 November 2026 (version a): Jordan's iPad now works on both the app and the parent page ("all working fine"). The earlier "No connection" and "Offline" on that iPad were the iPad reaching Supabase, not the app; cause not pinned down (likely the network it was on). Next step 16 closed. Still worth checking on the day: staff devices on school wifi and at Mingara can reach supabase.co (signal test, to plan).
 
 Changes on 3 November 2026 (version h): Jordan ran supabase/03-parent-results.sql. The parent page is live on the main link and shows the made-up day (checked: 110 races, no raw ids or device ids, no page errors). Next step 18 done.
 
@@ -1041,7 +1043,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    - Clear practice data;
    - a full backup and restore.
    Close and reopen the tab first (problem 17).
-16. NOW: Jordan's iPad on the staging link shows "No connection. Try again." at the PIN, though it has internet. The server accepts the PINs from other devices (checked 3 November 2026). Jordan tries a Private tab, then clears the website data for hammerpest.github.io. If that fixes it, Swim Opt 2.8: the app clears a stale sign-in and signs in fresh by itself. If not, Jordan sends the iPadOS version.
+16. (Done 4 November 2026) Jordan's iPad now reaches the app and the parent page. No app change needed.
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
