@@ -1,7 +1,7 @@
 # Swim Opt 2.0-c: publish the app to GitHub Pages.
 # main goes to the site root, staging goes to /staging/.
 # A push to either branch rebuilds both, so the two links always match their branches.
-# Only the app files are published (index.html, css/, js/). Tests, baselines and docs stay in the repo only.
+# Only the app files are published (index.html, css/, js/, parents/). Tests, baselines and docs stay in the repo only.
 name: Publish to GitHub Pages
 
 on:
@@ -43,6 +43,12 @@ jobs:
             v=$(git -C "$b" rev-parse --short HEAD)
             sed -i -E "s#(src=\"js/[^\"]+\.js)\"#\1?v=$v\"#g; s#(href=\"css/styles\.css)\"#\1?v=$v\"#" "$dest/index.html"
             grep -c "?v=$v" "$dest/index.html"
+            # Swim Opt 2.8: the results page for parents, at /parents/
+            if [ -d "$b/parents" ]; then
+              cp -R "$b/parents" "$dest/"
+              sed -i -E "s#(src=\"[^\"]+\.js)\"#\1?v=$v\"#g; s#(href=\"parents\.css)\"#\1?v=$v\"#" "$dest/parents/index.html"
+              grep -c "?v=$v" "$dest/parents/index.html"
+            fi
           done
           touch _site/.nojekyll
           find _site -type f | sort
