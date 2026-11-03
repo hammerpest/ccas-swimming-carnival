@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version e. Replaces 3 November version d and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version f. Replaces 3 November version e and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version f): At Jordan's request the staging Supabase project (used by both links) now holds a made-up carnival day: 110 races in 74 groups (36 with a second heat), made-up slip photos, places, times, 4 DNS, 2 DQ, 2 judge swaps (pink), 2 ties across heats, and 74 made-up records (8 broken, 2 equalled). All 74 results Final, no page errors. Made by tools/simday.py. Next step 17: when Jordan has finished looking, run tools/simday.py undo (clears races, slips, photos and records; keeps the students and settings).
 
 Changes on 3 November 2026 (version e): New timing equipment is organised (decision 147): a Swiss Timing Quantum Aquatics timer with a Colorado Infinity start. Times still reach the app by a photo of the printed slip. Question 30 and next step 3 now wait for a slip from the new timer, once the order arrives and is tested. Open problem: Jordan's iPad on the staging link gave "No connection. Try again." at the PIN (other devices fine; likely an old saved sign-in), next step 16.
 
@@ -1021,6 +1023,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    - a full backup and restore.
    Close and reopen the tab first (problem 17).
 16. NOW: Jordan's iPad on the staging link shows "No connection. Try again." at the PIN, though it has internet. The server accepts the PINs from other devices (checked 3 November 2026). Jordan tries a Private tab, then clears the website data for hammerpest.github.io. If that fixes it, Swim Opt 2.8: the app clears a stale sign-in and signs in fresh by itself. If not, Jordan sends the iPadOS version.
+17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
