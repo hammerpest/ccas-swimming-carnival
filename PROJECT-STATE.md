@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version d. Replaces 3 November version c and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version e. Replaces 3 November version d and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version e): New timing equipment is organised (decision 147): a Swiss Timing Quantum Aquatics timer with a Colorado Infinity start. Times still reach the app by a photo of the printed slip. Question 30 and next step 3 now wait for a slip from the new timer, once the order arrives and is tested. Open problem: Jordan's iPad on the staging link gave "No connection. Try again." at the PIN (other devices fine; likely an old saved sign-in), next step 16.
 
 Changes on 3 November 2026 (version d): Jordan ran the new supabase/01-setup.sql on the staging project. Swim Opt 2.7 pushed to main (4841c48): both links now run 2.7 (checked). Ask now: none.
 
@@ -904,6 +906,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
+147. (3 November 2026) New timing equipment is organised: a Swiss Timing Quantum Aquatics timer (with harness and printer) and a Colorado Infinity start system plugged into the Quantum's start input. The app still takes times from a photo of the printed slip. When the order arrives and is tested, Jordan sends a sample slip from it and the slip reader is checked against it (question 30). A direct data link from the Quantum to the app is not planned.
 
 ## 4. Rules and constraints
 
@@ -973,7 +976,7 @@ Ask now: none.
 
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
-- 30. (Partly answered, decision 110: the layout, from a simulated sample.) Still wanted: a few photos of real slips taken at the pool, to tune the reader.
+- 30. (Partly answered, decision 110: the layout, from a simulated sample.) Still wanted: a few photos of real slips, now from the new Quantum timer (decision 147) once it arrives and is tested, to tune the reader.
 - 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - (Closed by 130) 2. Confirmed carnival date.
 - 3. Sample HY3 file from the next level (decision 100). Layout answered (2.29, version d). The 5-digit and 3-digit numbers are made by the app at export (132).
@@ -995,7 +998,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 1. (Done 30 October 2026) The iPhone screen stays on during a long multitimer race (decision 128). Still to do: fix Claude in Chrome (restart Chrome or the extension) before the next check 2.
 2. (Done 2 November 2026) Jordan tested Swim Opt 2.4 on the site: all working. Any later changes as Swim Opt 2.5 and on.
-3. Real slip photos at the pool (question 30): photograph a few real slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader.
+3. Real slip photos (question 30), from the new Quantum timer once it arrives and is tested (decision 147): photograph a few slips (one with an empty lane, one with a DNS or DQ, one over a minute) and tune the reader. Check the new slip layout matches decision 110.
 4. Try the app on real iPads and a phone at school: two marshals, two Recorders, the phone losing signal, reader speed on a real phone.
 5. (Done in 2.2) Small known items.
 6. When the records list arrives (question 36): load it in Carnival Organiser section 6.
@@ -1017,6 +1020,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    - Clear practice data;
    - a full backup and restore.
    Close and reopen the tab first (problem 17).
+16. NOW: Jordan's iPad on the staging link shows "No connection. Try again." at the PIN, though it has internet. The server accepts the PINs from other devices (checked 3 November 2026). Jordan tries a Private tab, then clears the website data for hammerpest.github.io. If that fixes it, Swim Opt 2.8: the app clears a stale sign-in and signs in fresh by itself. If not, Jordan sends the iPadOS version.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
