@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version g. Replaces 3 November version f and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version h. Replaces 3 November version g and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version h): Jordan ran supabase/03-parent-results.sql. The parent page is live on the main link and shows the made-up day (checked: 110 races, no raw ids or device ids, no page errors). Next step 18 done.
 
 Changes on 3 November 2026 (version g): Jordan asked for a results website for parents, on iPhone. Mock-up drawn (S1.43, https://claude.ai/artifact/DrC1TV8LsiH4FZdJ4Yh2NB) and built as Swim Opt 2.8 (2.34): a look-only page at /parents/ with Home, Events, Find a swimmer, Houses, Age champions and Records. Decisions 148 to 150. Check 3 PASSED on the second run (first run found names in student ids, device ids and full record-holder names; all fixed on the server). Jordan must run supabase/03-parent-results.sql in Supabase before the page shows anything (next step 18). New question 68 (media consent). S1.42 stays reserved for the HY3 export panel.
 
@@ -1041,7 +1043,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    Close and reopen the tab first (problem 17).
 16. NOW: Jordan's iPad on the staging link shows "No connection. Try again." at the PIN, though it has internet. The server accepts the PINs from other devices (checked 3 November 2026). Jordan tries a Private tab, then clears the website data for hammerpest.github.io. If that fixes it, Swim Opt 2.8: the app clears a stale sign-in and signs in fresh by itself. If not, Jordan sends the iPadOS version.
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
-18. NOW: Jordan runs supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
+18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
