@@ -46,6 +46,8 @@ admin.execute(STUBS)
 setup = open(os.path.join(SQL, "01-setup.sql")).read()
 admin.execute(setup)
 admin.execute(setup)  # safe to run twice
+parents = open(os.path.join(SQL, "03-parent-results.sql")).read()
+admin.execute(parents); admin.execute(parents)  # safe to run twice
 admin.execute(open(os.path.join(SQL, "02-seed-test-students.sql")).read())
 check(admin.execute("select jsonb_array_length(doc->'students') from roster where id='F'").fetchone()[0] == 310, "seed: 310 girls")
 
@@ -179,6 +181,40 @@ b.q("select release_role()")
 check(m.q("select my_role()")[0][0] == "marshal", "my_role")
 m.q("select release_role()")
 check(m.q("select count(*) from roster")[0][0] == 0, "signed out: cannot read")
+
+# results for parents (Swim Opt 2.8): no sign-in, off until the organiser turns it on, trimmed names
+import json as _json
+pa = psycopg.connect(URI, autocommit=True); pa.execute("set role anon")
+pr = lambda have="": pa.execute("select parent_results(%s)", (have,)).fetchone()[0]
+check(pr() == {"off": True}, "parents: nothing until parent results are turned on")
+check(pa.execute("select count(*) from information_schema.role_table_grants where grantee='anon' and table_schema='public'").fetchone()[0] == 0, "parents: no table access, only the function")
+admin.execute("insert into config (id, doc) values ('main', '{}') on conflict (id) do nothing")
+admin.execute("update config set doc = doc || '{\"parents\": true, \"pins\": {\"x\": 1}}' where id = 'main'")
+admin.execute("delete from heats"); admin.execute("delete from extras")
+st = admin.execute("select doc->'students'->0 from roster where id='F'").fetchone()[0]
+admin.execute("insert into heats (id, doc) values ('r0050', %s)", (_json.dumps({"race": 50, "k": "free50", "x": "F", "g": st["g"], "heat": 1, "lanes": {"4": st["id"], "5": "B-A"}, "dev": "secret-device"}),))
+admin.execute("insert into times (id, doc) values ('r0050', %s)", (_json.dumps({"lanes": {"4": {"t": 3500, "st": "ok", "src": "photo", "chk": False}}, "checked": True, "checkedBy": "secret-device", "by": "secret-device"}),))
+admin.execute("insert into records (id, doc) values ('all', %s) on conflict (id) do update set doc = excluded.doc", (_json.dumps({"list": [{"key": "free50|F|13", "t": 3000, "holders": [{"n": "Jane Mary Citizen", "h": "B", "y": "2019"}]}]}),))
+d = pr(); raw = _json.dumps(d)
+check(not d.get("off") and len(d["heats"]) == 1 and d["heats"][0]["_id"] == "r0050", "parents: heats come through")
+check("secret-device" not in raw, "parents: no device ids anywhere")
+code = d["heats"][0]["lanes"]["4"]
+check(st["id"] not in raw and code.startswith("p") and len(code) == 11 and d["heats"][0]["lanes"]["5"] == "B-A", "parents: student ids replaced by codes, relay teams kept")
+check([x["id"] for x in d["students"]] == [code], "parents: only swimmers who are in a heat")
+st0 = admin.execute("select doc->'students'->1 from roster where id='F'").fetchone()[0]
+admin.execute("insert into heats (id, doc) values ('r0051', %s)", (_json.dumps({"race": 51, "k": "free50", "x": "F", "g": st0["g"], "heat": 2, "lanes": {"1": "a-aaa-first-1", "2": st0["id"]}}),))
+d2 = pr()
+check([h for h in d2["heats"] if h["_id"] == "r0050"][0]["lanes"]["4"] == code, "parents: a swimmer keeps their code when others are added")
+admin.execute("delete from heats where id = 'r0051'")
+check(not admin.execute("select has_table_privilege('anon', 'private.parent_secret', 'select')").fetchone()[0], "parents: the secret cannot be read")
+check(d["students"][0]["s"] == st["s"][0] + "." and d["students"][0]["f"] == st["f"], "parents: surname cut to its initial")
+check(set(d["times"]["r0050"]["lanes"]["4"]) == {"t", "st", "slip"} and "checkedBy" not in d["times"]["r0050"], "parents: times carry only what the results need")
+check(d["records"][0]["holders"][0]["n"] == "Jane C.", "parents: record holders as first name and initial")
+check("pins" not in d["config"], "parents: no PIN settings")
+check(pr(d["v"]) == {"v": d["v"], "same": True}, "parents: tiny answer when nothing changed")
+admin.execute("update config set doc = doc || '{\"parents\": false}' where id = 'main'")
+check(pr() == {"off": True}, "parents: turned off again")
+admin.execute("delete from heats where id = 'r0050'"); admin.execute("delete from times where id = 'r0050'"); admin.execute("delete from records")
 
 srv.cleanup()
 print(f"\n{len(fails)} failed" if fails else "\nall passed")

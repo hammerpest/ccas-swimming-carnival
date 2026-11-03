@@ -25,7 +25,7 @@ Owner: Jordan, PDHPE Head of Department at CCAS.
 - No emojis.
 - Money in AUD, rounded to the nearest dollar.
 - Never use these words: delve, realm, unleash, tapestry, holistic, synthesize, substantiate, paramount, empirical, transcend, pivotal.
-- Number every app change as **Swim Opt X.Y**. The first Claude Code release is Swim Opt 2.0. Design changes are S X.Y; the next is S1.42.
+- Number every app change as **Swim Opt X.Y**. The first Claude Code release is Swim Opt 2.0. Design changes are S X.Y; S1.42 is reserved for the HY3 export panel, S1.43 is the parent site, the next new one is S1.44.
 - After any decision, answered question or finished work, update `PROJECT-STATE.md`: write a new dated version, and tell Jordan what changed.
 - Ask Jordan any open questions from PROJECT-STATE instead of letting them sit.
 - When a session gets long, remind Jordan of the handover routine: a new dated PROJECT-STATE, then a fresh session.
@@ -57,6 +57,7 @@ A failure goes back to the build, never to Jordan.
 - `index.html`, `css/styles.css`, `js/core.js`, `js/store-local.js`, `js/ui1.js` to `js/ui5.js`: the app. The ui files hold small Supabase hooks (PIN on the server); each only runs when Supabase is on.
 - `js/store-supabase.js`: the Supabase store (same calls as `store-local.js`). `js/config.js`: project URL and publishable key. `js/vendor/supabase.js`: supabase-js 2.117.3, loaded only when Supabase is on (loading it changes the test-mode made-up slip times, so test mode must never load it).
 - `js/test-students.js`: the 620 test students for the page. `supabase/01-setup.sql` (tables, row-level security, functions; safe to run again) and `supabase/02-seed-test-students.sql` (made by `tools/make_seed.py`).
+- `parents/`: the look-only results page for parents (Swim Opt 2.8), fed by `supabase/03-parent-results.sql`.
 - `src/`: the Swim Opt 1.5 source, kept for reference. `SETUP.md`: Jordan's Supabase steps.
 
 ## How to run and test

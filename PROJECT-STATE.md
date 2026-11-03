@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 3 November 2026, version f. Replaces 3 November version e and all earlier PROJECT-STATE files.
+Date: 3 November 2026, version g. Replaces 3 November version f and all earlier PROJECT-STATE files.
+
+Changes on 3 November 2026 (version g): Jordan asked for a results website for parents, on iPhone. Mock-up drawn (S1.43, https://claude.ai/artifact/DrC1TV8LsiH4FZdJ4Yh2NB) and built as Swim Opt 2.8 (2.34): a look-only page at /parents/ with Home, Events, Find a swimmer, Houses, Age champions and Records. Decisions 148 to 150. Check 3 PASSED on the second run (first run found names in student ids, device ids and full record-holder names; all fixed on the server). Jordan must run supabase/03-parent-results.sql in Supabase before the page shows anything (next step 18). New question 68 (media consent). S1.42 stays reserved for the HY3 export panel.
 
 Changes on 3 November 2026 (version f): At Jordan's request the staging Supabase project (used by both links) now holds a made-up carnival day: 110 races in 74 groups (36 with a second heat), made-up slip photos, places, times, 4 DNS, 2 DQ, 2 judge swaps (pink), 2 ties across heats, and 74 made-up records (8 broken, 2 equalled). All 74 results Final, no page errors. Made by tools/simday.py. Next step 17: when Jordan has finished looking, run tools/simday.py undo (clears races, slips, photos and records; keeps the students and settings).
 
@@ -563,6 +565,17 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.34 Swim Opt 2.8: results for parents (3 November 2026)
+
+- Page: https://hammerpest.github.io/ccas-swimming-carnival/parents/ (staging copy at /staging/parents/). Files parents/index.html, parents.css, parents.js. It reuses js/core.js, so places, points, ties, records and champions match the app exactly. Same look as the app (navy, yellow, Red Hat, house colours, medals), light and dark, iPhone first, bottom tab bar.
+- Screens: Home (house points with bars, records broken, age champions link, latest 5 Final events), Events (Girls or Boys, age, every event with Final / x of y heats in / To come), one event (every swimmer: place, heat, house, time, points, record line; DNS shows "Did not swim", DQ "Disqualified"), Find a swimmer (type a first name; their events, points, wins, age champion), Houses (totals, points by age group), Age champions, Records broken today.
+- Rules: an event's names show only once every heat is in (Final). Age champions count Final events only. Names are first name and surname initial. House points are Provisional until all events are final.
+- Server: supabase/03-parent-results.sql adds parent_results(), callable with no sign-in (so the 100 sign-ins an hour limit never applies). Returns nothing unless config/main has "parents": true. Swimmers go out as a fixed code (a salted hash of the id; ids hold the full name), only swimmers in a heat, surnames cut to the initial, record holders shortened, and only the fields results need (no PINs, devices, slip readings or photos). The page asks every minute with its version; an unchanged answer is tiny. A full answer is about 125 KB (about 16 KB compressed).
+- Offline: the last results are kept on the phone and show with "Offline, saved results".
+- Tests: tests/sql_test.py has 14 new parent checks (all pass). The page was tested at 390 x 844, 375 x 667 and 820 x 1180, light and dark, fed by the real SQL run on a copy of the made-up staging day: no sideways scroll, nothing under 48 px, no console errors. The app itself did not change.
+- Check 3: run 1 FAIL (full names inside student ids, the Recorder's device id, full record-holder names, unescaped text, 44 px Back link, champions counting unfinished events, the keyboard closing on update, ties shown 1 2 3, contrast of table headings). All fixed. Run 2 FAIL (swimmer numbers could shift during the day). Fixed with fixed codes. Then PASS.
+- Not done: no switch on the Carnival Organiser screen to turn parent results on or off (needs Jordan's OK on the look); for now Claude sets it.
+
 ### 2.33 Swim Opt 2.7: the job review's must-fix list (3 November 2026, staging)
 
 Built (all of next step 13, no design change; new controls use the approved buttons, links, boxes and chips):
@@ -908,6 +921,9 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
+148. (3 November 2026) Parents get a look-only results website on their phones (Swim Opt 2.8, design S1.43). Results show once every heat of an event is in.
+149. (3 November 2026, Claude's call for privacy) On the parent site names are first name and surname initial, only swimmers who are in a heat, and nothing shows until parent results are turned on. Start lists and times of unfinished events are in the page's data with short names, but are not shown.
+150. (3 November 2026) The parent site link is https://hammerpest.github.io/ccas-swimming-carnival/parents/. Parent results stay on with the made-up day so Jordan can look; after tools/simday.py undo the page shows "No results yet" until the carnival.
 147. (3 November 2026) New timing equipment is organised: a Swiss Timing Quantum Aquatics timer (with harness and printer) and a Colorado Infinity start system plugged into the Quantum's start input. The app still takes times from a photo of the printed slip. When the order arrives and is tested, Jordan sends a sample slip from it and the slip reader is checked against it (question 30). A direct data link from the Quantum to the app is not planned.
 
 ## 4. Rules and constraints
@@ -931,7 +947,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ### 4.3 Writing style (chat, files, app text)
 - Australian spelling. Simple, direct language. No em dashes (en dashes fine in ranges). No emojis. Avoid Jordan's banned words.
 - Money in AUD, rounded to the nearest dollar.
-- Number every design change S X.Y (next is S1.42). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.8).
+- Number every design change S X.Y (S1.42 is reserved for the HY3 export panel; S1.43 is the parent site; next new one is S1.44). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.9).
 - Use the 620 test students for all testing and demo data (80).
 - Ask outstanding questions each time. Remind Jordan of the handover routine when a chat gets long.
 - Update PROJECT-STATE straight away after any decision and save it to Project Knowledge with today's date and a version letter.
@@ -979,7 +995,8 @@ Ask now: none.
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
 - 30. (Partly answered, decision 110: the layout, from a simulated sample.) Still wanted: a few photos of real slips, now from the new Quantum timer (decision 147) once it arrives and is tested, to tune the reader.
-- 1. Principal and ICT approval for real names in Supabase (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
+- 68. (New, 3 November 2026) Students without media consent: on the parent site, hide their name (show "Swimmer"), leave them out, or show everyone as first name and initial? This needs a consent column in the student list. Ask before the parent link goes out with real names.
+- 1. Principal and ICT approval for real names in Supabase (now also covers the parent site, 2.34) (privacy summary still to send; it now needs updating to say each year's names and results are kept, decision 95). Later.
 - (Closed by 130) 2. Confirmed carnival date.
 - 3. Sample HY3 file from the next level (decision 100). Layout answered (2.29, version d). The 5-digit and 3-digit numbers are made by the app at export (132).
 - 55. Check 3 found low contrast in the dark theme (white on the green and red buttons, house dot letters), the bronze medal and NEW RECORD tag, and several tap targets under 48 px (2.17). All were already in the approved look. Fix them (a design change, S1.39, needs Jordan's OK) or keep as is? Options drawn (2.18). Colour: Option A chosen (109). Tap sizes: yes (111). Closed.
@@ -1024,6 +1041,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    Close and reopen the tab first (problem 17).
 16. NOW: Jordan's iPad on the staging link shows "No connection. Try again." at the PIN, though it has internet. The server accepts the PINs from other devices (checked 3 November 2026). Jordan tries a Private tab, then clears the website data for hammerpest.github.io. If that fixes it, Swim Opt 2.8: the app clears a stale sign-in and signs in fresh by itself. If not, Jordan sends the iPadOS version.
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
+18. NOW: Jordan runs supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
