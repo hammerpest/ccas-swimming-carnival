@@ -1,8 +1,10 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 4 November 2026, version b. Replaces 4 November version a and all earlier PROJECT-STATE files.
+Date: 4 November 2026, version c. Replaces 4 November version b and all earlier PROJECT-STATE files.
 
-Changes on 4 November 2026 (version b): Jordan found the Marshal's name list runs off the bottom of the screen from about lane 6 and approved the fix (decision 151). Swim Opt 2.9 built (2.35): a full-screen panel on a phone; on an iPad or MacBook the list opens upwards when there is more room above. Checks 1 to 3 PASSED, except that no real iPhone or iPad keyboard has been tried (next step 19). Committed on staging, not pushed.
+Changes on 4 November 2026 (version c): Swim Opt 2.9 pushed to staging (6ee32bd) and checked there. Main is still on 2.7 for the app, with the parent page from 2.8. Next step 19 is ready for Jordan.
+
+Changes on 4 November 2026 (version b): Jordan found the Marshal's name list runs off the bottom of the screen from about lane 6 and approved the fix (decision 151). Swim Opt 2.9 built (2.35): a full-screen panel on a phone; on an iPad or MacBook the list opens upwards when there is more room above. Checks 1 to 3 PASSED, except that no real iPhone or iPad keyboard has been tried (next step 19). Committed on staging.
 
 Changes on 4 November 2026 (version a): Jordan's iPad now works on both the app and the parent page ("all working fine"). The earlier "No connection" and "Offline" on that iPad were the iPad reaching Supabase, not the app; cause not pinned down (likely the network it was on). Next step 16 closed. Still worth checking on the day: staff devices on school wifi and at Mingara can reach supabase.co (signal test, to plan).
 
@@ -571,7 +573,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
-### 2.35 Swim Opt 2.9: the Marshal's name list (4 November 2026, staging, not pushed)
+### 2.35 Swim Opt 2.9: the Marshal's name list (4 November 2026, staging)
 
 - Under 700 px wide: a full-screen panel for every lane, with Lane N, the race name, Close, the find box, + Not on the list and Clear lane, then the names. It is sized to the space above the keyboard.
 - 700 px and wider: the list stays beside its lane. It opens upwards when there is more room above, is cut to fit the screen and the keyboard, and never covers the bar with Next heat and New race. Direction and height are held while typing, so the find box does not move.
