@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 4 November 2026, version g. Replaces 4 November version f and all earlier PROJECT-STATE files.
+Date: 5 November 2026, version a. Replaces 4 November version g and all earlier PROJECT-STATE files.
+
+Changes on 5 November 2026 (version a): Jordan paused the project. Nothing is running. Both links are on Swim Opt 2.10. Still in place while paused: the made-up carnival day on the Supabase project, with parent results turned on (run tools/simday.py undo before real use; the link must not go to parents yet). To pick up: question 1 (approval for real names), question 68 (media consent), then the next steps in section 7.
 
 Changes on 4 November 2026 (version g): At Jordan's request Swim Opt 2.10 pushed to main. Both links now run 2.10.
 
