@@ -164,6 +164,8 @@ td.num,th.num{text-align:right}
 .checkline .what{flex:1 1 200px;font:800 1.25rem var(--font-display)}
 .checkline .what.not{color:var(--warn)}
 .picklist{position:absolute;z-index:30;left:72px;right:12px;top:calc(100% - 4px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(10,20,45,.28);max-height:380px;overflow:auto;padding:6px}
+.picklist.up{top:auto;bottom:calc(100% - 4px)}
+.plhead{display:none}
 .picklist .pick{display:flex;width:100%;align-items:center;gap:10px;padding:10px;border:0;background:transparent;border-radius:8px;text-align:left;cursor:pointer;min-height:48px}
 .picklist .pick:hover{background:var(--sunk)}
 .picklist .pick:disabled{opacity:.4;cursor:not-allowed}
@@ -281,3 +283,13 @@ body:has(.pbar) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .ann.ph .water{padding:10px 14px;gap:6px 10px}.ann.ph .water .label{flex:0 0 100%}
 .ann.ph h2{font-size:1.2rem}.ann.ph .phmeta{gap:6px;flex-wrap:nowrap}.ann.ph .phmeta .muted{font-size:.85rem}.ann.ph .podium{gap:8px}
 .ann.ph .podium .pr{gap:10px;padding:10px 12px}.ann.ph .podium .pr b{font-size:1.15rem}.ann.ph .podium .pr .t{font-size:1.3rem}.ann.ph .podium .medal{width:40px;height:40px;font-size:1.1rem}
+/* Swim Opt 2.9: on a phone the Marshal's name list is a full-screen panel, the same for every lane */
+@media (max-width:699px){
+  .lane .picklist{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100dvh);max-height:none;z-index:40;border:0;border-radius:0;box-shadow:none;padding:0 max(10px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));overscroll-behavior:contain}
+  .lane .picklist .acts{top:0;position:sticky;z-index:1;margin:0 -10px 4px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px}
+  .lane .picklist .plhead{display:flex;flex-direction:column;flex:1 1 100%;min-height:48px;padding-right:92px;justify-content:center}
+  .plhead b{font:900 1.4rem var(--font-display)}
+  .plhead span{color:var(--muted);font-size:.85rem}
+  .lane .picklist .plclose{position:absolute;right:10px;top:calc(10px + env(safe-area-inset-top,0px));min-height:48px}
+  .lane .picklist #mfilter{flex:1 1 100% !important;font-size:17px}
+}

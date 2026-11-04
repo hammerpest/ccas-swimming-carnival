@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 4 November 2026, version a. Replaces 3 November version h and all earlier PROJECT-STATE files.
+Date: 4 November 2026, version b. Replaces 4 November version a and all earlier PROJECT-STATE files.
+
+Changes on 4 November 2026 (version b): Jordan found the Marshal's name list runs off the bottom of the screen from about lane 6 and approved the fix (decision 151). Swim Opt 2.9 built (2.35): a full-screen panel on a phone; on an iPad or MacBook the list opens upwards when there is more room above. Checks 1 to 3 PASSED, except that no real iPhone or iPad keyboard has been tried (next step 19). Committed on staging, not pushed.
 
 Changes on 4 November 2026 (version a): Jordan's iPad now works on both the app and the parent page ("all working fine"). The earlier "No connection" and "Offline" on that iPad were the iPad reaching Supabase, not the app; cause not pinned down (likely the network it was on). Next step 16 closed. Still worth checking on the day: staff devices on school wifi and at Mingara can reach supabase.co (signal test, to plan).
 
@@ -569,6 +571,19 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.35 Swim Opt 2.9: the Marshal's name list (4 November 2026, staging, not pushed)
+
+- Under 700 px wide: a full-screen panel for every lane, with Lane N, the race name, Close, the find box, + Not on the list and Clear lane, then the names. It is sized to the space above the keyboard.
+- 700 px and wider: the list stays beside its lane. It opens upwards when there is more room above, is cut to fit the screen and the keyboard, and never covers the bar with Next heat and New race. Direction and height are held while typing, so the find box does not move.
+- Change an earlier race gets the same list. The Recorder's Add swimmer box is unchanged.
+- Phone only: after Next heat the "Race N (Heat H) sent to the starter" message shows as a toast, because the panel covers the green bar. The page now starts at the top after Go, so Back is no longer hidden under the header.
+- Check 1: compared with 2.8 on the same script, 376 screens, 12 differ, all Marshal and all expected: iPad landscape confirm heat (list cut to fit) and five phone screens (panel, page starts at the top, toast). Each phone shot was checked by eye.
+- Check 2: built-in browser at 390 x 844 and 1180 x 820 (Chrome cannot go below 500 px, decision 141): pick names, find, Close, Next heat, no console errors.
+- Check 3: run 1 FAIL (list behind the iPad keyboard, list flipping while typing, a stale height after rotating, no sent message on a phone, Back under the header). All fixed. Run 2 PASS.
+- Engine and flow27 pass. tests/flow.py passed 10 of 11 runs; one run stopped with an error that was not saved and did not come back.
+- Known limits: keyboard tests used a simulated keyboard. At sizes that are not carnival devices (844 x 390, 700 x 500) the list on lane 2 can cover the bar; Close clears it. Three phone baseline shots catch the 3-second toast, so they depend on timing.
+- Testing note: port 8103 has an old server from an earlier session serving Swim Opt 2.6. Use another port for a before-and-after comparison.
+
 ### 2.34 Swim Opt 2.8: results for parents (3 November 2026)
 
 - Page: https://hammerpest.github.io/ccas-swimming-carnival/parents/ (staging copy at /staging/parents/). Files parents/index.html, parents.css, parents.js. It reuses js/core.js, so places, points, ties, records and champions match the app exactly. Same look as the app (navy, yellow, Red Hat, house colours, medals), light and dark, iPhone first, bottom tab bar.
@@ -925,6 +940,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
+151. (4 November 2026) The Marshal's name list: a full-screen panel on a phone; on an iPad or MacBook it opens upwards when there is more room above (design change approved by Jordan, drawn in the app, no canvas board).
 148. (3 November 2026) Parents get a look-only results website on their phones (Swim Opt 2.8, design S1.43). Results show once every heat of an event is in.
 149. (3 November 2026, Claude's call for privacy) On the parent site names are first name and surname initial, only swimmers who are in a heat, and nothing shows until parent results are turned on. Start lists and times of unfinished events are in the page's data with short names, but are not shown.
 150. (3 November 2026) The parent site link is https://hammerpest.github.io/ccas-swimming-carnival/parents/. Parent results stay on with the made-up day so Jordan can look; after tools/simday.py undo the page shows "No results yet" until the carnival.
@@ -951,7 +967,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 ### 4.3 Writing style (chat, files, app text)
 - Australian spelling. Simple, direct language. No em dashes (en dashes fine in ranges). No emojis. Avoid Jordan's banned words.
 - Money in AUD, rounded to the nearest dollar.
-- Number every design change S X.Y (S1.42 is reserved for the HY3 export panel; S1.43 is the parent site; next new one is S1.44). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.9).
+- Number every design change S X.Y (S1.42 is reserved for the HY3 export panel; S1.43 is the parent site; next new one is S1.44). The working app is numbered Swim Opt 1, Swim Opt 1.1 and so on (Claude Code builds started at Swim Opt 2.0; next is Swim Opt 2.10).
 - Use the 620 test students for all testing and demo data (80).
 - Ask outstanding questions each time. Remind Jordan of the handover routine when a chat gets long.
 - Update PROJECT-STATE straight away after any decision and save it to Project Knowledge with today's date and a version letter.
@@ -1046,6 +1062,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 16. (Done 4 November 2026) Jordan's iPad now reaches the app and the parent page. No app change needed.
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
+19. NOW: Jordan tries Swim Opt 2.9 on a real iPhone and iPad once it is on staging: type in the find box on lanes 6 to 8 with the keyboard up, in both iPad orientations.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
