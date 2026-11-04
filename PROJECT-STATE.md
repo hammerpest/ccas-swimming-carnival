@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 4 November 2026, version f. Replaces 4 November version e and all earlier PROJECT-STATE files.
+Date: 4 November 2026, version g. Replaces 4 November version f and all earlier PROJECT-STATE files.
+
+Changes on 4 November 2026 (version g): At Jordan's request Swim Opt 2.10 pushed to main. Both links now run 2.10.
 
 Changes on 4 November 2026 (version f): Jordan approved Swim Opt 2.10 ("Yes, keep it"). Problem 19 solved, next step 20 closed. 2.10 is on staging; main is still on 2.7 for the app until Jordan says to push it.
 
@@ -1084,7 +1086,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
-20. (Done 4 November 2026) Jordan approved Swim Opt 2.10. Still to do: push staging to main when Jordan says.
+20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
