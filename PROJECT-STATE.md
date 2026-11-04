@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 4 November 2026, version e. Replaces 4 November version d and all earlier PROJECT-STATE files.
+Date: 4 November 2026, version f. Replaces 4 November version e and all earlier PROJECT-STATE files.
+
+Changes on 4 November 2026 (version f): Jordan approved Swim Opt 2.10 ("Yes, keep it"). Problem 19 solved, next step 20 closed. 2.10 is on staging; main is still on 2.7 for the app until Jordan says to push it.
 
 Changes on 4 November 2026 (version e): Jordan answered question 69: the Marshal's name list goes downwards for lanes 1 to 4 and upwards for lanes 5 to 8 (decision 152). Built as Swim Opt 2.10 (2.36) and pushed to staging for Jordan to try. Checks 1 to 3 PASSED, with no real iPhone or iPad keyboard tried (next step 20). Problem 19 stays open until Jordan has tried it.
 
@@ -1015,7 +1017,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 16. (3 November 2026) The job review's must-fix items: built in 2.7 (2.33) except A15 and A17 (need a design), A14 (dropped by 142) and A16 (nice to have). A5's non-app parts (signal test, offline copy of the page) are still open.
 17. NEW (3 November 2026): GitHub Pages and phone browsers keep old files for up to about 10 minutes, so a phone may run the old version straight after a push. Close and reopen the tab before testing.
 18. NEW (3 November 2026): Claude in Chrome cannot shrink the window below 500 px and its screenshots time out on this page (141).
-19. NEW (4 November 2026): The Marshal's name list opens downwards with no check for room, so on a phone, and on an iPad from about lane 6, it runs off the bottom of the screen. The page can still be scrolled to reach it. Swim Opt 2.10 is on staging for Jordan to try (decision 152).
+19. SOLVED by 152 (4 November 2026): the Marshal's name list opens down for lanes 1 to 4 and up for 5 to 8 (Swim Opt 2.10). Jordan approved it.
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
 
 ---
@@ -1082,7 +1084,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
-20. NOW: Jordan tries Swim Opt 2.10 on the staging link on a real iPhone and iPad, typing in the find box with the keyboard up. If it is right, push it to main.
+20. (Done 4 November 2026) Jordan approved Swim Opt 2.10. Still to do: push staging to main when Jordan says.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
