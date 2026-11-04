@@ -164,6 +164,7 @@ td.num,th.num{text-align:right}
 .checkline .what{flex:1 1 200px;font:800 1.25rem var(--font-display)}
 .checkline .what.not{color:var(--warn)}
 .picklist{position:absolute;z-index:30;left:72px;right:12px;top:calc(100% - 4px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(10,20,45,.28);max-height:380px;overflow:auto;padding:6px}
+.picklist.up{top:auto;bottom:calc(100% - 4px)}
 .picklist .pick{display:flex;width:100%;align-items:center;gap:10px;padding:10px;border:0;background:transparent;border-radius:8px;text-align:left;cursor:pointer;min-height:48px}
 .picklist .pick:hover{background:var(--sunk)}
 .picklist .pick:disabled{opacity:.4;cursor:not-allowed}

@@ -288,7 +288,24 @@ function renderInner(){
   if(fid){const el=document.getElementById(fid);if(el&&el.focus){el.focus();if(el.setSelectionRange&&el.type!=="number")try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
   window.scrollTo(sx,sy);
   wireInputs();
+  fitPicklist();
 }
+/* Swim Opt 2.10: the Marshal's name list opens downwards for the top half of the pool (lanes 1 to 4) and
+   upwards for the bottom half (5 to 8). An upward list stops under the bar with Next heat and New race,
+   and keeps its height while typing, so the find box stays put */
+function fitPicklist(){
+  const e=document.querySelector(".lane .picklist");if(!e)return;
+  const lane=e.parentElement,all=[...lane.parentElement.children];
+  if(all.indexOf(lane)<all.length/2)return;
+  e.classList.add("up");
+  const hdr=document.getElementById("hdr").getBoundingClientRect().bottom;
+  const bar=document.querySelector("#main .racebar");
+  const room=Math.min(380,lane.getBoundingClientRect().top-(bar?bar.getBoundingClientRect().bottom:hdr)-4);
+  e.style.maxHeight=room+"px";
+  if(A.m.filter)e.style.height=(A.m.pickH||room)+"px";else A.m.pickH=e.offsetHeight;
+  const top=e.getBoundingClientRect().top;if(top<hdr+4)window.scrollBy(0,top-hdr-4);
+}
+window.addEventListener("resize",fitPicklist);
 function wireInputs(){
   const f=document.getElementById("mfilter");if(f){f.oninput=()=>{A.m.filter=f.value;render()}}
   const cam=document.getElementById("camin");if(cam)cam.onchange=e=>{const file=e.target.files[0];e.target.value="";onPhoto(file)};
