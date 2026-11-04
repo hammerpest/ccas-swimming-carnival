@@ -62,7 +62,7 @@ function marshalGo(){
   const key=groupKey(m.k,m.x,m.g);
   if(otherPeers().some(p=>p.mk===key)){A.modal={t:"info",title:"Already selected",body:`<p style="margin:0">${esc(groupLabel(m.k,m.x,m.g))} has already been selected on another iPad. Please go back and choose another race or group.</p>`,ok:"Back"};render();return}
   m.phase="lanes";m.lanes={};m.cur=1;m.open=1;m.filter="";m.heat=heatsSentFor(key)+1;m.sent=[];m.msg="";m.showMiss=false;m.bar="";
-  window.scrollTo(0,0);announce();render();
+  announce();render();
 }
 function renderMarshalLanes(){
   const m=A.m;const L=Number(A.cfg.lanes)||8;
@@ -92,10 +92,10 @@ function laneList(l,k,x,g,used,inHeat,id,setAct,clearAct,usedLabel){
   const m=A.m;const list=eligible(k,x,g);const q=m.filter.toLowerCase();
   const shown=q?list.filter(s=>(listName(s)).toLowerCase().includes(q)):list;
   return `<div class="picklist" role="listbox" aria-label="Swimmers for lane ${l}">
-        <div class="acts">${clearAct?`<div class="plhead"><b>Lane ${l}</b><span>${esc(groupLabel(k,x,g))}</span></div>`:""}${TYPE[k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:48px" autocomplete="off">`}
+        <div class="acts">${TYPE[k].relay?"":`<input id="mfilter" placeholder="Type to find a name" value="${esc(m.filter)}" style="flex:1 1 160px;min-height:48px" autocomplete="off">`}
           ${TYPE[k].relay||!clearAct?"":`<button type="button" class="btn small" data-act="maddnew" data-l="${l}">+ Not on the list</button>`}
           ${clearAct?`<button type="button" class="btn small" data-act="${clearAct}" data-l="${l}">Clear lane</button>`:""}
-          <button type="button" class="btn small plclose" data-act="${clearAct?"mclose":"closemodal"}">${clearAct?"Close":"Cancel"}</button></div>
+          <button type="button" class="btn small" data-act="${clearAct?"mclose":"closemodal"}">${clearAct?"Close":"Cancel"}</button></div>
         ${shown.length?shown.map(s=>{const dis=used.has(s.id)||(inHeat.has(s.id)&&id!==s.id);return `<button type="button" class="pick" data-act="${setAct}" data-l="${l}" data-id="${esc(s.id)}" ${dis?"disabled":""}>${hdot(s.h)}<span>${esc(listName(s))}</span>${used.has(s.id)?`<span class="muted" style="margin-left:auto;font-size:.8rem">${usedLabel||"Earlier heat"}</span>`:inHeat.has(s.id)&&id!==s.id?`<span class="muted" style="margin-left:auto;font-size:.8rem">In this heat</span>`:""}</button>`}).join(""):`<div class="muted" style="padding:10px">No names match.</div>`}
       </div>`;
 }

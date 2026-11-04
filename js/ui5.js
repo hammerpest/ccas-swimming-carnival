@@ -288,34 +288,7 @@ function renderInner(){
   if(fid){const el=document.getElementById(fid);if(el&&el.focus){el.focus();if(el.setSelectionRange&&el.type!=="number")try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
   window.scrollTo(sx,sy);
   wireInputs();
-  fitPicklist();
 }
-/* Swim Opt 2.9: the Marshal's name list. On a phone it is a full-screen panel, sized to the space above the
-   keyboard. On anything larger it stays beside its lane: it opens upwards when there is more room above, and
-   is cut to fit, so the names are never below the screen, behind the keyboard or over the Next heat bar.
-   The direction and height are set when the list opens and held while typing, so the find box stays put */
-let pickFit=null,pickVar="";
-function fitPicklist(){
-  const e=document.querySelector(".lane .picklist");if(!e)return;
-  const vv=window.visualViewport;const h=vv?vv.height:innerHeight,top=vv?vv.offsetTop:0;
-  e.classList.remove("up");e.style.maxHeight="";e.style.height="";e.style.bottom="";
-  if(innerWidth<700){
-    const v=h+"/"+top;if(v!==pickVar){pickVar=v;const st=document.documentElement.style;st.setProperty("--vvh",h+"px");st.setProperty("--vvt",top+"px")}
-    return;
-  }
-  const L=e.parentElement.getBoundingClientRect();
-  const bar=document.querySelector("#main .racebar");const roof=Math.max(document.getElementById("hdr").getBoundingClientRect().bottom,bar?bar.getBoundingClientRect().bottom:0);
-  const seen=top+h-8;const below=seen-L.bottom+4,above=Math.min(L.top+4,seen)-roof-8;
-  const key=A.m.open+"/"+(A.m.edit||"");const held=A.m.filter&&pickFit&&pickFit.key===key;
-  const up=held?pickFit.up:e.offsetHeight>below&&above>below;
-  const room=Math.max(120,up?above:below);
-  if(up){e.classList.add("up");e.style.bottom=`calc(100% - 4px + ${Math.max(0,L.top+4-seen)}px)`}
-  e.style.maxHeight=Math.min(380,room)+"px";
-  if(held)e.style.height=Math.min(pickFit.h,room)+"px";
-  else pickFit={key,up,h:e.offsetHeight};
-}
-if(window.visualViewport){visualViewport.addEventListener("resize",fitPicklist);visualViewport.addEventListener("scroll",fitPicklist)}
-window.addEventListener("resize",fitPicklist);window.addEventListener("scroll",fitPicklist,{passive:true});
 function wireInputs(){
   const f=document.getElementById("mfilter");if(f){f.oninput=()=>{A.m.filter=f.value;render()}}
   const cam=document.getElementById("camin");if(cam)cam.onchange=e=>{const file=e.target.files[0];e.target.value="";onPhoto(file)};
@@ -353,8 +326,7 @@ const ACT={
   maddnew:el=>{A.modal={t:"addSwimmer",l:+el.dataset.l};render()},
   maddsave:el=>addSwimmer(+el.dataset.l),
   mback:()=>{if(Object.keys(A.m.lanes).length){A.modal={t:"leaveMarshal",to:"marshal"};render();return}finishMarshalRace()},
-  /* the phone's name list covers the bar that says the heat was sent, so it shows as a toast there */
-  mnext:async()=>{if(await sendHeat()){if(innerWidth<700)toast(A.m.bar);render()}},
+  mnext:async()=>{if(await sendHeat())render()},
   mnew:()=>{if(Object.keys(A.m.lanes).length){A.modal={t:"confirmHeat"};render()}else finishMarshalRace()},
   mconfirm:async()=>{A.modal=null;if(await sendHeat())finishMarshalRace();else render()},
   jtap:el=>{if(!locked())judgeTap(+el.dataset.l)},

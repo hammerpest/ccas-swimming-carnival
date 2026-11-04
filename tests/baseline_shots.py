@@ -43,7 +43,6 @@ async def run(pw,dev,theme):
     await shot(M,"marshal-lanes-full")
     await M.click('[data-act=mnext]'); await M.wait_for_timeout(200)
     for i in range(3): await M.click('.picklist button.pick:not([disabled]) >> nth=0')
-    if M.viewport_size["width"] < 700: await M.click('[data-act=mclose]')  # the phone's name list covers the screen (2.9)
     await M.click('[data-act=mnew]'); await shot(M,"marshal-confirmheat"); await M.click('[data-act=mconfirm]'); await M.wait_for_timeout(200)
     await shot(M,"marshal-sent")
     await M.click('[data-act=menu]'); await shot(M,"marshal-jobmenu"); await M.click('[data-act=menu]')
