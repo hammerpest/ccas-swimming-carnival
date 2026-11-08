@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version c. Replaces 9 November version b and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version d. Replaces 9 November version c and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version d): Jordan said "Push both". Swim Opt 2.14 pushed to staging and main (cf56279); both links checked running 2.14 with the new photo slip box sentence. No SQL change. Next step 25 closed. Ask now: none.
 
 Changes on 9 November 2026 (version c): Jordan answered question 72 ("Yes, add it", decision 156). Swim Opt 2.14 built (2.40): the photo slip box "Replace the Race N slip?" adds the same sentence as the multitimer box. Checks 1 to 3 PASSED. Committed on staging, not pushed (next step 25). No open questions to ask now.
 
@@ -607,7 +609,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
-### 2.40 Swim Opt 2.14: photo slip Replace box wording (9 November 2026, staging)
+### 2.40 Swim Opt 2.14: photo slip Replace box wording (9 November 2026; on staging and main the same day)
 
 - Decision 156. js/ui3.js MODALS.replaceSlip: after "This photo will replace its times." the box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Same sentence as the multitimer box (155). index.html comment now Swim Opt 2.14. No SQL change.
 - Tests: engine, flow and multitimer.py pass.
@@ -1097,7 +1099,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: push 2.14 (next step 25).
+Ask now: none.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1166,7 +1168,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
 22. (Done 8 November 2026) Swim Opt 2.12 on both links (2.38); both SQL files run on the staging project and checked.
 24. (Done 9 November 2026) Swim Opt 2.13 pushed to staging and main (9620054), checks 1 to 3 passed.
-25. NOW: Swim Opt 2.14 on staging (2.40), checks 1 to 3 passed. Push staging and main when Jordan says.
+25. (Done 9 November 2026) Swim Opt 2.14 pushed to staging and main (cf56279), checks 1 to 3 passed.
 23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
