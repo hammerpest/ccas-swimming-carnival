@@ -1,5 +1,5 @@
-"""Swim Opt 2.16 test (Playwright, test mode): Place Judge Start again clears "fewer places confirmed" (ok),
-so a race with no places is not counted as done (PROJECT-STATE next step 23).
+"""Swim Opt 2.16 and 2.17 test (Playwright, test mode): Place Judge Start again clears "fewer places confirmed" (ok),
+so a race with no places is not counted as done (PROJECT-STATE next step 23). 2.17: any place taken off clears ok too (question 73).
 Run: python3 tests/flow216.py "http://127.0.0.1:8102/?mode=local"   (from a scratch folder)"""
 import asyncio, sys
 from playwright.async_api import async_playwright
@@ -60,6 +60,26 @@ async def main():
     check(not await ev(R, "A.R.races.get(1).done"), "after Undo the judge confirms fewer places again")
     await J.click('[data-act=jnext]'); await J.wait_for_timeout(80); await J.click('[data-act=jconfirm]'); await J.wait_for_timeout(150)
     check(await ev(R, "A.R.races.get(1).done"), "confirmed again: race 1 done")
+
+    # Swim Opt 2.17 (decision 159, question 73): taking a place off after confirming fewer places clears ok
+    await J.click('[data-act=jgoto]'); await J.click('[data-act=pickrace][data-race="1"]'); await J.wait_for_timeout(80)
+    await J.click('[data-act=jundo]'); await J.wait_for_timeout(150)
+    check(await ev(J, "A.finish.r0001.order.length") == 1 and await ev(J, "A.finish.r0001.ok") is False, "2.17: Undo last takes a place off and clears ok")
+    check(not await ev(R, "A.R.races.get(1).done"), "2.17: 1 place left: not done until confirmed again")
+    await J.click('[data-act=jtap][data-l="2"]'); await J.wait_for_timeout(80)
+    await J.click('[data-act=jnext]'); await J.wait_for_timeout(80); await J.click('[data-act=jconfirm]'); await J.wait_for_timeout(150)
+    check(await ev(R, "A.R.races.get(1).done"), "2.17: confirmed again: done")
+    await J.click('[data-act=jgoto]'); await J.click('[data-act=pickrace][data-race="1"]'); await J.wait_for_timeout(80)
+    await J.click('[data-act=jtap][data-l="2"]'); await J.wait_for_timeout(150)
+    check(await ev(J, "A.finish.r0001.order.length") == 1 and await ev(J, "A.finish.r0001.ok") is False, "2.17: tapping a placed lane takes it off and clears ok")
+    check(not await ev(R, "A.R.races.get(1).done"), "2.17: not done after a tapped-off place")
+    await J.click('[data-act=jtap][data-l="2"]'); await J.wait_for_timeout(80)
+    await J.click('[data-act=jnext]'); await J.wait_for_timeout(80); await J.click('[data-act=jconfirm]'); await J.wait_for_timeout(150)
+    await J.click('[data-act=jgoto]'); await J.click('[data-act=pickrace][data-race="1"]'); await J.wait_for_timeout(80)
+    await J.click('[data-act=jtap][data-l="3"]'); await J.wait_for_timeout(150)
+    check(await ev(J, "A.finish.r0001.ok") is True and await ev(R, "A.R.races.get(1).done"), "2.17: adding a place keeps the confirm")
+    await J.click('[data-act=jundo]'); await J.wait_for_timeout(150)
+    check(await ev(J, "A.finish.r0001.order.length") == 2 and await ev(J, "A.finish.r0001.ok") is False and not await ev(R, "A.R.races.get(1).done"), "2.17: Undo of an added place also asks for a confirm again")
 
     # A full top 4 never needs ok
     await J.click('[data-act=jgoto]'); await J.click('[data-act=pickrace][data-race="1"]'); await J.wait_for_timeout(80)

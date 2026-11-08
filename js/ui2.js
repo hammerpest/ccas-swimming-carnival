@@ -270,7 +270,10 @@ async function saveFinish(r,order,undoable,extra){
   const key=rid(r.race);const fin=judgeFin(r);
   const undo=(fin.undo||[]).slice();if(undoable)undo.push(fin.order||[]);
   const T=r.T||{};
-  const doc=Object.assign({order,seq:order.flat(),undo:undo.slice(-20),gen:r.gen||0,ck:T.checked?T.checkedAt||0:0,ok:!!fin.ok,at:Date.now(),dev:DEV},extra||{});
+  /* Swim Opt 2.17 (decision 159): a place taken off (Undo last, tapping a placed lane, Start again) clears
+     "fewer places confirmed" (ok), so the judge confirms again with Next race */
+  const fewer=order.flat().length<(fin.order||[]).flat().length;
+  const doc=Object.assign({order,seq:order.flat(),undo:undo.slice(-20),gen:r.gen||0,ck:T.checked?T.checkedAt||0:0,ok:!!fin.ok&&!fewer,at:Date.now(),dev:DEV},extra||{});
   A.finish[key]=doc;recompute();render();
   await w(()=>A.store.set("finish/"+key,doc));
 }
