@@ -1,4 +1,6 @@
 /* ===== Swim Opt 1: app shell, PIN, header, shared helpers ===== */
+/* Swim Opt 2.15 (decision 157): the running version, shown in the Carnival Organiser badge. Update it with each release. */
+const APP_VERSION="2.15";
 const JOBS=[
   {k:"marshal",n:1,name:"Marshal",badge:"MARSHAL",dev:"iPad",desc:"Put swimmers in lanes and send each heat"},
   {k:"judge",n:2,name:"Place Judge",badge:"PLACE JUDGE",dev:"iPad",desc:"Tap the top places in each heat"},
@@ -138,7 +140,7 @@ function renderHeader(){
   const slim=slimHdr();h.classList.toggle("slim",slim);
   if(slim){h.innerHTML=`<div class="wrap"><div class="topin"><span class="live ${cls}"><i></i>${esc(live)}</span>${jobPill(jobs,esc(pillName()))}</div></div>`;return}
   h.innerHTML=`<div class="wrap"><div class="topin">
-    ${j?`<span class="jobbadge">${esc(j.badge)}</span>`:""}
+    ${j?`<span class="jobbadge">${esc(j.badge)}${j.k==="organiser"?`<small class="ver">v${APP_VERSION}</small>`:""}</span>`:""}
     <div class="ttl"><b>Swimming Carnival ${A.past?esc(A.past):esc(curYear())}</b><small>${esc(A.cfg.name||"CCAS")}${A.job==="organiser"?" · Organiser PIN only":""}</small></div>
     ${A.role==="org"&&A.yearPicked?`<button type="button" class="hlink" data-act="changeyear">${A.past?"Look only · ":""}Change year</button>`:""}
     ${links}

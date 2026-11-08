@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version e. Replaces 9 November version d and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version f. Replaces 9 November version e and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version f): Jordan asked for the running version in the yellow Carnival Organiser badge and chose the style (decision 157): "v2.15" after the name, smaller and lighter, Organiser only. Built as Swim Opt 2.15 (2.41) on local staging, not pushed. Checks 1 to 3 PASSED. Hidden below 900 px so the iPad portrait header stays as approved. New next step 26 (Jordan looks at 2.15, then push). Also: section 8 file line corrected, and "his" changed to "their" for Jordan. Version e (64d0872) is still not pushed either. Ask now: none (items 17, 23 and 14 in section 7 are still waiting on Jordan).
 
 Changes on 9 November 2026 (version e): handover. Section 0 brought up to date (it still said 2.7 was live; both links now run Swim Opt 2.14, and the 2.11 and 2.12 SQL is run). No new decisions. Ask now: none. Start the next session from section 0, then the "Ask now" line in section 6 and the open items in section 7 (17, 23 and 14).
 
@@ -80,7 +82,7 @@ Changes on 2 November 2026 (version a): Jordan tested Swim Opt 2.4 on the live l
 
 Changes on 30 October 2026 (version b): Jordan confirmed the iPhone screen stayed on during a long multitimer race on Swim Opt 2.4 (decision 128 works; next step 1 closed). Out-of-date lines fixed at Jordan's request: section 0 (Swim Opt 2.0 build steps replaced by where things stand now), problems 1, 6, 7, 10 and 12a, the empty "Ask now" list, section 7 (Done line and step 2) and section 8 (version). No new decisions.
 
-Changes on 30 October 2026 (version a): Jordan tested Swim Opt 2.3 on the staging link on his iPhone in Chrome. Test 1 (a normal race) passed. Test 2: firm press, double tap and Fix splits passed, but starting a scroll on SPLIT adds a split (bug). Test 3: the clock kept time, but the phone went to sleep (the keep-awake request is ignored by Chrome on iPhone). Test 4: after the 100 m and 200 m races the phone stayed on the multitimer for 50 m races (bug). Decisions 125 to 128. Design S1.41 drawn (https://claude.ai/artifact/BYJZvCc65AfaiTUtr8adDw, source design/S1.41-multitimer-pinned.html), approved by Jordan (question 61 closed). Swim Opt 2.4 built on staging (2.28); checks 1 and 3 PASSED; check 2 run in the built-in browser because Claude in Chrome is not connected; Jordan accepted it (decision 129). Pushed to staging. Jordan tested 2.4 on his iPhone: "seems to be pretty good". Whether the screen now stays on was not confirmed. At Jordan's request, staging (Swim Opt 2.2 to 2.4) promoted to main.
+Changes on 30 October 2026 (version a): Jordan tested Swim Opt 2.3 on the staging link on their iPhone in Chrome. Test 1 (a normal race) passed. Test 2: firm press, double tap and Fix splits passed, but starting a scroll on SPLIT adds a split (bug). Test 3: the clock kept time, but the phone went to sleep (the keep-awake request is ignored by Chrome on iPhone). Test 4: after the 100 m and 200 m races the phone stayed on the multitimer for 50 m races (bug). Decisions 125 to 128. Design S1.41 drawn (https://claude.ai/artifact/BYJZvCc65AfaiTUtr8adDw, source design/S1.41-multitimer-pinned.html), approved by Jordan (question 61 closed). Swim Opt 2.4 built on staging (2.28); checks 1 and 3 PASSED; check 2 run in the built-in browser because Claude in Chrome is not connected; Jordan accepted it (decision 129). Pushed to staging. Jordan tested 2.4 on their iPhone: "seems to be pretty good". Whether the screen now stays on was not confirmed. At Jordan's request, staging (Swim Opt 2.2 to 2.4) promoted to main.
 
 Changes on 29 October 2026 (version t): Jordan approved S1.40 (question 60 closed, decision 123). Swim Opt 2.3 built on staging (2.27): the digital multitimer. Checks 1, 2 (built-in browser, decision 124) and 3 PASSED. Committed and pushed to staging (485a3f5). Jordan ran the new 01-setup.sql on the staging project (Success). Jordan must run the new supabase/01-setup.sql on the staging project so Time Slips can save places.
 
@@ -181,7 +183,7 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
 - The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.14 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 9 November 2026. The parent page is at /parents/. Jordan has run the latest supabase/01-setup.sql (2.11) and 03-parent-results.sql (2.12) on the staging project. Claude can push when Jordan says; each repo keeps its own token in the Keychain (credential.useHttpPath is on in the swimming and athletics repos).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
-  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
+  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40); 2.15 version in the Organiser badge (2.41, built, not pushed). Jordan confirmed on their iPhone that 2.4 works and the screen stays on during a long race.
   - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule. Chrome cannot hold phone or iPad widths (problem 18), so those sizes come from the Playwright runs and check 3. Chrome can cache old local files: fetch each script with cache 'reload', then reload the page.
 - Check 1 compares a new build with the previous build's shots (not baseline-mac, which is the untouched 1.5 and now differs by the approved changes).
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
@@ -612,6 +614,16 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.41 Swim Opt 2.15: version in the Carnival Organiser badge (9 November 2026; built on local staging, not pushed)
+
+- Decision 157. js/ui1.js: new APP_VERSION constant ("2.15"); the header's yellow job badge adds <small class="ver">v2.15</small> on the Carnival Organiser job only. css/styles.css: .jobbadge .ver (0.78em, weight 600, opacity 0.8, 10 px gap); hidden below 900 px wide. index.html comment now Swim Opt 2.15. No SQL change.
+- Bump APP_VERSION in js/ui1.js with every release from now on.
+- Why the 900 px rule: at 820 px (iPad portrait) the wider badge pushed "Swimming Carnival 2027" onto two lines and the header grew 20 px. Hidden there, the iPad portrait header matches 2.14 exactly. At in-between widths no carnival device uses (980 to 1080 and 1220 to 1240 px) the header wraps a little sooner than before; never a sideways scroll.
+- Tests: engine passes.
+- Check 1: against the 2.14 shots: 46 of 376 differ, all org-* screens on MacBook and iPad landscape, every changed pixel inside the header's top band (badge and the title beside it). iPad portrait, phone and all other jobs unchanged. Expected. PASSED.
+- Check 2: Claude in Chrome, test mode, Organiser 9999: badge reads "CARNIVAL ORGANISER v2.15"; Marshal, Place Judge, Time Slips, Recorder and Announcer badges unchanged; dark theme colours the same; no console errors; all app requests 200 or 304; Supabase not loaded in test mode. Chrome would not take screenshots (window hidden), so the look was checked from the Playwright shots. PASSED.
+- Check 3: fresh-eyes agent: PASS. Version readable and clearly secondary; header keeps its rows and height; contrast 5.37:1 (needs 4.5); phone unchanged; no em dashes or emojis. Note: on iPad landscape the subtitle now breaks after "2027 ·" instead of before "ONLY" (still two lines, same height).
+
 ### 2.40 Swim Opt 2.14: photo slip Replace box wording (9 November 2026; on staging and main the same day)
 
 - Decision 156. js/ui3.js MODALS.replaceSlip: after "This photo will replace its times." the box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Same sentence as the multitimer box (155). index.html comment now Swim Opt 2.14. No SQL change.
@@ -841,7 +853,7 @@ Built to S1.41 and decisions 125 to 128.
 - Check 1: pixel diff against Swim Opt 2.3: 0 screens changed (the standard screens use 50 m races). PASSED.
 - Check 2: Claude in Chrome was not connected. Run in the desktop app's built-in browser: 100 m race opened on the multitimer with the slim banner; the Job menu works; 8 splits from 8 clicks; scrolling while running keeps the clock under the banner; placing and Send; Next race to a 50 m race opened the camera with the full banner; Recorder shows all 8 "From multitimer"; no console errors. PASSED (accepted by Jordan, decision 129).
 - Check 3: run 1 FAILED (slim banner also at iPad and MacBook sizes; a slide could still count through the click; two overlapping thumbs lost a split; licence text; banner height on rotation). All fixed. Run 2 found that the resize redraw wiped typed text; fixed. Run 3 PASSED.
-- Jordan tried it on his iPhone (30 October 2026): "seems to be pretty good", and the screen stayed on. Auto-Lock Never stays the backup on the day.
+- Jordan tried it on their iPhone (30 October 2026): "seems to be pretty good", and the screen stayed on. Auto-Lock Never stays the backup on the day.
 
 ### 2.27 Swim Opt 2.3: multitimer (29 October 2026, staging)
 
@@ -1031,6 +1043,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
 155. (8 November 2026, answers question 71) The multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Built as Swim Opt 2.13.
+157. (9 November 2026) Jordan asked for the running version in the yellow Carnival Organiser badge and chose: same line, smaller and lighter ("CARNIVAL ORGANISER v2.15"), Organiser only. Hidden below 900 px so the approved iPad portrait header does not change. Built as Swim Opt 2.15.
 156. (9 November 2026, answers question 72) The photo slip "Replace the Race N slip?" box adds the same sentence. Built as Swim Opt 2.14.
 154. (8 November 2026, answers question 70) Multitimer places skip any lane the Recorder has marked DNS, DQ or No time; the places go to the next lanes in tap order. Worked out live, so taking the mark off (Use slip) gives the place back. Once the Place Judge changes the places, the judge's places stand. Built as Swim Opt 2.12.
 153. (8 November 2026) Jordan approved Swim Opt 2.11 ("Yes, build 2.11"): late multitimer sends merge like photo slips and save times use the server clock. Check 3's fix (old re-swim sends ignored) added as the same kind of fix, no look change.
@@ -1172,6 +1185,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 22. (Done 8 November 2026) Swim Opt 2.12 on both links (2.38); both SQL files run on the staging project and checked.
 24. (Done 9 November 2026) Swim Opt 2.13 pushed to staging and main (9620054), checks 1 to 3 passed.
 25. (Done 9 November 2026) Swim Opt 2.14 pushed to staging and main (cf56279), checks 1 to 3 passed.
+26. NOW: Jordan looks at Swim Opt 2.15 (version in the Organiser badge, 2.41). On Jordan's word, push PROJECT-STATE version e, 2.15 and this version to staging and main.
 23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
@@ -1179,7 +1193,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 8 November 2026 version c (this file; the latest)
+- PROJECT-STATE.md in the repo, 9 November 2026 version f (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)

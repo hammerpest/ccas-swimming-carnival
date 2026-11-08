@@ -45,6 +45,8 @@ h3{font-size:1.05rem;font-weight:700}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--navy);color:var(--navy-ink);border-bottom:4px solid var(--grey)}
 .topin{display:flex;align-items:center;gap:10px 14px;padding-block:10px;flex-wrap:wrap}
 .jobbadge{background:var(--sun);color:var(--sun-ink);font:800 .9rem var(--font-display);letter-spacing:.08em;padding:6px 12px;border-radius:6px;white-space:nowrap}
+.jobbadge .ver{font-size:.78em;font-weight:600;letter-spacing:.04em;opacity:.8;margin-left:10px}
+@media (max-width:899px){.jobbadge .ver{display:none}} /* Swim Opt 2.15: keeps the iPad portrait header on one title line */
 .ttl{display:flex;flex-direction:column;min-width:0;flex:1 1 160px}
 .ttl b{font-family:var(--font-display);font-weight:800;font-size:1.15rem;line-height:1.1}
 .ttl small{color:var(--navy-muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
