@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 5 November 2026, version a. Replaces 4 November version g and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version a. Replaces 5 November version a and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version a): Handover to a fresh session at Jordan's request. No app change since 5 November. Where things stand: both links run Swim Opt 2.10; the parent results page (2.8) is live; the made-up carnival day is still loaded with parent results on (do not share the parent link; undo with tools/simday.py undo when Jordan says). Waiting on Jordan: question 1 (approval for real names, now covering the parent page), question 68 (media consent on the parent page), next step 7 (import the test HY3 into Meet Manager), next step 15 (try Clear practice data and backup and restore), next step 17 (undo the made-up day when finished), question 30 (a slip from the new Quantum timer once it arrives). Later, each needing a design and Jordan's OK: printing, the HY3 export panel (S1.42), a faster multitimer reset, the Organiser overview panel, an on/off switch for parent results, an offline copy of the page. The free Supabase project pauses after about 7 days idle: if the app looks offline, check that first. Next app change is Swim Opt 2.11; next new design is S1.44.
 
 Changes on 5 November 2026 (version a): Jordan paused the project. Nothing is running. Both links are on Swim Opt 2.10. Still in place while paused: the made-up carnival day on the Supabase project, with parent results turned on (run tools/simday.py undo before real use; the link must not go to parents yet). To pick up: question 1 (approval for real names), question 68 (media consent), then the next steps in section 7.
 
