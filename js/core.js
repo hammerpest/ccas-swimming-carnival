@@ -181,17 +181,20 @@ function compute(S){
     /* a cancelled race keeps its lanes on screen, but none of them counts */
     const filled=h.cancelled?[]:Object.keys(lanes).filter(l=>lanes[l]);
     const lt=T.lanes||{};
+    /* Swim Opt 2.12 (decision 154): multitimer places are worked out from the whole tap order each time,
+       so a lane marked DNS, DQ or No time gets no place, and gets it back if the mark is taken off (Use slip) */
+    const FO=F.multi&&Array.isArray(F.taps)?F.taps.filter(l=>lanes[l]&&!(lt[l]&&noTimeSt(lt[l].st))).slice(0,F.n||4).map(l=>[l]):(F.order||[]);
     /* only marshalled lanes count; a slip time for an empty lane is shown to the Recorder as "extra" */
     const ltIn={};for(const l of filled)if(lt[l])ltIn[l]=lt[l];
-    const eff=heatEffective(ltIn,(F.order||[]).map(g=>g.filter(l=>lanes[l])).filter(g=>g.length));
+    const eff=heatEffective(ltIn,FO.map(g=>g.filter(l=>lanes[l])).filter(g=>g.length));
     const extra=Object.keys(lt).filter(l=>!lanes[l]&&lt[l]&&lt[l].t!=null&&!noTimeSt(lt[l].st)).map(Number).sort((a,b)=>a-b);
-    const placeTaps=finishOrderFromTaps(F.order);
+    const placeTaps=finishOrderFromTaps(FO);
     const nTimes=filled.filter(l=>lt[l]&&(lt[l].t!=null||noTimeSt(lt[l].st))).length;
     const nOk=filled.filter(l=>lt[l]&&lt[l].t!=null&&!noTimeSt(lt[l].st)).length;
     const flagged=filled.filter(l=>{const v=lt[l];return v&&v.t!=null&&!noTimeSt(v.st)&&!v.keep&&(oddTime(h.k,v.t,cfg.limits)||v.chk)}).length;
     const differs=filled.filter(l=>lt[l]&&lt[l].slip!=null&&lt[l].slip!==lt[l].t).map(Number);
     const need=Math.min(4,filled.length);
-    const dh=(F.order||[]).map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
+    const dh=FO.map(g=>g.map(String).filter(l=>lanes[l])).filter(g=>g.length>1);
     const tapped=Object.keys(placeTaps).filter(l=>lanes[l]).length;
     /* a lane changed after Times checked sends the race back to "To check" (decision 113); two minutes
        either way allows for device clocks that differ, so a doubtful change is checked again */
@@ -209,7 +212,7 @@ function compute(S){
     if(h.cancelled)tstatus="Cancelled";
     else if(nTimes)tstatus=checked?"Checked":"To check";
     const doneAt=Math.max(h.at||0,T.at||0,T.checkedAt||0,F.at||0,(slip&&slip.at)||0);
-    const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,
+    const r={race:h.race,heat:h.heat,k:h.k,x:h.x,g:h.g,key,label:groupLabel(h.k,h.x,h.g),lanes,filled,times:lt,eff,placeTaps,FO,
       tstatus,checked,checkedAt:T.checkedAt||0,nTimes,nOk,flagged,need,tapped,placesIn,allIn,done,doneAt,differs,dh,extra,src:T.src||null,hasSlip:!!slip,
       gen,T,F,slip,cancelled:!!h.cancelled};
     races.set(h.race,r);

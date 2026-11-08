@@ -178,8 +178,18 @@ async def main():
               and all(L[str(l)].get('src') == 'multi' for l in f2[2:]), f"2.11: a multitimer resend keeps DNS and the typed time ({who})")
     await R.wait_for_timeout(300)
     await R.evaluate("document.activeElement&&document.activeElement.blur()"); await R.wait_for_timeout(300)  # the screen redraws once no time box has focus
+    for P, who in ((S, 'phone'), (R, 'Recorder')):
+        O = await P.evaluate("A.finish.r0002.order")
+        check([g[0] for g in O] == f2[1:], f"2.12: the DNS lane gets no place, the next lanes move up (154) ({who})")
+    P1 = await R.evaluate(f"A.R.races.get(2).placeTaps[{f2[1]}]")
+    check(await R.evaluate(f"A.R.races.get(2).placeTaps[{f2[0]}]") is None and P1 == 1, "2.12: the Recorder sees no place for the DNS lane")
     check(await R.locator('.under', has_text='Slip differs').count() == 2, "2.11: the Recorder sees Slip differs on the typed lane and the DNS lane (as photo slips, 136)")
     await R.screenshot(path='9b-recorder-kept.png', full_page=True)
+    await R.click(f'[data-act=rslipuse][data-l="{f2[0]}"]'); await R.wait_for_timeout(400)
+    E = await R.evaluate(f"(()=>{{const r=A.R.races.get(2);return {{p:r.placeTaps[{f2[0]}],p1:r.placeTaps[{f2[1]}],e:r.eff[{f2[0]}],t:A.times.r0002.lanes[{f2[0]}].t}}}})()")
+    check(E['p'] == 1 and E['p1'] == 2 and E['e']['eff'] == E['t'] and not E['e']['pink'], f"2.12: Use slip on the DNS lane gives back its place and its own time {E}")
+    J = await R.evaluate("(()=>{const r=A.R.races.get(2);return {j:judgeFin(r).order,fo:r.FO}})()")
+    check(J['j'] == J['fo'] and J['j'][0] == [f2[0]], f"2.12: the Place Judge screen shows the live multitimer places {J}")
 
     # reload mid-race keeps the clock, even when an earlier race still has no slip (check 3, finding 1)
     await M.click('[data-act=mpick][data-v=free100]'); await M.click('[data-act=mpick][data-v=F]'); await M.click('[data-act=mpick][data-f=g][data-v="14"]')

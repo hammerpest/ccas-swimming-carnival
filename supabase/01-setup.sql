@@ -232,6 +232,32 @@ drop trigger if exists slips_keep_newer on public.slips;
 create trigger slips_keep_newer before update on public.slips
   for each row execute function private.slips_keep_newer();
 
+-- Swim Opt 2.12 (decision 154): multitimer places skip a lane the Recorder has marked DNS, DQ or No time,
+-- even when the send waited in the phone's queue. The phone sends its whole tap order (taps) and how many
+-- places (n); the places are the first n tapped lanes without one of those statuses in the race's times.
+create or replace function private.multi_places() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare t jsonb; top jsonb := '[]'::jsonb; l jsonb; k int := 0; n int;
+begin
+  if private.my_role() is distinct from 'slips' or coalesce(new.doc->>'multi', '') <> 'true'
+     or coalesce(jsonb_typeof(new.doc->'taps'), '') <> 'array' then return new; end if;
+  select doc into t from public.times where id = new.id;
+  if t is null or coalesce((t->>'gen')::int, 0) <> coalesce((new.doc->>'gen')::int, 0) then return new; end if;
+  n := coalesce((new.doc->>'n')::int, 4);
+  for l in select value from jsonb_array_elements(new.doc->'taps') loop
+    exit when k >= n;
+    if coalesce(t->'lanes'->(l #>> '{}')->>'st', '') not in ('DNS', 'DQ', 'NT') then
+      top := top || jsonb_build_array(l); k := k + 1;
+    end if;
+  end loop;
+  new.doc := new.doc || jsonb_build_object('seq', top,
+    'order', coalesce((select jsonb_agg(jsonb_build_array(v) order by i) from jsonb_array_elements(top) with ordinality as e(v, i)), '[]'::jsonb));
+  return new;
+end $$;
+drop trigger if exists multi_places on public.finish;
+create trigger multi_places before insert or update on public.finish
+  for each row execute function private.multi_places();
+
 -- ---------- PINs ----------
 -- Every wrong PIN is counted. More than 5 wrong in 5 minutes on one device,
 -- or 100 wrong in 10 minutes in total, and every PIN is refused for a while.

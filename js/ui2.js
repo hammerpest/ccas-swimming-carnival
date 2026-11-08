@@ -202,7 +202,9 @@ function judgeRace(){
   A.j.race=liveRaceNo(A.j.race);
   return A.R.races.get(A.j.race);
 }
-function judgeFin(r){return r.F||{}}
+/* Swim Opt 2.12: a multitimer race shows the Place Judge the live places (decision 154), so a judge
+   change starts from what the results use; the judge's save then replaces the multitimer places */
+function judgeFin(r){const F=r.F||{};return F.multi&&Array.isArray(F.taps)?Object.assign({},F,{order:r.FO||[],seq:(r.FO||[]).flat()}):F}
 function renderJudge(){
   const r=judgeRace();
   if(!r)return waitingCard("Waiting for the marshal","The first race appears here as soon as the marshal sends it.");

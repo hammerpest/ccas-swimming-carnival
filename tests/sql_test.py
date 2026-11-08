@@ -147,6 +147,14 @@ s.ok(admin_fin, ('{"order":[[2]],"gen":1}',)); s.ok(admin_fin, ('{"order":[[1]],
 check(r.q("select doc->'order'->0->>0 from finish where id='r0010'")[0][0] == "2", "2.11: old-gen multitimer places do not replace a re-swim")
 s.ok(admin_fin, ('{"order":[[3]],"gen":1}',))
 check(r.q("select doc->'order'->0->>0 from finish where id='r0010'")[0][0] == "3", "2.11: same-gen places still save")
+# Swim Opt 2.12 (decision 154): multitimer places skip lanes marked DNS, DQ or No time, even for a late send
+r.ok("""insert into times values ('r0011', '{"lanes":{"1":{"st":"DNS","src":"typed"},"3":{"st":"DQ","src":"multi","t":4000}},"gen":0}')""")
+fin11 = """insert into finish values ('r0011', %s) on conflict (id) do update set doc = excluded.doc"""
+check(s.ok(fin11, ('{"order":[[1],[2],[3],[4]],"seq":[1,2,3,4],"taps":[1,2,3,4,5,6],"n":4,"multi":true,"gen":0}',)), "late multitimer places saved")
+d = r.q("select doc from finish where id='r0011'")[0][0]
+check(d["order"] == [[2], [4], [5], [6]] and d["seq"] == [2, 4, 5, 6], "2.12: multitimer places skip DNS and DQ lanes (154)")
+check(j.ok("""insert into finish values ('r0012', '{"order":[[1],[2]],"taps":[1,2],"multi":true,"gen":0}')"""), "judge saves places")
+check(r.q("select doc->'order' from finish where id='r0012'")[0][0] == [[1], [2]], "2.12: Place Judge places are left alone")
 # Swim Opt 2.11: updated_at is the server's clock, whatever the phone sends
 r.ok("""insert into times values ('r0009', '{}', '2000-01-01') on conflict (id) do update set doc = excluded.doc, updated_at = excluded.updated_at""")
 check(r.q("select updated_at > now() - interval '1 minute' from times where id='r0009'")[0][0], "updated_at: an old phone clock on insert is replaced by the server's (2.11)")

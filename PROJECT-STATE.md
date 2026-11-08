@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version e. Replaces 8 November version d and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version f. Replaces 8 November version e and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version f): Jordan answered question 70 ("Yes, skip them", decision 154). Swim Opt 2.12 built (2.38), no look change: multitimer places skip lanes marked DNS, DQ or No time, and are worked out live, so Use slip gives a lane its place back and a later DNS takes it away; the Place Judge screen shows the same live places. Checks 1 to 3 PASSED (check 3 on the third run, after two fixes it found). Committed on staging, not pushed. Jordan to run the new supabase/01-setup.sql and supabase/03-parent-results.sql on the staging project, then say when to push (next step 22). Question 70 closed; question 71 still open.
 
 Changes on 8 November 2026 (version e): At Jordan's request ("Yes, push main") Swim Opt 2.11 pushed to main. Both links now run 2.11. Next step 21 closed. Still open: questions 70 and 71.
 
@@ -593,6 +595,18 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.38 Swim Opt 2.12: multitimer places skip DNS, DQ and No time (8 November 2026, staging)
+
+- Decision 154. js/ui3.js mtSend: the finish doc now carries the whole tap order (taps), the number of places (n) and multi:true; its stored places leave out lanes the Recorder marked DNS, DQ or No time.
+- js/core.js compute: for a multitimer finish doc the places are worked out each time from taps, leaving out lanes marked DNS, DQ or No time and lanes the Marshal has emptied, first n. So Use slip on a DNS lane gives the swimmer back their place and their own time; a DNS marked after the send takes the place away. The parent page uses the same core.js.
+- js/ui2.js judgeFin: the Place Judge sees those live places on a multitimer race; a judge change then saves the judge's own places, which take over from the multitimer's (after that, a later DNS or Use slip no longer moves places).
+- supabase/01-setup.sql: new trigger private.multi_places on finish (Time Slips phone only) keeps the stored places right for a late send. supabase/03-parent-results.sql: also passes multi, taps (lane numbers only) and n to the parent page.
+- Tests: sql_test.py (3 new), multitimer.py (5 new: places skip the DNS lane on the phone and the Recorder, Use slip gives back the place and own time, the Place Judge sees the live places); engine, flow and flow27 pass.
+- Check 1: against 2.11 shot the same way: 0 of 376 changed. PASSED.
+- Check 2: Claude in Chrome, test mode: re-swim, DNS and DQ marked, multitimer send (places skip both), Use slip (place back, own time, nothing pink), DNS on and off, Place Judge screen and Undo last. No console errors. Chrome kept an old core.js in its cache at first; refreshed (the GitHub Pages links stamp file versions, so this cannot happen there). PASSED.
+- Check 3: run 1 found Use slip gave wrong times (fixed by working places out live); run 2 found the Place Judge screen still used the stored places (fixed); run 3 PASSED, phone both themes, no sideways scroll, nothing under 48 px.
+- Note from check 3, not fixed (already so before 2.11): a judge save keeps the "fewer places confirmed" flag (ok), so after Start again a race can count as done with no places. Worth a small fix later.
+
 ### 2.37 Swim Opt 2.11: late multitimer sends merge, server clock, old re-swim sends ignored (8 November 2026, staging)
 
 - js/ui3.js mtSend: multitimer times go through lateSlip (as photo slips, decision 136), on the phone and again on the server. A lane the Recorder typed, or marked DNS, DQ or No time, keeps its value; the multitimer time sits beside it and the Recorder sees "Slip differs" (Use slip or Keep typed). Places from the multitimer still replace the Place Judge's (decision 121).
@@ -983,6 +997,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
+154. (8 November 2026, answers question 70) Multitimer places skip any lane the Recorder has marked DNS, DQ or No time; the places go to the next lanes in tap order. Worked out live, so taking the mark off (Use slip) gives the place back. Once the Place Judge changes the places, the judge's places stand. Built as Swim Opt 2.12.
 153. (8 November 2026) Jordan approved Swim Opt 2.11 ("Yes, build 2.11"): late multitimer sends merge like photo slips and save times use the server clock. Check 3's fix (old re-swim sends ignored) added as the same kind of fix, no look change.
 152. (4 November 2026, answers question 69) The Marshal's name list opens downwards for lanes 1 to 4 and upwards for lanes 5 to 8, on every device (Swim Opt 2.10). An upward list stays clear of Next heat and New race.
 151. (Withdrawn 4 November 2026, Jordan tried it and asked for it to be undone) The Marshal's name list: a full-screen panel on a phone; on an iPad or MacBook it opens upwards when there is more room above.
@@ -1052,7 +1067,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: questions 70 and 71.
+Ask now: run the two SQL files for 2.12 (next step 22); question 71.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1060,7 +1075,7 @@ Ask now: questions 70 and 71.
 - (Closed by 146) 66. Untapped equal times in a heat stay a tie.
 - (Closed by 146) 67. The 2.7 list.
 
-- 70. (New, 8 November 2026, check 3 on 2.11) When the Recorder has marked a lane DNS, DQ or No time, or typed a time, and a multitimer send then arrives, the time is kept but the multitimer's places still replace the Place Judge's. A DNS lane can show a place, and the judge-order rule can move times between swimmers (pink) until the Recorder picks Use slip or Keep typed. Keep this (the race stays at To check), or leave lanes marked DNS, DQ or No time out of the multitimer's places?
+- (Closed by 154) 70. When the Recorder has marked a lane DNS, DQ or No time, or typed a time, and a multitimer send then arrives, the time is kept but the multitimer's places still replace the Place Judge's. A DNS lane can show a place, and the judge-order rule can move times between swimmers (pink) until the Recorder picks Use slip or Keep typed. Keep this (the race stays at To check), or leave lanes marked DNS, DQ or No time out of the multitimer's places?
 - 71. (New, 8 November 2026) The "Replace the Race N results?" box says the multitimer times "will replace them", but typed times and DNS, DQ or No time are now kept (as with photo slips since 2.7). Change the words (app text, needs Jordan's OK), for example "Typed times and DNS, DQ or No time are kept for the Recorder to check"?
 
 Still open (Jordan will send or answer later, 28 October 2026):
@@ -1117,6 +1132,8 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
 21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
+22. NOW: Swim Opt 2.12 committed on staging (2.38), checks 1 to 3 passed, not pushed. Jordan runs supabase/01-setup.sql and then supabase/03-parent-results.sql in the Supabase SQL Editor on the staging project (each: paste it all, Run), then says when to push staging and main. Either order is safe.
+23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---

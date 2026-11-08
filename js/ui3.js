@@ -423,20 +423,24 @@ async function mtSend(force){
   A.modal=null;
   const lanes={},read={};
   M.taps.forEach((l,i)=>{lanes[l]={t:M.splits[i],st:"ok",src:"multi",keep:false,chk:false};read[l]=M.splits[i]});
-  const top=M.taps.slice(0,Math.min(4,r.filled.length));
-  const fin={order:top.map(l=>[l]),seq:top.slice(),ok:true,gen:r.gen,at:Date.now(),dev:DEV};
+  /* Swim Opt 2.12 (decision 154): a lane the Recorder has marked DNS, DQ or No time gets no place;
+     the places go to the next lanes in tap order. taps and n let the server do the same for a late send. */
+  const n=Math.min(4,r.filled.length);
+  const mkFin=T=>{const L=(T&&T.lanes)||{};const top=M.taps.filter(l=>!(L[l]&&noTimeSt(L[l].st))).slice(0,n);
+    return {order:top.map(l=>[l]),seq:top.slice(),taps:M.taps.slice(),n,multi:true,ok:true,gen:r.gen,at:Date.now(),dev:DEV}};
   const meta={race:r.race,multi:true,splits:M.splits.slice(),read,unsure:[],miss:false,missed:[],mism:false,two:false,gen:r.gen,at:Date.now(),dev:DEV,test:false};
   /* Swim Opt 2.11: like a photo slip, multitimer times never overwrite what the Recorder typed or
      marked DNS, DQ or No time (decision 136), here and on the server when a queued send arrives late */
   const tdoc=()=>({lanes,src:"multi",checked:false,gen:r.gen,by:DEV,at:Date.now()});
-  A.slips[key]=meta;A.times[key]=lateSlip(A.times[key],tdoc());A.finish[key]=fin;recompute();
+  A.slips[key]=meta;A.times[key]=lateSlip(A.times[key],tdoc());A.finish[key]=mkFin(A.times[key]);recompute();
   M.phase="sent";mtSave();
   A.s.flash={c:"green",t:`Race ${r.race} sent to the Recorder`};render();
   setTimeout(()=>{A.s.flash=null;render()},1100);
   await w(()=>A.store.set("slips/"+key,meta));
   let cur=null;try{cur=await withTimeout(A.store.get("times/"+key),4000)}catch(e){cur=A.times[key]||null}
-  await w(()=>A.store.set("times/"+key,lateSlip(cur,tdoc())));
-  await w(()=>A.store.set("finish/"+key,fin));
+  const merged=lateSlip(cur,tdoc());
+  await w(()=>A.store.set("times/"+key,merged));
+  await w(()=>A.store.set("finish/"+key,mkFin(merged)));
 }
 /* Fix splits: delete a double tap, add a missed time, or clear and time again */
 function mtFixSplits(sp){const M=A.mt;M.splits=sp.slice().sort((a,b)=>a-b);M.taps=[];mtSave();render()}

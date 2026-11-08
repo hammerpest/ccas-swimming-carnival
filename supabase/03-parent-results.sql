@@ -65,7 +65,9 @@ begin
           from jsonb_each(t.doc->'lanes') l), '{}'::jsonb)))
       from public.times t), '{}'::jsonb),
     'finish', coalesce((select jsonb_object_agg(f.id, jsonb_build_object('order', f.doc->'order', 'gen', f.doc->'gen',
-      'ck', f.doc->'ck', 'ok', f.doc->'ok', 'at', f.doc->'at')) from public.finish f), '{}'::jsonb),
+      'ck', f.doc->'ck', 'ok', f.doc->'ok', 'at', f.doc->'at',
+      -- Swim Opt 2.12: multitimer tap order (lane numbers only), so places follow DNS, DQ or No time marks
+      'multi', f.doc->'multi', 'taps', f.doc->'taps', 'n', f.doc->'n')) from public.finish f), '{}'::jsonb),
     'records', coalesce((select jsonb_agg(jsonb_build_object('key', r->'key', 't', r->'t',
         'holders', coalesce((select jsonb_agg(jsonb_build_object('n', private.short_name(regexp_replace(hd->>'n', '^Test: ', '')),
           'h', hd->'h', 'y', hd->'y')) from jsonb_array_elements(r->'holders') hd), '[]'::jsonb)))
