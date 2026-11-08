@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version h. Replaces 8 November version g and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version i. Replaces 8 November version h and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version i): Jordan answered question 71 ("Yes, new wording", decision 155). Swim Opt 2.13 built (2.39): the multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Checks 1 and 3 PASSED; check 2 waits for Claude in Chrome to reconnect. Committed on staging, not pushed. New question 72 (the same sentence on the photo slip box).
 
 Changes on 8 November 2026 (version h): Jordan ran the new supabase/03-parent-results.sql (pasted fresh into a new query; the first run had used an older saved copy). Checked: the parent function now returns multi, taps and n with each race's places, still no device ids. Next step 22 closed. Tip: in the SQL Editor always paste the file into a new query; a saved query keeps its old text.
 
@@ -599,6 +601,14 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.39 Swim Opt 2.13: Replace box wording (8 November 2026, staging)
+
+- Decision 155. js/ui3.js MODALS.mtReplace: after "These multitimer times and places will replace them." the box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Only the multitimer box; the photo slip box (MODALS.replaceSlip, "This photo will replace its times.") is unchanged (question 72).
+- Tests: multitimer.py checks the text, no sideways scroll on the phone and 48 px buttons; engine, flow and flow27 pass.
+- Check 1: against 2.12: 0 of 376 changed (the standard screens never open this box). PASSED.
+- Check 2: waiting; Claude in Chrome not connected (8 November 2026).
+- Check 3: PASSED. Box checked in light and dark at all four sizes: fits the phone (16 to 374 px), buttons 48 px tall, wording matches what 2.11 and 2.12 do.
+
 ### 2.38 Swim Opt 2.12: multitimer places skip DNS, DQ and No time (8 November 2026, staging)
 
 - Decision 154. js/ui3.js mtSend: the finish doc now carries the whole tap order (taps), the number of places (n) and multi:true; its stored places leave out lanes the Recorder marked DNS, DQ or No time.
@@ -1001,6 +1011,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 144. (3 November 2026, answers question 64) A swimmer who swam but has no time (the timekeeper let a slow swimmer go): the Recorder marks the lane "No time". The swimmer gets no place and is not on the HRIS Team List, but gets participation points (the 4th and below points) for themselves and their house, and counts towards age champion points the same way.
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
+155. (8 November 2026, answers question 71) The multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Built as Swim Opt 2.13.
 154. (8 November 2026, answers question 70) Multitimer places skip any lane the Recorder has marked DNS, DQ or No time; the places go to the next lanes in tap order. Worked out live, so taking the mark off (Use slip) gives the place back. Once the Place Judge changes the places, the judge's places stand. Built as Swim Opt 2.12.
 153. (8 November 2026) Jordan approved Swim Opt 2.11 ("Yes, build 2.11"): late multitimer sends merge like photo slips and save times use the server clock. Check 3's fix (old re-swim sends ignored) added as the same kind of fix, no look change.
 152. (4 November 2026, answers question 69) The Marshal's name list opens downwards for lanes 1 to 4 and upwards for lanes 5 to 8, on every device (Swim Opt 2.10). An upward list stays clear of Next heat and New race.
@@ -1071,7 +1082,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: question 71.
+Ask now: reconnect Claude in Chrome for check 2 on 2.13 (next step 24); question 72.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1080,7 +1091,9 @@ Ask now: question 71.
 - (Closed by 146) 67. The 2.7 list.
 
 - (Closed by 154) 70. When the Recorder has marked a lane DNS, DQ or No time, or typed a time, and a multitimer send then arrives, the time is kept but the multitimer's places still replace the Place Judge's. A DNS lane can show a place, and the judge-order rule can move times between swimmers (pink) until the Recorder picks Use slip or Keep typed. Keep this (the race stays at To check), or leave lanes marked DNS, DQ or No time out of the multitimer's places?
-- 71. (New, 8 November 2026) The "Replace the Race N results?" box says the multitimer times "will replace them", but typed times and DNS, DQ or No time are now kept (as with photo slips since 2.7). Change the words (app text, needs Jordan's OK), for example "Typed times and DNS, DQ or No time are kept for the Recorder to check"?
+- (Closed by 155) 71. The "Replace the Race N results?" box says the multitimer times "will replace them", but typed times and DNS, DQ or No time are now kept (as with photo slips since 2.7). Change the words (app text, needs Jordan's OK), for example "Typed times and DNS, DQ or No time are kept for the Recorder to check"?
+
+- 72. (New, 8 November 2026) The photo slip box "Replace the Race N slip?" says "This photo will replace its times." but, since 2.7, typed times and DNS, DQ or No time are kept there too. Add the same sentence as the multitimer box (decision 155)?
 
 Still open (Jordan will send or answer later, 28 October 2026):
 - 36. Records list, including relays and the 200 m freestyle (decision 99). Jordan uploading later.
@@ -1137,6 +1150,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
 21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
 22. (Done 8 November 2026) Swim Opt 2.12 on both links (2.38); both SQL files run on the staging project and checked.
+24. NOW: Swim Opt 2.13 on staging (2.39), checks 1 and 3 passed. Check 2 when Claude in Chrome reconnects, then push staging and main when Jordan says.
 23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 

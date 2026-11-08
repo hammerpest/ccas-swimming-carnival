@@ -171,6 +171,11 @@ async def main():
     for l in f2: await S.click(f'[data-act=mttap][data-l="{l}"]')
     await S.click('[data-act=mtsend]'); await S.wait_for_timeout(200)
     check(await S.locator('.modal h2', has_text='Replace the Race 2 results?').count() == 1, "resending race 2 asks first")
+    check(await S.locator('.modal p', has_text='Typed times and DNS, DQ or No time are kept for the Recorder to check.').count() == 1, "2.13: the box says typed times and DNS, DQ or No time are kept (155)")
+    await S.screenshot(path='8b-replace-box.png')
+    sw = await S.evaluate("document.documentElement.scrollWidth")
+    small = await S.evaluate("""[...document.querySelectorAll('.modal button')].filter(e=>{const r=e.getBoundingClientRect();return r.height<48||r.width<48}).length""")
+    check(sw <= 390 and small == 0, f"2.13: the box fits the phone, buttons 48 px or more ({sw}, {small})")
     await S.click('[data-act=mtsendok]'); await S.wait_for_timeout(1500)
     for P, who in ((S, 'phone'), (R, 'Recorder')):
         L = await P.evaluate("A.times.r0002.lanes")
