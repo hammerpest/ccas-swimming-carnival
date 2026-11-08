@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version g. Replaces 9 November version f and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version h. Replaces 9 November version g and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version h): Jordan finished looking at the made-up carnival day ("Yes, undo it"). Ran tools/simday.py undo on the staging project. Checked after: heats, times, finish, slips, extras and records all empty, no slip photos, race number back to 1, students (roster) and settings (config) kept; the parent page returns no heats. Next step 17 closed. Note: the staging settings still hold the made-up date 10 February 2027; the real date (3 February 2027, decision 130) goes in on the live project (step 10). Ask now: none (items 23 and 14 in section 7 still waiting on Jordan).
 
 Changes on 9 November 2026 (version g): Jordan said "Push both". Swim Opt 2.15 and PROJECT-STATE versions e and f pushed to staging and main (44e9f10); both links checked serving 2.15 (index.html comment, APP_VERSION "2.15" in js/ui1.js, the new badge CSS). No SQL change. Next step 26 closed. Ask now: none (items 17, 23 and 14 in section 7 still waiting on Jordan).
 
@@ -1179,7 +1181,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
    - a full backup and restore.
    Close and reopen the tab first (problem 17).
 16. (Done 4 November 2026) Jordan's iPad now reaches the app and the parent page. No app change needed.
-17. NOW: Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
+17. (Done 9 November 2026, undone with tools/simday.py undo) Jordan looks at the made-up carnival day on either link (Announcer 5555, then Full results and Houses; Organiser 9999 for the HRIS file and backup). When finished, tell Claude to run ../.venv/bin/python tools/simday.py undo.
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
