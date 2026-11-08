@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version a. Replaces 5 November version a and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version b. Replaces 8 November version a and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version b): Jordan sent a list of 17 ideas from the athletics app. Checked against the swimming code: 12 are already in swimming (multitimer switch per race, relays on the multitimer, multitimer places, the parent page's switch and hidden ids, typed times win, refused or offline saves, PIN lockout, deep merge on the server, test habits). Jordan chose to run just the three checks. (a) A DNS, DQ or No time swimmer is left out of places and results; DNS and No time lock the time box, DQ keeps it open on purpose (the time is kept but not used). Nothing to fix. (b) The save time on each record comes from the phone's clock; it is only used by the parent page to see if anything changed, so a slow phone clock could hold back a parent update until the next save (problem 21, small). (c) A multitimer send replaces the race's times and places whole. If it waits on the phone with no signal and arrives after the Recorder typed a time or marked DNS, DQ or No time, that work is lost (problem 20). Photo slips are already safe (decision 136). Fixes for both need no look change; waiting for Jordan's OK (next step 21). Not chosen for now: adding a swimmer from the multitimer, several ages in one race.
 
 Changes on 8 November 2026 (version a): Handover to a fresh session at Jordan's request. No app change since 5 November. Where things stand: both links run Swim Opt 2.10; the parent results page (2.8) is live; the made-up carnival day is still loaded with parent results on (do not share the parent link; undo with tools/simday.py undo when Jordan says). Waiting on Jordan: question 1 (approval for real names, now covering the parent page), question 68 (media consent on the parent page), next step 7 (import the test HY3 into Meet Manager), next step 15 (try Clear practice data and backup and restore), next step 17 (undo the made-up day when finished), question 30 (a slip from the new Quantum timer once it arrives). Later, each needing a design and Jordan's OK: printing, the HY3 export panel (S1.42), a faster multitimer reset, the Organiser overview panel, an on/off switch for parent results, an offline copy of the page. The free Supabase project pauses after about 7 days idle: if the app looks offline, check that first. Next app change is Swim Opt 2.11; next new design is S1.44.
 
@@ -1024,6 +1026,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 17. NEW (3 November 2026): GitHub Pages and phone browsers keep old files for up to about 10 minutes, so a phone may run the old version straight after a push. Close and reopen the tab before testing.
 18. NEW (3 November 2026): Claude in Chrome cannot shrink the window below 500 px and its screenshots time out on this page (141).
 19. SOLVED by 152 (4 November 2026): the Marshal's name list opens down for lanes 1 to 4 and up for 5 to 8 (Swim Opt 2.10). Jordan approved it.
+20. NEW (8 November 2026): a multitimer send saves the race's times and finish places whole, without the server merge that photo slips get. If the phone sends late (no signal at the far end) after the Recorder typed a time or marked DNS, DQ or No time, the Recorder's work is replaced, against decision 136. The "Replace the results?" box only sees what the phone already knew. Fix: send multitimer times through the same merge as photo slips (phone and server). No look change.
+21. NEW (8 November 2026): each saved record's time (updated_at) is set by the phone's clock. Only the parent page uses it (to tell if anything changed), so a slow phone clock or two saves in the same instant can hold back a parent update until the next save. Fix: a small server trigger that stamps the server's clock. No look change.
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
 
 ---
@@ -1091,13 +1095,14 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
+21. WAITING FOR JORDAN'S OK (8 November 2026): Swim Opt 2.11, no look change: fix problem 20 (multitimer times merge like photo slips) and problem 21 (server clock for save times). Needs a new supabase/01-setup.sql run by Jordan, then checks 1 to 3.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 3 November 2026 version c (this file; the latest)
+- PROJECT-STATE.md in the repo, 8 November 2026 version b (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
