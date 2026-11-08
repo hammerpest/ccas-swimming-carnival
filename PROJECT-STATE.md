@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version d. Replaces 8 November version c and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version e. Replaces 8 November version d and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version e): At Jordan's request ("Yes, push main") Swim Opt 2.11 pushed to main. Both links now run 2.11. Next step 21 closed. Still open: questions 70 and 71.
 
 Changes on 8 November 2026 (version d): Jordan ran the 2.11 supabase/01-setup.sql on the staging project. Swim Opt 2.11 pushed to staging (77fc555); main is still on 2.10 until Jordan says. Pushing had failed with "Permission denied" (403): the Mac's Keychain held the athletics repo's token, which only reaches hammerpest/ccas-athletics. Fixed: both repos now keep their own token (git config credential.useHttpPath true in each repo); Jordan regenerated the swimming token and pushed. The next athletics push will ask for the athletics token once. Next step 21 now: Jordan tries 2.11 on the staging link, then says when to push main. Questions 70 and 71 still open.
 
@@ -1050,7 +1052,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: when to push Swim Opt 2.11 to main (next step 21); questions 70 and 71.
+Ask now: questions 70 and 71.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1114,7 +1116,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
-21. NOW: Swim Opt 2.11 is on the staging link (pushed 8 November 2026, 2.37) and the 2.11 01-setup.sql has been run. Jordan tries it if wanted (close and reopen the tab first, problem 17), then says when to push main.
+21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
