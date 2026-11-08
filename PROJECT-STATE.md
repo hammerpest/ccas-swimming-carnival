@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version g. Replaces 8 November version f and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version h. Replaces 8 November version g and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version h): Jordan ran the new supabase/03-parent-results.sql (pasted fresh into a new query; the first run had used an older saved copy). Checked: the parent function now returns multi, taps and n with each race's places, still no device ids. Next step 22 closed. Tip: in the SQL Editor always paste the file into a new query; a saved query keeps its old text.
 
 Changes on 8 November 2026 (version g): Jordan ran the 2.12 SQL and said "push both". Swim Opt 2.12 pushed to staging and main; both links run 2.12. Checked after: the live parent_results function still returns the old finish fields (no multi, taps or n), so the new supabase/03-parent-results.sql has not taken effect yet; run it again (next step 22). Until then the parent page uses the places stored at send time, which is right unless a DNS is changed after the send.
 
@@ -1069,7 +1071,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: run supabase/03-parent-results.sql again (next step 22); question 71.
+Ask now: question 71.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1134,7 +1136,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
 21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
-22. NOW: Swim Opt 2.12 is on both links (2.38). Jordan runs supabase/03-parent-results.sql again in the Supabase SQL Editor on the staging project (paste it all, Run; it should say Success). Claude then checks the parent function returns taps.
+22. (Done 8 November 2026) Swim Opt 2.12 on both links (2.38); both SQL files run on the staging project and checked.
 23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
