@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version i. Replaces 8 November version h and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version a. Replaces 8 November version i and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version a): Claude in Chrome reconnected. Check 2 on Swim Opt 2.13 PASSED (2.39). 2.13 is ready to push to staging and main when Jordan says. Question 72 still open.
 
 Changes on 8 November 2026 (version i): Jordan answered question 71 ("Yes, new wording", decision 155). Swim Opt 2.13 built (2.39): the multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Checks 1 and 3 PASSED; check 2 waits for Claude in Chrome to reconnect. Committed on staging, not pushed. New question 72 (the same sentence on the photo slip box).
 
@@ -606,7 +608,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 155. js/ui3.js MODALS.mtReplace: after "These multitimer times and places will replace them." the box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Only the multitimer box; the photo slip box (MODALS.replaceSlip, "This photo will replace its times.") is unchanged (question 72).
 - Tests: multitimer.py checks the text, no sideways scroll on the phone and 48 px buttons; engine, flow and flow27 pass.
 - Check 1: against 2.12: 0 of 376 changed (the standard screens never open this box). PASSED.
-- Check 2: waiting; Claude in Chrome not connected (8 November 2026).
+- Check 2 (9 November 2026): Claude in Chrome, test mode, fresh copies of every file. The Replace box shows the new sentence, with and without Place Judge places; both buttons 48 px or more; no sideways scroll; dark theme colours correct; Back closes it. No console messages, all requests 200, test mode never loaded Supabase. Chrome still cannot hold phone or iPad widths (problem 18), so those sizes were covered by check 3 and tests/multitimer.py. PASSED.
 - Check 3: PASSED. Box checked in light and dark at all four sizes: fits the phone (16 to 374 px), buttons 48 px tall, wording matches what 2.11 and 2.12 do.
 
 ### 2.38 Swim Opt 2.12: multitimer places skip DNS, DQ and No time (8 November 2026, staging)
@@ -1082,7 +1084,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: reconnect Claude in Chrome for check 2 on 2.13 (next step 24); question 72.
+Ask now: push 2.13 to staging and main (next step 24); question 72.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1150,7 +1152,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
 21. (Done 8 November 2026) Swim Opt 2.11 on both links (2.37); the 2.11 01-setup.sql has been run on the staging project.
 22. (Done 8 November 2026) Swim Opt 2.12 on both links (2.38); both SQL files run on the staging project and checked.
-24. NOW: Swim Opt 2.13 on staging (2.39), checks 1 and 3 passed. Check 2 when Claude in Chrome reconnects, then push staging and main when Jordan says.
+24. NOW: Swim Opt 2.13 on staging (2.39), checks 1 to 3 passed. Push staging and main when Jordan says.
 23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
