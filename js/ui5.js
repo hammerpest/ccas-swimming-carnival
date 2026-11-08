@@ -349,7 +349,8 @@ const ACT={
   jtap:el=>{if(!locked())judgeTap(+el.dataset.l)},
   jundo:()=>judgeUndo(),
   jreset:()=>{const r=judgeRace();const n=Object.keys(finishOrderFromTaps(judgeFin(r).order)).length;if(!n)return;A.modal={t:"judgeReset",race:r.race,placed:n};render()},
-  jresetok:()=>{const r=judgeRace();A.modal=null;saveFinish(r,[],true)},
+  /* Swim Opt 2.16: Start again also clears "fewer places confirmed" (ok), so a race with no places is not done */
+  jresetok:()=>{const r=judgeRace();A.modal=null;saveFinish(r,[],true,{ok:false})},
   jnext:()=>judgeNext(false),
   jconfirm:()=>judgeNext(true),
   jlatest:()=>{A.j.race=latestRace();render()},

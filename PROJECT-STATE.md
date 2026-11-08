@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version h. Replaces 9 November version g and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version i. Replaces 9 November version h and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version i): Jordan said "Yes, build 2.16" (decision 158). Swim Opt 2.16 (2.42): Place Judge Start again also clears "fewer places confirmed", so a race with no places is no longer done. Built on local staging, not pushed. Checks 1 to 3 PASSED. Next step 23 closed; new next step 27 (push on Jordan's word). New question 73 (removing a place after confirming fewer places). Section 8 file line corrected (version h missed it). Ask now: question 73.
 
 Changes on 9 November 2026 (version h): Jordan finished looking at the made-up carnival day ("Yes, undo it"). Ran tools/simday.py undo on the staging project. Checked after: heats, times, finish, slips, extras and records all empty, no slip photos, race number back to 1, students (roster) and settings (config) kept; the parent page returns no heats. Next step 17 closed. Note: the staging settings still hold the made-up date 10 February 2027; the real date (3 February 2027, decision 130) goes in on the live project (step 10). Ask now: none (items 23 and 14 in section 7 still waiting on Jordan).
 
@@ -187,7 +189,7 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
 - The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.15 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 9 November 2026. The Carnival Organiser badge shows the running version (decision 157); bump APP_VERSION in js/ui1.js with each release. The parent page is at /parents/. Jordan has run the latest supabase/01-setup.sql (2.11) and 03-parent-results.sql (2.12) on the staging project. Claude can push when Jordan says; each repo keeps its own token in the Keychain (credential.useHttpPath is on in the swimming and athletics repos).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
-  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40); 2.15 version in the Organiser badge (2.41). Jordan confirmed on their iPhone that 2.4 works and the screen stays on during a long race.
+  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40); 2.15 version in the Organiser badge (2.41); 2.16 Place Judge Start again clears "fewer places confirmed" (2.42, built, not pushed). Jordan confirmed on their iPhone that 2.4 works and the screen stays on during a long race.
   - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule. Chrome cannot hold phone or iPad widths (problem 18), so those sizes come from the Playwright runs and check 3. Chrome can cache old local files: fetch each script with cache 'reload', then reload the page.
 - Check 1 compares a new build with the previous build's shots (not baseline-mac, which is the untouched 1.5 and now differs by the approved changes).
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
@@ -618,6 +620,14 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.42 Swim Opt 2.16: Place Judge Start again clears "fewer places confirmed" (9 November 2026; built on local staging, not pushed)
+
+- Decision 158 (next step 23). js/ui5.js jresetok: Start again now saves the empty order with ok:false. Before, the "fewer places confirmed" flag (ok) was carried over, so after Start again a race could count as done with no places (2.38 note). Undo last still puts the places back but not the flag: the judge presses Next race and confirms fewer places again. A full top 4 never needs the flag. APP_VERSION "2.16"; index.html comment Swim Opt 2.16. No SQL change, no look change apart from v2.16 in the Organiser badge.
+- New test tests/flow216.py (test mode, 10 checks): confirm 2 of 4, done; Start again, not done and ok cleared; Undo, places back, not done; confirm again, done; Start again then all 4 places, done. All pass. Engine, flow and flow27 pass.
+- Check 1: against the 2.15 shots: the MacBook dark set was over by 0.10% to 0.47% on 28 screens (text smoothing); that set re-shot: 0 of 376 changed. PASSED.
+- Check 2: Claude in Chrome, test mode, the same steps by hand on one tab (Organiser PIN): Start again leaves race 1 not done with ok false; Undo brings back 2 places, not done; confirm again, done. No console messages; all app files 200. Chrome still would not take screenshots (window hidden), so the look came from the Playwright shots. PASSED.
+- Check 3: fresh-eyes agent: PASS. Supabase has no trigger that keeps ok; the parent page, Recorder and Announcer use the same core.js rule. Also better for multitimer races (Start again now clears the multitimer's ok too). Not covered: a 2.15 doc already saved with ok and no places stays done (staging was cleared, so none exist); a Supabase live run. Raised question 73.
+
 ### 2.41 Swim Opt 2.15: version in the Carnival Organiser badge (9 November 2026; on staging and main the same day, 44e9f10)
 
 - Decision 157. js/ui1.js: new APP_VERSION constant ("2.15"); the header's yellow job badge adds <small class="ver">v2.15</small> on the Carnival Organiser job only. css/styles.css: .jobbadge .ver (0.78em, weight 600, opacity 0.8, 10 px gap); hidden below 900 px wide. index.html comment now Swim Opt 2.15. No SQL change.
@@ -1047,6 +1057,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
 155. (8 November 2026, answers question 71) The multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Built as Swim Opt 2.13.
+158. (9 November 2026) Jordan said "Yes, build 2.16": Place Judge Start again clears "fewer places confirmed"; Undo last brings the places back and the judge confirms again. Built as Swim Opt 2.16.
 157. (9 November 2026) Jordan asked for the running version in the yellow Carnival Organiser badge and chose: same line, smaller and lighter ("CARNIVAL ORGANISER v2.15"), Organiser only. Hidden below 900 px so the approved iPad portrait header does not change. Built as Swim Opt 2.15.
 156. (9 November 2026, answers question 72) The photo slip "Replace the Race N slip?" box adds the same sentence. Built as Swim Opt 2.14.
 154. (8 November 2026, answers question 70) Multitimer places skip any lane the Recorder has marked DNS, DQ or No time; the places go to the next lanes in tap order. Worked out live, so taking the mark off (Use slip) gives the place back. Once the Place Judge changes the places, the judge's places stand. Built as Swim Opt 2.12.
@@ -1119,7 +1130,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: none.
+Ask now: 73.
+- 73. (New, 9 November 2026, from check 3 on 2.16) After the Place Judge confirms fewer places (for example 2 of 4), removing a place with Undo last or by tapping a placed lane keeps the "fewer places confirmed" flag, so the race stays done with only 1 place. Same as before 2.16. Clear the flag on any place removed, so the judge confirms again (small fix, no look change), or keep as is?
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1190,14 +1202,15 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 24. (Done 9 November 2026) Swim Opt 2.13 pushed to staging and main (9620054), checks 1 to 3 passed.
 25. (Done 9 November 2026) Swim Opt 2.14 pushed to staging and main (cf56279), checks 1 to 3 passed.
 26. (Done 9 November 2026) Swim Opt 2.15 pushed to staging and main (44e9f10), checks 1 to 3 passed.
-23. Later, small: after Start again on the Place Judge screen, the race should not count as done with no places (the ok flag is carried over; 2.38 note).
+27. NOW: on Jordan's word, push Swim Opt 2.16 and this version to staging and main.
+23. (Done 9 November 2026, Swim Opt 2.16, 2.42) After Start again on the Place Judge screen, the race no longer counts as done with no places.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 9 November 2026 version g (this file; the latest)
+- PROJECT-STATE.md in the repo, 9 November 2026 version i (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
