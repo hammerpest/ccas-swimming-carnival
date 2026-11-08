@@ -130,6 +130,28 @@ d = r.q("select doc from times where id='r0007'")[0][0]
 check(d["lanes"]["3"]["t"] == 3650 and d["lanes"]["1"]["t"] == 3500 and d["checked"] is False, "late slip changes an untyped lane: To check (136)")
 s.ok(up, ('{"lanes":{"1":{"t":1,"st":"ok","src":"photo"}},"src":"photo","gen":1,"checked":false}',))
 check(r.q("select doc->'lanes'->'1'->>'t' from times where id='r0007'")[0][0] == "1", "slip for a re-swum race starts fresh (134)")
+# Swim Opt 2.11: a late multitimer send keeps the Recorder's typed times and statuses too
+r.ok("""insert into times values ('r0008', '{"lanes":{"1":{"t":6500,"st":"ok","src":"typed"},"2":{"st":"DQ","src":"typed"}},"checked":false}')""")
+up8 = """insert into times values ('r0008', %s) on conflict (id) do update set doc = excluded.doc"""
+check(s.ok(up8, ('{"lanes":{"1":{"t":6620,"st":"ok","src":"multi"},"2":{"t":6800,"st":"ok","src":"multi"},"3":{"t":7000,"st":"ok","src":"multi"}},"src":"multi","checked":false}',)), "late multitimer send saved")
+d = r.q("select doc from times where id='r0008'")[0][0]
+check(d["lanes"]["1"]["t"] == 6500 and d["lanes"]["1"]["slip"] == 6620 and d["lanes"]["2"]["st"] == "DQ" and d["lanes"]["3"]["t"] == 7000, "late multitimer: typed lanes and DQ kept, multitimer time beside them (2.11)")
+s.ok(up8, ('{"lanes":{"3":{"t":7050,"st":"ok","src":"multi"}},"src":"multi","checked":false}',))
+check(r.q("select doc->'lanes'->'3'->>'t' from times where id='r0008'")[0][0] == "7050", "a second multitimer send replaces the first one's times (2.11)")
+# Swim Opt 2.11: a send that waited in the queue from before a re-swim never replaces the re-swim's results
+r.ok("""insert into times values ('r0010', '{"lanes":{"1":{"t":5000,"st":"ok","src":"typed"}},"gen":1}')""")
+s.ok("""insert into times values ('r0010', '{"lanes":{"1":{"t":1,"st":"ok","src":"multi"}},"src":"multi","gen":0}') on conflict (id) do update set doc = excluded.doc""")
+check(r.q("select doc->'lanes'->'1'->>'t' from times where id='r0010'")[0][0] == "5000", "2.11: old-gen multitimer times do not replace a re-swim")
+admin_fin = """insert into finish values ('r0010', %s) on conflict (id) do update set doc = excluded.doc"""
+s.ok(admin_fin, ('{"order":[[2]],"gen":1}',)); s.ok(admin_fin, ('{"order":[[1]],"gen":0}',))
+check(r.q("select doc->'order'->0->>0 from finish where id='r0010'")[0][0] == "2", "2.11: old-gen multitimer places do not replace a re-swim")
+s.ok(admin_fin, ('{"order":[[3]],"gen":1}',))
+check(r.q("select doc->'order'->0->>0 from finish where id='r0010'")[0][0] == "3", "2.11: same-gen places still save")
+# Swim Opt 2.11: updated_at is the server's clock, whatever the phone sends
+r.ok("""insert into times values ('r0009', '{}', '2000-01-01') on conflict (id) do update set doc = excluded.doc, updated_at = excluded.updated_at""")
+check(r.q("select updated_at > now() - interval '1 minute' from times where id='r0009'")[0][0], "updated_at: an old phone clock on insert is replaced by the server's (2.11)")
+r.ok("""update times set updated_at = '2000-01-01' where id = 'r0009'""")
+check(r.q("select updated_at > now() - interval '1 minute' from times where id='r0009'")[0][0], "updated_at: an old phone clock on update is replaced by the server's (2.11)")
 check(s.ok("insert into storage.objects (bucket_id, name) values ('slips', 'r0001.jpg')"), "time slips uploads a photo")
 check(not m.ok("insert into storage.objects (bucket_id, name) values ('slips', 'r0002.jpg')"), "marshal cannot upload a photo")
 check(m.q("select count(*) from storage.objects")[0][0] == 1, "any job can see the photos")

@@ -107,6 +107,24 @@ revoke all on all functions in schema private from public, anon;
 grant execute on function private.my_role(), private.in_past(), private.is_locked(),
   private.can_write(text), private.jsonb_merge(jsonb, jsonb) to authenticated;
 
+-- Swim Opt 2.11: every saved document gets the server's clock as updated_at, never the phone's.
+-- The parent page uses the newest updated_at to tell whether anything changed.
+create or replace function private.touch() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  new.updated_at := now();
+  return new;
+end $$;
+revoke all on function private.touch() from public, anon;
+do $$
+declare t text;
+begin
+  foreach t in array array['config','roster','extras','heats','times','finish','slips','records','counter','years','archive'] loop
+    execute format('drop trigger if exists touch on public.%I', t);
+    execute format('create trigger touch before insert or update on public.%I for each row execute function private.touch()', t);
+  end loop;
+end $$;
+
 -- ---------- row-level security on the document tables ----------
 do $$
 declare t text;
@@ -156,6 +174,7 @@ drop trigger if exists heats_recorder_lanes_only on public.heats;
 create trigger heats_recorder_lanes_only before update on public.heats
   for each row execute function private.heats_recorder_lanes_only();
 
+-- Swim Opt 2.11: multitimer times (src 'multi') are merged the same way.
 -- Swim Opt 2.7 (decision 136): a slip photo never overwrites what the Recorder typed, even when it waits
 -- in the phone's queue and arrives late. A lane typed by the Recorder, or given a status (DNS, DQ,
 -- No time), keeps its value; a different slip time is kept beside it as "slip" for the Recorder to pick.
@@ -164,7 +183,9 @@ create or replace function private.times_slip_merge() returns trigger
 language plpgsql security definer set search_path = '' as $$
 declare l text; o jsonb; n jsonb; ol jsonb; nl jsonb; lanes jsonb := '{}'::jsonb; changed boolean := false;
 begin
-  if private.my_role() is distinct from 'slips' or coalesce(new.doc->>'src', '') <> 'photo' then return new; end if;
+  if private.my_role() is distinct from 'slips' or coalesce(new.doc->>'src', '') not in ('photo', 'multi') then return new; end if;
+  -- Swim Opt 2.11: a send from before a re-swim (an older gen) never replaces the re-swim's times
+  if coalesce((new.doc->>'gen')::int, 0) < coalesce((old.doc->>'gen')::int, 0) then return old; end if;
   if coalesce((old.doc->>'gen')::int, 0) <> coalesce((new.doc->>'gen')::int, 0) then return new; end if;
   ol := case when jsonb_typeof(old.doc->'lanes') = 'object' then old.doc->'lanes' else '{}'::jsonb end;
   nl := case when jsonb_typeof(new.doc->'lanes') = 'object' then new.doc->'lanes' else '{}'::jsonb end;
@@ -194,6 +215,22 @@ end $$;
 drop trigger if exists times_slip_merge on public.times;
 create trigger times_slip_merge before update on public.times
   for each row execute function private.times_slip_merge();
+
+-- Swim Opt 2.11: the same for the places and slip record a Time Slips phone sends (multitimer or photo):
+-- one that waited in the queue from before a re-swim never replaces the re-swim's.
+create or replace function private.slips_keep_newer() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if private.my_role() is not distinct from 'slips'
+     and coalesce((new.doc->>'gen')::int, 0) < coalesce((old.doc->>'gen')::int, 0) then return old; end if;
+  return new;
+end $$;
+drop trigger if exists slips_keep_newer on public.finish;
+create trigger slips_keep_newer before update on public.finish
+  for each row execute function private.slips_keep_newer();
+drop trigger if exists slips_keep_newer on public.slips;
+create trigger slips_keep_newer before update on public.slips
+  for each row execute function private.slips_keep_newer();
 
 -- ---------- PINs ----------
 -- Every wrong PIN is counted. More than 5 wrong in 5 minutes on one device,

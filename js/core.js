@@ -113,7 +113,10 @@ function stName(st){return st==="NT"?"No time":st}
    when the slip changes nothing. A slip for an earlier run of a re-swum race (gen) starts fresh.
    supabase/01-setup.sql does the same on the server for photos that wait in the queue. */
 function lateSlip(old,neu){
-  if(!old||(old.gen||0)!==(neu.gen||0))return neu;
+  if(!old)return neu;
+  /* Swim Opt 2.11: a send from before a re-swim (an older gen) never replaces the re-swim's times */
+  if((neu.gen||0)<(old.gen||0))return old;
+  if((old.gen||0)!==(neu.gen||0))return neu;
   const ol=old.lanes||{},nl=neu.lanes||{};const lanes={};let changed=false;
   for(const l of new Set([...Object.keys(ol),...Object.keys(nl)])){
     const o=ol[l],n=nl[l];

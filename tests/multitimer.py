@@ -159,6 +159,28 @@ async def main():
     check(await R.locator('h3', has_text='Multitimer').count() == 1, "Recorder shows the multitimer splits")
     check(await R.locator('.pinkt').count() == 0, "no pink times")
 
+    # Swim Opt 2.11: a later multitimer send keeps the Recorder's DNS and typed time (decision 136)
+    await R.click('[data-act=rgoto]'); await R.click('.modal [data-act=pickrace][data-race="2"]'); await R.wait_for_timeout(200)
+    await R.click(f'[data-act=rst][data-l="{f2[0]}"][data-st=DNS]'); await R.wait_for_timeout(300)
+    await R.fill(f'#t-2-{f2[1]}', '1:30.00'); await R.press(f'#t-2-{f2[1]}', 'Enter'); await R.wait_for_timeout(500)
+    await S.click('[data-act=sgoto]'); await S.click('[data-act=pickrace][data-race="2"]'); await S.wait_for_timeout(200)
+    await S.click('[data-act=mtgo]'); await S.wait_for_timeout(1500)  # the re-timed splits must differ from the first run's
+    for i in range(4):
+        await S.click('[data-act=mtsplit]'); await S.wait_for_timeout(120)
+    await S.click('[data-act=mtstop]')
+    for l in f2: await S.click(f'[data-act=mttap][data-l="{l}"]')
+    await S.click('[data-act=mtsend]'); await S.wait_for_timeout(200)
+    check(await S.locator('.modal h2', has_text='Replace the Race 2 results?').count() == 1, "resending race 2 asks first")
+    await S.click('[data-act=mtsendok]'); await S.wait_for_timeout(1500)
+    for P, who in ((S, 'phone'), (R, 'Recorder')):
+        L = await P.evaluate("A.times.r0002.lanes")
+        check(L[str(f2[0])].get('st') == 'DNS' and L[str(f2[1])].get('t') == 9000 and L[str(f2[1])].get('slip') is not None
+              and all(L[str(l)].get('src') == 'multi' for l in f2[2:]), f"2.11: a multitimer resend keeps DNS and the typed time ({who})")
+    await R.wait_for_timeout(300)
+    await R.evaluate("document.activeElement&&document.activeElement.blur()"); await R.wait_for_timeout(300)  # the screen redraws once no time box has focus
+    check(await R.locator('.under', has_text='Slip differs').count() == 2, "2.11: the Recorder sees Slip differs on the typed lane and the DNS lane (as photo slips, 136)")
+    await R.screenshot(path='9b-recorder-kept.png', full_page=True)
+
     # reload mid-race keeps the clock, even when an earlier race still has no slip (check 3, finding 1)
     await M.click('[data-act=mpick][data-v=free100]'); await M.click('[data-act=mpick][data-v=F]'); await M.click('[data-act=mpick][data-f=g][data-v="14"]')
     await M.click('[data-act=mgo]')

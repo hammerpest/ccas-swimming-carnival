@@ -426,12 +426,16 @@ async function mtSend(force){
   const top=M.taps.slice(0,Math.min(4,r.filled.length));
   const fin={order:top.map(l=>[l]),seq:top.slice(),ok:true,gen:r.gen,at:Date.now(),dev:DEV};
   const meta={race:r.race,multi:true,splits:M.splits.slice(),read,unsure:[],miss:false,missed:[],mism:false,two:false,gen:r.gen,at:Date.now(),dev:DEV,test:false};
-  A.slips[key]=meta;A.times[key]={lanes,src:"multi",checked:false,gen:r.gen};A.finish[key]=fin;recompute();
+  /* Swim Opt 2.11: like a photo slip, multitimer times never overwrite what the Recorder typed or
+     marked DNS, DQ or No time (decision 136), here and on the server when a queued send arrives late */
+  const tdoc=()=>({lanes,src:"multi",checked:false,gen:r.gen,by:DEV,at:Date.now()});
+  A.slips[key]=meta;A.times[key]=lateSlip(A.times[key],tdoc());A.finish[key]=fin;recompute();
   M.phase="sent";mtSave();
   A.s.flash={c:"green",t:`Race ${r.race} sent to the Recorder`};render();
   setTimeout(()=>{A.s.flash=null;render()},1100);
   await w(()=>A.store.set("slips/"+key,meta));
-  await w(()=>A.store.set("times/"+key,{lanes,src:"multi",checked:false,gen:r.gen,by:DEV,at:Date.now()}));
+  let cur=null;try{cur=await withTimeout(A.store.get("times/"+key),4000)}catch(e){cur=A.times[key]||null}
+  await w(()=>A.store.set("times/"+key,lateSlip(cur,tdoc())));
   await w(()=>A.store.set("finish/"+key,fin));
 }
 /* Fix splits: delete a double tap, add a missed time, or clear and time again */

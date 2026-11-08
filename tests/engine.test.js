@@ -169,6 +169,7 @@ a(sl.race===null,'slip: no header, no race');
  m=C.lateSlip(old,{lanes:{2:{t:3650,st:'ok',src:'photo'}},src:'photo',checked:false});
  a(m.lanes[2].t===3650&&!m.checked,'136: an untyped lane takes the slip time and the race goes back to To check');
  a(C.lateSlip(Object.assign({gen:0},old),{gen:1,lanes:{1:{t:1}}}).lanes[1].t===1,'136: re-swum race starts fresh');
+a(C.lateSlip({gen:1,lanes:{1:{t:4000,st:'ok',src:'typed'}}},{gen:0,lanes:{1:{t:1,st:'ok',src:'multi'}},src:'multi'}).lanes[1].t===4000,'2.11: a send from before the re-swim is ignored');
  S4=base();S4.times.r0001.lanes[1].slip=3510;R4=C.compute(S4);
  a(JSON.stringify(R4.races.get(1).differs)==='[1]','136: Slip differs lane listed');
  a(!R4.races.get(1).done&&!R4.groups.get('back50|F|14').final,'136: a race with Slip differs is not done until the Recorder picks');}
