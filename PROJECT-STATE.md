@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version d. Replaces 9 November version c and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version e. Replaces 9 November version d and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version e): handover. Section 0 brought up to date (it still said 2.7 was live; both links now run Swim Opt 2.14, and the 2.11 and 2.12 SQL is run). No new decisions. Ask now: none. Start the next session from section 0, then the "Ask now" line in section 6 and the open items in section 7 (17, 23 and 14).
 
 Changes on 9 November 2026 (version d): Jordan said "Push both". Swim Opt 2.14 pushed to staging and main (cf56279); both links checked running 2.14 with the new photo slip box sentence. No SQL change. Next step 25 closed. Ask now: none.
 
@@ -177,10 +179,11 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - The look is approved and must not change (CLAUDE.md, decision 98). Design canvas COMPLETE at S1.38.
 - Six PINs, one per job (decision 88). Test PINs: Marshal 1111, Place Judge 2222, Recorder 3333, Time Slips 4444, Announcer 5555, Carnival Organiser 9999. Keep 4 digits (104).
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
-- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.7 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 3 November 2026. Jordan ran the 2.7 01-setup.sql on the staging project. Claude can push (token in the Keychain).
+- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.14 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 9 November 2026. The parent page is at /parents/. Jordan has run the latest supabase/01-setup.sql (2.11) and 03-parent-results.sql (2.12) on the staging project. Claude can push when Jordan says; each repo keeps its own token in the Keychain (credential.useHttpPath is on in the swimming and athletics repos).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
-  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
-  - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule.
+  - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40). Jordan confirmed on his iPhone that 2.4 works and the screen stays on during a long race.
+  - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule. Chrome cannot hold phone or iPad widths (problem 18), so those sizes come from the Playwright runs and check 3. Chrome can cache old local files: fetch each script with cache 'reload', then reload the page.
+- Check 1 compares a new build with the previous build's shots (not baseline-mac, which is the untouched 1.5 and now differs by the approved changes).
 - Small app changes made in 2.0 (all need no design OK, or Jordan has OKed them): PIN checked on the server (ui1.js, ui5.js); new toast "No connection. Try again." (102); PIN table fix (103); refused-save toast now "Not saved. Calling Tech Boy to help you. Enjoy grandstand duty next year." (106).
 - Next level export: a HY3 file, not RE1 (decision 100). Writer built (2.30); Jordan to import the test file into Meet Manager.
 - Devices (133): Marshal on an iPad; Place Judge, Time Slips and Announcer on iPhones; Recorder, Results and Carnival Organiser on a MacBook.
