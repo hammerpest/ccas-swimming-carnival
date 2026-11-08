@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 8 November 2026, version c. Replaces 8 November version b and all earlier PROJECT-STATE files.
+Date: 8 November 2026, version d. Replaces 8 November version c and all earlier PROJECT-STATE files.
+
+Changes on 8 November 2026 (version d): Jordan ran the 2.11 supabase/01-setup.sql on the staging project. Swim Opt 2.11 pushed to staging (77fc555); main is still on 2.10 until Jordan says. Pushing had failed with "Permission denied" (403): the Mac's Keychain held the athletics repo's token, which only reaches hammerpest/ccas-athletics. Fixed: both repos now keep their own token (git config credential.useHttpPath true in each repo); Jordan regenerated the swimming token and pushed. The next athletics push will ask for the athletics token once. Next step 21 now: Jordan tries 2.11 on the staging link, then says when to push main. Questions 70 and 71 still open.
 
 Changes on 8 November 2026 (version c): Jordan said "Yes, build 2.11" (decision 153). Swim Opt 2.11 built (2.37), no look change: a late multitimer send keeps the Recorder's typed times and DNS, DQ or No time (problem 20 solved); save times use the server's clock (problem 21 solved); and, from check 3, a send that waited in the phone's queue from before a re-swim never replaces the re-swim's times, places or slip record. Checks 1 to 3 PASSED. Committed on staging, not pushed. Jordan to run the new supabase/01-setup.sql on the staging project, then say when to push (next step 21). New questions 70 (multitimer places when the Recorder has marked a lane) and 71 (Replace box wording).
 
@@ -496,7 +498,7 @@ Tested so far: rules (sql_test.py, 49 of 49), engine tests, six-device flow in t
 - .github/workflows/pages.yml: runs on every push to main or staging. Puts main at the site root and staging at /staging/ (index.html, css/, js/ only; tests, baselines, src and docs are never published) and deploys with GitHub Actions.
 - Links once set up: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and https://hammerpest.github.io/ccas-swimming-carnival/staging/ (staging).
 - Both links use the Supabase project in js/config.js (staging) until the live project exists (step 2 in section 7).
-- Pushing uses HTTPS with a fine-grained token that only reaches this repo. Jordan pastes the token in the Terminal; Claude never sees it. macOS keeps it in the Keychain.
+- Pushing uses HTTPS with a fine-grained token that only reaches this repo. Jordan pastes the token in the Terminal; Claude never sees it. macOS keeps it in the Keychain. Since 8 November 2026 each repo keeps its own Keychain entry (credential.useHttpPath), so the athletics token no longer replaces this one. A 403 "Permission denied to hammerpest" means the wrong or an expired token: regenerate it on GitHub and push once in the Terminal.
 - Checked locally: the site served from a sub-folder (as Pages does) runs the six-device flow with no errors, and Supabase mode loads with no console errors.
 
 ### 2.16 Check 2: Claude in Chrome walk-through (29 October 2026, PASSED)
@@ -1048,7 +1050,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: run the 2.11 supabase/01-setup.sql on the staging project (next step 21); questions 70 and 71.
+Ask now: when to push Swim Opt 2.11 to main (next step 21); questions 70 and 71.
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
 - (Closed by 144) 64. A swimmer with no time.
@@ -1112,7 +1114,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 18. (Done 3 November 2026) Jordan ran supabase/03-parent-results.sql in the Supabase SQL Editor (paste it all, Run). Then the parent page shows the made-up day. Do not send the link to parents until question 1 (approval) and question 68 (media consent) are settled and the made-up day is undone.
 19. (Closed 4 November 2026) Swim Opt 2.9 undone. See question 69.
 20. (Done 4 November 2026) Jordan approved Swim Opt 2.10; pushed to main the same day.
-21. NOW: Swim Opt 2.11 is built and committed on staging (2.37), checks 1 to 3 passed, not pushed. Jordan runs the new supabase/01-setup.sql in the Supabase SQL Editor on the staging project (paste it all, Run), then tells Claude to push staging. Then main, when Jordan says. Either order is safe: the phone and the server each merge on their own.
+21. NOW: Swim Opt 2.11 is on the staging link (pushed 8 November 2026, 2.37) and the 2.11 01-setup.sql has been run. Jordan tries it if wanted (close and reopen the tab first, problem 17), then says when to push main.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
 
 ---
