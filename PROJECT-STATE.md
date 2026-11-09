@@ -1,6 +1,20 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version l. Replaces 9 November version k and all earlier PROJECT-STATE files.
+Date: 9 November 2026, version s. Replaces 9 November version r and all earlier PROJECT-STATE files.
+
+Changes on 9 November 2026 (version s): Jordan answered questions 75, 76 and 77 (decisions 160, 161, 162): primary is a separate carnival; primary swims every 50 m race, the 100 m freestyle and the 4 x 50 m relays (no 200 m freestyle); primary results go to the same next level as high school (the same HY3 file). Jordan said "commit. push." New question 78 (primary relay groups). S1.44 still needs Jordan's OK before it is built, and should be redrawn to match 160 (one carnival is primary or secondary, so a carnival-type choice may suit better than a mixed age table). Ask now: 78, and the OK on S1.44.
+
+Changes on 9 November 2026 (version r): Jordan said the carnival must also cover primary students, ages 8, 9, 10, 11 and 12, with a Carnival Organiser setting to turn ages on or off like the events. Mock-up drawn as S1.44 (look only, nothing built): in section 3 Program, a new "Age groups" table above the races, rows 8 & under to 18 and over in Primary (8 to 12) and Secondary (13 to 18) blocks, each with a switch and an "All on" button; the youngest age on is called "& under" and the oldest "and over"; the Groups and Races columns and the race total follow the ages on (all 11 on: 22 races per age event, 124 races). Drawn with the app's own CSS; screenshots MacBook light and dark, iPad portrait, iPhone, no sideways scroll. Waiting for Jordan's OK on S1.44 and answers to new questions 75 to 77. This is a scope change: until now the app had secondary age groups only (13 & under to 18 and over). Ask now: 75, 76, 77 (and 74 waits on the Meet Manager import).
+
+Changes on 9 November 2026 (version q): question 74 answered in part: Jordan is sending the HY3 test file (SWIM 2027- App/CCAS test HRIS 2027.zip, with the .hy3 inside) to the Meet Manager person. Waiting on their import result and screenshots. Ask now: none (step 7 waits on the import).
+
+Changes on 9 November 2026 (version p): Jordan wants the end-of-carnival export made correct and ready for Meet Manager (step 7). Checked: tests/hy3.test.js passes on 2.17, and tools/make_test_hy3.js still makes a file identical to "SWIM 2027- App/CCAS test HRIS 2027.hy3" (apart from the made date and time in the A1 line), so the 2 November test file is still the right one to try. Nothing is proven in Meet Manager yet. New question 74. Ask now: question 74.
+
+Changes on 9 November 2026 (version o): Jordan asked for a print version of the practice pack. Made a 9-page A4 PDF: "SWIM 2027- App/CCAS swim practice pack.pdf" (page 1 who does what and before people arrive, pages 2 and 3 the race script and finish, pages 4 to 9 one job card each in larger type). The published page got the same print layout. No app change. Ask now: none.
+
+Changes on 9 November 2026 (version n): Jordan said "Yes, make it". Practice pack for the sit-down (step 29) made and published, private: https://claude.ai/artifact/1cJ2Wc1arDzLCFZMVncqVz. It has who does what (job, device, PIN, a blank for the person), what to do the day before and on each device, a six-race script (normal flow; Undo last and a typed time; 100 m multitimer with a false start and a DNS; a relay; Change an earlier race and a relief judge reopening the app; Cancel this race (not swum) and Set next race number), the finish (backup, Clear practice data, three questions per person) and one job card per job. Button names checked against the 2.17 code. No app change. Ask now: none.
+
+Changes on 9 November 2026 (version m): Jordan said "Not yet" to turning the "to plan" list (2.31) into a checklist; step 14 stays open. Jordan named the next step: a sit-down with about 5 or 6 people, each on the device they will use on the day, running a few races to test and learn (new next step 29). No app change. Ask now: none.
 
 Changes on 9 November 2026 (version l): Jordan said "Push both". Swim Opt 2.17 pushed to staging and main (4c260d8); both links checked serving 2.17 (index.html comment, APP_VERSION "2.17", the saveFinish change in js/ui2.js). No SQL change. Next step 28 closed. Handover: the next session starts from section 0, then step 14 (the "to plan" list). Check 1 reference shots for 2.17: /private/tmp/claude-332400660/-Users-jordan-dennis-SWIM-2027--App-ccas-swimming/12c7f67b-7aff-42a1-abf7-00919c35cfa7/scratchpad/shots217 (scratchpad of this session; a new session shoots the current build first if that folder is gone). Ask now: none.
 
@@ -1071,6 +1085,9 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 145. (3 November 2026, answers question 65) Joint age champions: no runner up is shown beside them.
 146. (3 November 2026, answers questions 66 and 67) Equal times in one heat that the judge did not place stay a tie (as built). Jordan wants the project finished and left the 2.7 list to Claude: next step 13.
 155. (8 November 2026, answers question 71) The multitimer "Replace the Race N results?" box adds "Typed times and DNS, DQ or No time are kept for the Recorder to check." Built as Swim Opt 2.13.
+162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
+161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+160. (9 November 2026, answers question 75) The primary carnival is separate from the secondary carnival: its own day, results and house points. The age on and off setting (S1.44) chooses the ages for each carnival.
 159. (9 November 2026, answers question 73) Jordan said "Yes, fix it": any place taken off after "fewer places confirmed" clears it, so the Place Judge confirms again with Next race. Built as Swim Opt 2.17.
 158. (9 November 2026) Jordan said "Yes, build 2.16": Place Judge Start again clears "fewer places confirmed"; Undo last brings the places back and the judge confirms again. Built as Swim Opt 2.16.
 157. (9 November 2026) Jordan asked for the running version in the yellow Carnival Organiser badge and chose: same line, smaller and lighter ("CARNIVAL ORGANISER v2.15"), Organiser only. Hidden below 900 px so the approved iPad portrait header does not change. Built as Swim Opt 2.15.
@@ -1145,7 +1162,12 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: none.
+Ask now: 78.
+- 78. (9 November 2026, after 161) Primary 4 x 50 m relays: what groups? For example one group per age (8 & under to 12), or Junior primary (8 to 10) and Senior primary (11 and 12), or one Open primary relay?
+- (Closed by 160) 75. Primary and secondary together or separate?
+- (Closed by 161) 76. Which races do primary students swim?
+- (Closed by 162) 77. Where do primary results go?
+- 74. (9 November 2026) The HY3 test file has never been opened in Meet Manager. Who can import it: Jordan, the person who runs the primary carnival in Meet Manager (they made the 2.29 sample), or the HRIS convenor who receives the file? Best is the HRIS convenor, importing into a copy of their own HRIS meet, because the app uses its own event numbers (1 to 74) and Claude does not know if Meet Manager matches entries by event number or by distance, stroke, sex and age. Their answer settles the repeated D1 lines, event numbers and age ranges (0–14, 18–109) in 2.30.
 - (Closed by 159) 73. (9 November 2026, from check 3 on 2.16) After the Place Judge confirms fewer places (for example 2 of 4), removing a place with Undo last or by tapping a placed lane keeps the "fewer places confirmed" flag, so the race stays done with only 1 place. Same as before 2.16. Clear the flag on any place removed, so the judge confirms again (small fix, no look change), or keep as is?
 - (Done 3 November 2026) Run the 2.7 supabase/01-setup.sql on the staging project.
 - (Closed by 142, 143) 63. Swap check and records on swapped times.
@@ -1220,7 +1242,8 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 27. (Done 9 November 2026) Swim Opt 2.16 pushed to staging and main (f92443d), checks 1 to 3 passed.
 28. (Done 9 November 2026) Swim Opt 2.17 pushed to staging and main (4c260d8), checks 1 to 3 passed.
 23. (Done 9 November 2026, Swim Opt 2.16, 2.42) After Start again on the Place Judge screen, the race no longer counts as done with no places.
-14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice.
+14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice. (9 November 2026: Jordan said "Not yet" to making it a checklist with a person and a date.)
+29. NEXT: practice sit-down. About 5 or 6 people, each on the device they will use on the day (iPad Marshal, iPhone Place Judge, Time Slips and Announcer, MacBook Recorder and Organiser), run a few races to test and learn. Date and people not set yet. Practice pack (race script and job cards): https://claude.ai/artifact/1cJ2Wc1arDzLCFZMVncqVz (version n). Before: wake the Supabase project if unused for 7 days, close and reopen each tab so every device runs the current version (check the Organiser badge). After: Clear practice data (A7, 140), and note what people found for the next Swim Opt change.
 
 ---
 
