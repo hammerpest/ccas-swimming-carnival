@@ -5,7 +5,7 @@ const TYPES=[
   {k:"free50",name:"50 m freestyle",btn:"50 m free",dist:50,stroke:"Freestyle",gk:"age",start:"10:00 am"},
   {k:"free100",name:"100 m freestyle",btn:"100 m free",dist:100,stroke:"Freestyle",gk:"age",start:"10:45 am"},
   {k:"breast50",name:"50 m breaststroke",btn:"50 m breast",dist:50,stroke:"Breaststroke",gk:"age",start:"11:30 am"},
-  {k:"free200",name:"200 m freestyle",btn:"200 m free",dist:200,stroke:"Freestyle",gk:"band",start:"12:15 pm"},
+  {k:"free200",name:"200 m freestyle",btn:"200 m free",dist:200,stroke:"Freestyle",gk:"band",start:"12:15 pm",noPrimary:true},
   {k:"relayfree",name:"4 x 50 m freestyle relay",btn:"Free relay",dist:200,stroke:"Freestyle",gk:"band",relay:true,start:"1:00 pm"},
   {k:"relaymed",name:"4 x 50 m medley relay",btn:"Medley relay",dist:200,stroke:"Medley",gk:"open",relay:true,start:"1:25 pm",optional:true}
 ];
@@ -14,6 +14,42 @@ const GROUPS={age:["13","14","15","16","17","18"],band:["J","I","S"],open:["O"],
 const AGE_GROUPS=GROUPS.age;
 const BAND_OF={"13":"J","14":"J","15":"I","16":"I","17":"S","18":"S"};
 const BAND_AGES={J:["13","14"],I:["15","16"],S:["17","18"]};
+/* Swim Opt 2.18 (S1.44, decisions 160 to 164): a carnival is Primary (ages 8 to 12) or Secondary (13 to 18),
+   and each age can be turned off. A student's g is their age, kept inside the carnival's range (13 holds
+   13 and under, 18 holds 18 and over, 8 holds 8 and under, 12 holds 12 and over). ageGrp(g) gives the age
+   group they swim in: an age turned off swims with the youngest age on (if younger) or the next age up.
+   Primary relays are Junior (8 to 10) and Senior (11 and 12), freestyle and medley; no 200 m freestyle. */
+const LEVELS={
+  secondary:{name:"Secondary",ages:["13","14","15","16","17","18"],bands:{J:["13","14"],I:["15","16"],S:["17","18"]}},
+  primary:{name:"Primary",ages:["8","9","10","11","12"],bands:{PJ:["8","9","10"],PS:["11","12"]}}
+};
+function carnLevel(cfg){return cfg&&cfg.level==="primary"?"primary":"secondary"}
+function levelAgesOn(cfg){
+  const L=LEVELS[carnLevel(cfg)];const off=new Set(((cfg&&cfg.agesOff)||{})[carnLevel(cfg)]||[]);
+  const on=L.ages.filter(a=>!off.has(a));return on.length?on:L.ages.slice();
+}
+function setAll(arr,vals){arr.splice(0,arr.length,...vals)}
+function setObj(o,vals){for(const k of Object.keys(o))delete o[k];Object.assign(o,vals)}
+/* point the shared group lists at this carnival's ages (changes them in place, so every screen follows) */
+function applyAges(cfg){
+  const lv=carnLevel(cfg),L=LEVELS[lv];const on=levelAgesOn(cfg);
+  setAll(GROUPS.age,on);
+  const bands=Object.keys(L.bands).filter(b=>L.bands[b].some(a=>on.includes(a)));
+  setAll(GROUPS.band,bands.length?bands:Object.keys(L.bands));
+  setObj(BAND_AGES,L.bands);
+  const of={};for(const b in L.bands)for(const a of L.bands[b])of[a]=b;
+  for(const a of on)if(!of[a])of[a]=null;
+  setObj(BAND_OF,of);
+  TYPE.relaymed.gk=lv==="primary"?"band":"open";
+  return on;
+}
+function typeOn(p,cfg){const t=TYPE[p.k];return !!(t&&p.on&&!(t.noPrimary&&carnLevel(cfg)==="primary"))}
+function ageGrp(g){
+  const on=GROUPS.age;if(g==null||!on.length)return g;g=String(g);if(on.includes(g))return g;
+  const n=+g;if(isNaN(n))return g;
+  if(n<+on[0])return on[0];
+  const up=on.find(a=>+a>=n);return up||on[on.length-1];
+}
 const HOUSES=[{c:"B",n:"Bradman"},{c:"J",n:"Jackson"},{c:"N",n:"Newcombe"}];
 const TEAMS=["B-A","B-B","J-A","J-B","N-A","N-B"];
 
@@ -28,8 +64,10 @@ const DEFAULT_CONFIG={
 };
 
 function grpName(g){
-  if(g==="13")return "13 & under";if(g==="18")return "18+";
-  if(g==="J")return "Junior";if(g==="I")return "Intermediate";if(g==="S")return "Senior";
+  const on=GROUPS.age;
+  if(on.includes(g)){if(g===on[0]&&on.length>1)return g+" & under";if(g===on[on.length-1])return g+"+";return g}
+  if(g==="13")return "13";if(g==="18")return "18";
+  if(g==="J"||g==="PJ")return "Junior";if(g==="I")return "Intermediate";if(g==="S"||g==="PS")return "Senior";
   if(g==="O")return "Open";if(g==="Y12")return "Year 12";return g;
 }
 function sexName(x){return x==="F"?"Girls":x==="M"?"Boys":""}
@@ -47,8 +85,9 @@ function teamName(t){const [h,l]=t.split("-");return houseName(h)+" "+l}
 function programEvents(cfg){
   const out=[];let no=0;
   const prog=(cfg&&cfg.program)||DEFAULT_CONFIG.program;
+  applyAges(cfg);
   for(const p of prog){
-    const t=TYPE[p.k];if(!t||!p.on)continue;
+    const t=TYPE[p.k];if(!typeOn(p,cfg))continue;
     for(const g of GROUPS[t.gk]){
       for(const x of (t.nosex?["X"]:["F","M"])){no++;out.push({no,k:t.k,x,g,key:groupKey(t.k,x,g)})}
     }
@@ -292,7 +331,7 @@ function compute(S){
       if(!r.pts||!r.p||!house[r.p.h])continue;
       if(t.relay){house[r.p.h].relay+=r.pts}
       else{
-        const ag=r.p.g||G.g;
+        const ag=r.p.g?ageGrp(r.p.g):G.g;
         if(house[r.p.h].byAge[ag]!=null)house[r.p.h].byAge[ag]+=r.pts;
         house[r.p.h].indiv+=r.pts;
         const ck=ag+"|"+(r.p.x||G.x);
@@ -427,7 +466,8 @@ function ageOn(dobIso,onIso){
   if(c.getMonth()<b.getMonth()||(c.getMonth()===b.getMonth()&&c.getDate()<b.getDate()))a--;
   return a;
 }
-function ageGroup(a){if(a==null)return null;if(a<=13)return "13";if(a>=18)return "18";return String(a)}
+function ageGroup(a,level){if(a==null)return null;const L=(LEVELS[level]||LEVELS.secondary).ages;const lo=+L[0],hi=+L[L.length-1];
+  if(a<=lo)return String(lo);if(a>=hi)return String(hi);return String(a)}
 function parseDob(v){
   v=String(v||"").trim();if(!v)return null;
   if(/^\d{5}(\.\d+)?$/.test(v)){const d=new Date(Math.round((Number(v)-25569)*864e5));return isNaN(d)?null:d.toISOString().slice(0,10)}
@@ -447,7 +487,7 @@ function splitRow(line){
   out.push(cur);return out;
 }
 function tidyName(s){return String(s).trim().replace(/\s+/g," ")}
-function parseStudents(text,ageDate){
+function parseStudents(text,ageDate,level){
   const lines=String(text||"").split(/\r?\n/).filter(l=>l.trim());
   const ok=[],bad=[];const seen=new Map();
   lines.forEach((line,i)=>{
@@ -464,7 +504,7 @@ function parseStudents(text,ageDate){
     if(probs.length){bad.push({row,probs});return}
     const base=(row.s+"-"+row.f).toLowerCase().replace(/[^a-z0-9]+/g,"-");
     const n=(seen.get(base)||0)+1;seen.set(base,n);
-    ok.push({id:"s-"+base+"-"+n,s:tidyName(row.s),f:tidyName(row.f),h:row.h,x:row.x,g:ageGroup(a)});
+    ok.push({id:"s-"+base+"-"+n,s:tidyName(row.s),f:tidyName(row.f),h:row.h,x:row.x,g:ageGroup(a,level)});
   });
   return {ok,bad};
 }
@@ -476,7 +516,12 @@ function parseStudents(text,ageDate){
    missing: swimmers left out (no house, no clear DOB). provisional: races not final yet. */
 const HY3_TEAM={B:"BRA",J:"JAC",N:"NEW"};
 const HY3_STROKE={Freestyle:"A",Backstroke:"B",Breaststroke:"C",Butterfly:"D",Medley:"E"};
-const HY3_AGES={"13":[0,13],"14":[14,14],"15":[15,15],"16":[16,16],"17":[17,17],"18":[18,109],J:[0,14],I:[15,16],S:[17,109],O:[0,109],Y12:[0,109]};
+const HY3_AGES={J:[0,14],I:[15,16],S:[17,109],PJ:[0,10],PS:[11,109],O:[0,109],Y12:[0,109]};
+/* an age group's range: the youngest age on is "and under" (0), the oldest "and over" (109) */
+function hy3Ages(g){
+  if(HY3_AGES[g])return HY3_AGES[g];const on=GROUPS.age;const n=+g;if(isNaN(n))return [0,109];
+  return [g===on[0]?0:n,g===on[on.length-1]?109:n];
+}
 function hy3Check(body){
   let s=0;for(let i=0;i<128;i++)s+=body.charCodeAt(i)*(i%2?2:1);
   const v=String(Math.floor(s/21)+205).slice(-2).padStart(2,"0");
@@ -491,13 +536,13 @@ function hy3Ascii(v){return String(v||"").replace(/[\u2018\u2019]/g,"'").replace
 function hy3Date(iso){const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[2]+m[3]+m[1]:"        "}
 function hy3Time(cs){return ((cs/100).toFixed(2)).padStart(8)}
 function hy3Event(G,ev,cfg,course,place,cs,pre){
-  const t=TYPE[G.k];const ag=HY3_AGES[G.g]||[0,109];const dist=t.relay?t.dist/4:t.dist;
+  const t=TYPE[G.k];const ag=hy3Ages(G.g);const dist=t.relay?t.dist/4:t.dist;
   return pre.concat([[14,G.x],[15,G.x==="F"?"G":"B"],[16,String(dist).padStart(6)],[22,HY3_STROKE[t.stroke]||"A"],
     [23,String(ag[0]).padStart(3)],[26,String(ag[1]).padStart(3)],[29,"  0U"],[33,"  0.00"],[39,String(ev.no).padStart(4)],
     [43,hy3Time(cs)+course],[52,hy3Time(cs)+course],[61,"    0.00"],[69,"    0.00"],[77,"  0NN"],[85,String(place).padStart(4)]]);
 }
 function hy3File(R,cfg,dobOf,now){
-  cfg=Object.assign({},DEFAULT_CONFIG,cfg||{});now=now||new Date();
+  cfg=Object.assign({},DEFAULT_CONFIG,cfg||{});now=now||new Date();applyAges(cfg);
   const course=String(cfg.poolLen)==="25"?"S":"L";
   const p2=n=>String(n).padStart(2,"0");
   const made=p2(now.getMonth()+1)+p2(now.getDate())+now.getFullYear();
@@ -534,4 +579,4 @@ function hy3File(R,cfg,dobOf,now){
   return {text:out.join("\r\n")+"\r\n",entries,swimmers:nums.size,missing,provisional};
 }
 
-if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,DEFAULT_CONFIG,lateSlip,noTimeSt,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip,hy3File,hy3Line,hy3Check};
+if(typeof module!=="undefined")module.exports={TYPES,TYPE,GROUPS,LEVELS,applyAges,ageGrp,ageGroup,grpName,typeOn,levelAgesOn,carnLevel,BAND_AGES,BAND_OF,DEFAULT_CONFIG,lateSlip,noTimeSt,parseTime,fmtTime,oddTime,heatEffective,pointsFor,compute,programEvents,parseStudents,groupLabel,groupKey,parseSlip,hy3File,hy3Line,hy3Check};

@@ -172,14 +172,14 @@ function renderHouses(){
     <div class="grid2"><div class="panel stack"><h3>Points by age group</h3><div class="tablewrap"><table><thead><tr><th>Age group</th>${HOUSES.map(h=>`<th class="num">${hdot(h.c)}</th>`).join("")}</tr></thead><tbody>${rowsAge}
       <tr><td>Relays</td>${relayVals.map(v=>`<td class="num" style="${v===rtop&&v>0?"font-weight:800":""}">${fmtPts(v)}</td>`).join("")}</tr>
       <tr><td><b>Total</b></td>${HOUSES.map(h=>`<td class="num"><b>${fmtPts(R.house[h.c].total)}</b></td>`).join("")}</tr></tbody></table></div>
-      <p class="muted" style="margin:0;font-size:.85rem">Girls and boys together. 200 m freestyle points count in each swimmer's own age group.</p></div>
+      <p class="muted" style="margin:0;font-size:.85rem">Girls and boys together.${carnLevel(A.cfg)==="primary"?"":" 200 m freestyle points count in each swimmer's own age group."}</p></div>
       <div class="stack"><h3>Age champions</h3><div class="grid2" style="gap:10px">${champ}</div>
       <p class="muted" style="margin:0;font-size:.85rem">Most individual points in each age group, relays not included. Equal points are joint champions.</p></div></div>`;
 }
 
 /* Announcer program: each race type in swim order with its start time and how many results are final (decision 96) */
 function programPanel(last){
-  const R=A.R;const prog=(A.cfg.program||DEFAULT_CONFIG.program).filter(p=>TYPE[p.k]&&p.on);
+  const R=A.R;const prog=(A.cfg.program||DEFAULT_CONFIG.program).filter(p=>typeOn(p,A.cfg));
   const rows=prog.map(p=>{const t=TYPE[p.k];const evs=R.events.filter(e=>e.k===p.k);
     const fin=evs.filter(e=>R.isFinal(e.key)).length;
     const started=evs.some(e=>R.groups.has(e.key));

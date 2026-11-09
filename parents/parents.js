@@ -6,7 +6,8 @@
 const P={data:null,v:"",R:null,off:false,err:false,at:0,sex:"F",age:"all",q:""};
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=id=>document.getElementById(id);
-const AGE_LABEL={"13":"13 & under","14":"14 years","15":"15 years","16":"16 years","17":"17 years","18":"18+"};
+/* Swim Opt 2.18: labels follow the carnival's ages (primary 8 to 12 or secondary 13 to 18) */
+const AGE_LABEL=new Proxy({},{get:(o,a)=>{a=ageGrp(a);const on=GROUPS.age;if(!on.includes(a))return "";return a===on[0]&&on.length>1?a+" & under":a===on[on.length-1]?a+"+":a+" years"}});
 
 /* ---- data ---- */
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
@@ -85,7 +86,7 @@ function home(){
 }
 function events(){
   const R=P.R;
-  const ages=["all","13","14","15","16","17","18"];
+  const ages=["all",...GROUPS.age];
   const ev=R.events.filter(e=>e.x===P.sex||e.x==="X").filter(e=>{
     if(P.age==="all")return true;const t=TYPE[e.k];
     return e.g===P.age||(t.gk==="band"&&BAND_OF[P.age]===e.g)||t.gk==="open";
@@ -136,7 +137,7 @@ function swimmerPage(id){
   const m=swimmers().get(id);
   if(!m)return `<div class="card empty">No finished results for this swimmer yet.</div>`;
   const R=P.R;const pts=m.ev.reduce((s,e)=>s+(e.r.pts||0),0);const wins=m.ev.filter(e=>e.r.place===1).length;
-  const c=P.RF.champs[m.p.g+"|"+m.p.x];
+  const c=P.RF.champs[ageGrp(m.p.g)+"|"+m.p.x];
   const champ=c&&c.winners.some(w=>w.id===id)?`<div class="recnote"><span class="med p1">1</span><b>${c.winners.length>1?"Joint age champion":"Age champion"}, ${esc(sexName(m.p.x))} ${esc(AGE_LABEL[m.p.g])}${c.done<c.of?" (so far)":""}</b></div>`:"";
   const ev=m.ev.slice().sort((a,b)=>(a.r.place||99)-(b.r.place||99));
   return `<article class="card">
@@ -163,7 +164,7 @@ function champions(){
     ${["F","M"].map(x=>{const c=R.champs[a+"|"+x];if(!c||!c.winners.length)return `<div class="res"><span style="width:48px" class="small muted"><b>${x==="F"?"GIRLS":"BOYS"}</b></span><span class="nm muted">No points yet</span></div>`;
       const w=c.winners;const run=c.runners.length?(c.runners.length>2?c.runners.length+" tied":c.runners.map(r=>r.p.name).join(" and "))+", "+ptsTxt(c.runners[0].pts):"";
       return `<div class="res"><span style="width:48px" class="small muted"><b>${x==="F"?"GIRLS":"BOYS"}</b></span>${dot(w.length===1?w[0].p.h:"")}<span class="nm"><b style="white-space:normal">${esc(w.map(r=>r.p.name).join(" and "))}</b><small>${w.length>1?"Joint champions":run?"Runner up: "+esc(run):""}${c.done<c.of?` (${c.done} of ${c.of} races final)`:""}</small></span><span class="time">${ptsTxt(w[0].pts)}</span></div>`}).join("")}</section>`).join("")}
-  <p class="note">Most points from the five age races and the 200 m freestyle. Finished events only.</p>`;
+  <p class="note">Most points from the five age races${carnLevel(P.RF&&P.RF.cfg)==="primary"?"":" and the 200 m freestyle"}. Finished events only.</p>`;
 }
 function records(){
   const list=P.R.broken.filter(G=>G.final);

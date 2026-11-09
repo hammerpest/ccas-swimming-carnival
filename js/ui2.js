@@ -1,8 +1,10 @@
 /* ===== Marshal and Place Judge ===== */
-function enabledTypes(){return (A.cfg.program||DEFAULT_CONFIG.program).filter(p=>p.on&&TYPE[p.k]).map(p=>TYPE[p.k])}
+function enabledTypes(){return (A.cfg.program||DEFAULT_CONFIG.program).filter(p=>typeOn(p,A.cfg)).map(p=>TYPE[p.k])}
+/* Swim Opt 2.18: the youngest age on says "& under", the oldest "and over" */
+function ageSub(g){const on=GROUPS.age;return g===on[0]&&on.length>1?"& under":g===on[on.length-1]?"and over":""}
 function groupChoices(t){
   if(!t)return [];
-  if(t.gk==="age")return GROUPS.age.map(g=>({g,l:g,sub:g==="13"?"& under":g==="18"?"and over":""}));
+  if(t.gk==="age")return GROUPS.age.map(g=>({g,l:g,sub:ageSub(g)}));
   if(t.gk==="band")return GROUPS.band.map(g=>({g,l:grpName(g)}));
   if(t.gk==="open")return [{g:"O",l:"Open"}];
   return [{g:"Y12",l:"Year 12"}];
@@ -11,7 +13,7 @@ function eligible(k,x,g){
   const t=TYPE[k];
   if(t.relay)return TEAMS.map(id=>({id,team:true,name:teamName(id),h:id[0]}));
   let list=students();
-  if(t.gk==="age")list=list.filter(s=>s.x===x&&s.g===g);
+  if(t.gk==="age")list=list.filter(s=>s.x===x&&ageGrp(s.g)===g);
   else if(t.gk==="band")list=list.filter(s=>s.x===x&&BAND_AGES[g].includes(s.g));
   else list=list.filter(s=>s.g==="17"||s.g==="18");
   return list.slice().sort((a,b)=>(a.s+" "+a.f).localeCompare(b.s+" "+b.f));
@@ -40,7 +42,7 @@ function renderMarshal(){
   const row=(id,title,inner,isMiss)=>`<div class="mrow ${showMiss&&isMiss?"miss":""}" id="${id}"><span class="label">${title}</span><div class="choices">${inner}</div></div>`;
   const raceBtns=types.map(x=>`<button type="button" class="choice" data-act="mpick" data-f="k" data-v="${x.k}" aria-pressed="${m.k===x.k}">${esc(x.btn)}</button>`).join("");
   const sexBtns=[["F","Girls"],["M","Boys"]].map(([v,l])=>`<button type="button" class="choice" data-act="mpick" data-f="x" data-v="${v}" aria-pressed="${m.x===v}">${l}</button>`).join("");
-  const gBtns=(t?groupChoices(t):GROUPS.age.map(g=>({g,l:g,sub:g==="13"?"& under":g==="18"?"and over":""}))).map(c=>`<button type="button" class="choice" data-act="mpick" data-f="g" data-v="${c.g}" aria-pressed="${m.g===c.g}">${esc(c.l)}${c.sub?`<small style="display:block;font-size:.7rem;font-weight:600">${c.sub}</small>`:""}</button>`).join("");
+  const gBtns=(t?groupChoices(t):GROUPS.age.map(g=>({g,l:g,sub:ageSub(g)}))).map(c=>`<button type="button" class="choice" data-act="mpick" data-f="g" data-v="${c.g}" aria-pressed="${m.g===c.g}">${esc(c.l)}${c.sub?`<small style="display:block;font-size:.7rem;font-weight:600">${c.sub}</small>`:""}</button>`).join("");
   const name=!miss.length?groupLabel(m.k,t.nosex?"X":m.x,m.g):"";
   return `${lockBar()}<div class="stack" style="max-width:1040px;margin:0 auto">
     ${m.msg?`<div class="msg ok">${esc(m.msg)}</div>`:""}

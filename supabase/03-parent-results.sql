@@ -52,7 +52,7 @@ begin
     'v', v,
     'config', jsonb_build_object('name', cfg->'name', 'date', cfg->'date', 'dateConfirmed', cfg->'dateConfirmed',
       'pool', cfg->'pool', 'lanes', cfg->'lanes', 'points', cfg->'points', 'program', cfg->'program',
-      'notSwum', cfg->'notSwum', 'locked', cfg->'locked'),
+      'notSwum', cfg->'notSwum', 'locked', cfg->'locked', 'level', cfg->'level', 'agesOff', cfg->'agesOff'),
     'heats', coalesce((select jsonb_agg(jsonb_build_object('_id', h.id, 'race', h.doc->'race', 'heat', h.doc->'heat',
         'k', h.doc->'k', 'x', h.doc->'x', 'g', h.doc->'g', 'gen', h.doc->'gen', 'cancelled', h.doc->'cancelled',
         'edited', h.doc->'edited', 'at', h.doc->'at',

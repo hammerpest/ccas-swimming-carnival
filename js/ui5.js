@@ -3,7 +3,7 @@ const SECS=[["details","Carnival details"],["students","Students"],["program","P
 function secStatus(k){
   const c=A.cfg;
   if(k==="details")return c.dateConfirmed?{t:c.date}:{t:"Date not confirmed yet",a:1};
-  if(k==="students"){const n=students().length;return n?{t:n+" students loaded"}:{t:"No list loaded yet",a:1}}
+  if(k==="students"){const n=students().length;if(n&&listOtherLevel())return {t:"Import the list again",a:1};return n?{t:n+" students loaded"}:{t:"No list loaded yet",a:1}}
   if(k==="program")return {t:A.R.events.length+" races on the program"};
   if(k==="points"){const P=Object.assign({},DEFAULT_CONFIG.points,c.points||{});return {t:[P.p1,P.p2,P.p3,P.rest].join(", ")}}
   if(k==="limits")return {t:"By stroke and distance"};
@@ -36,29 +36,56 @@ OSEC.details=()=>{const c=A.cfg;
   <div class="row">${badge(A.counter)}<span class="muted">Next race number. It only goes back to 1 with Start a new carnival.</span></div>
   <div class="row"><input id="cNext" inputmode="numeric" autocomplete="off" aria-label="New next race number" style="width:7em"><button type="button" class="btn small" data-act="onext">Set next race number</button><span class="muted" style="font-size:.88rem">Forward only, to match the timing console.</span></div>`};
 OSEC.students=()=>{
-  const all=students();const cnt={};for(const s of all){cnt[s.x+s.g]=(cnt[s.x+s.g]||0)+1}
+  const all=students();const cnt={};for(const s of all){const g=ageGrp(s.g);cnt[s.x+g]=(cnt[s.x+g]||0)+1}
   const pv=A.o.preview;
   return `<h2>Students</h2>
    ${all.length?`<div class="tablewrap"><table><thead><tr><th></th>${AGE_GROUPS.map(a=>`<th class="num">${esc(grpName(a))}</th>`).join("")}<th class="num">Total</th></tr></thead><tbody>${["F","M"].map(x=>`<tr><td><b>${sexName(x)}</b></td>${AGE_GROUPS.map(a=>`<td class="num">${cnt[x+a]||0}</td>`).join("")}<td class="num"><b>${AGE_GROUPS.reduce((t,a)=>t+(cnt[x+a]||0),0)}</b></td></tr>`).join("")}</tbody></table></div>
      <p class="muted" style="margin:0">${all.length} students loaded${A.extras.length?", including "+A.extras.length+" added on the day":""}. Houses: ${HOUSES.map(h=>h.n+" "+all.filter(s=>s.h===h.c).length).join(", ")}.</p>`:`<div class="msg warn">No student list loaded yet.</div>`}
+   ${listOtherLevel()?`<div class="msg warn">The student list was loaded for a ${LEVELS[carnLevel(A.cfg)==="primary"?"secondary":"primary"].name.toLowerCase()} carnival. Import the student list again.</div>`:""}
    <div class="msg info">Columns: Surname, Firstname, House (B, J or N), Sex (F or M), DOB. The date of birth is used on this computer only to work out the age group. It is never saved or sent.</div>
    <textarea id="oText" placeholder="Paste the student list here (from Excel)">${esc(A.o.text)}</textarea>
    <div class="row"><label class="btn" for="oFile">Choose CSV file</label><input id="oFile" type="file" accept=".csv,.txt,.tsv" hidden><button type="button" class="btn" data-act="ocheck">Check list</button>
      <button type="button" class="btn" data-act="otest">Load the 620 test students</button></div>
    ${pv?`<div class="stack"><div class="row"><span class="chip final">${pv.ok.length} ready</span><span class="chip ${pv.bad.length?"bad":"final"}">${pv.bad.length?pv.bad.length+" with problems":"No problems"}</span></div>
      ${pv.bad.length?`<div class="tablewrap"><table><thead><tr><th>Row</th><th>Surname</th><th>First name</th><th>House</th><th>Sex</th><th>DOB</th><th>Problem</th></tr></thead><tbody>${pv.bad.slice(0,50).map(b=>`<tr class="probrow"><td>${b.row.n}</td><td>${esc(b.row.s)}</td><td>${esc(b.row.f)}</td><td>${esc(b.row.h)}</td><td>${esc(b.row.x)}</td><td>${esc(b.row.dob)}</td><td><b>${esc(b.probs.join(" "))}</b></td></tr>`).join("")}</tbody></table></div><p class="muted" style="margin:0">Fix these rows in the file and paste it again, or import the rows that are ready now.</p>`:""}
-     <div class="tablewrap"><table><thead><tr><th>Surname</th><th>First name</th><th>House</th><th>Sex</th><th>Age group</th></tr></thead><tbody>${pv.ok.slice(0,6).map(s=>`<tr><td>${esc(s.s)}</td><td>${esc(s.f)}</td><td>${hdot(s.h)}</td><td>${s.x}</td><td>${esc(grpName(s.g))}</td></tr>`).join("")}</tbody></table></div>
+     <div class="tablewrap"><table><thead><tr><th>Surname</th><th>First name</th><th>House</th><th>Sex</th><th>Age group</th></tr></thead><tbody>${pv.ok.slice(0,6).map(s=>`<tr><td>${esc(s.s)}</td><td>${esc(s.f)}</td><td>${hdot(s.h)}</td><td>${s.x}</td><td>${esc(grpName(ageGrp(s.g)))}</td></tr>`).join("")}</tbody></table></div>
      <div><button type="button" class="btn primary" data-act="oimport" ${pv.ok.length?"":"disabled"}>Import ${pv.ok.length} students</button></div></div>`:""}
    <p class="muted" style="margin:0;font-size:.88rem">Importing replaces the current list. "+ Not on the list" still works on the day.</p>`};
 OSEC.program=()=>{const prog=progList();
+  const lv=carnLevel(A.cfg),pri=lv==="primary";
   return `<h2>Program</h2><p class="muted" style="margin:0">Swim order for the day. Girls then boys in each group. Race numbers on the day follow whatever the marshal sends.</p>
+  ${agesPanel()}
   <div class="tablewrap"><table><thead><tr><th>Order</th><th>Start</th><th>Race</th><th>Groups</th><th class="num">Races</th><th>On</th></tr></thead><tbody>
-  ${prog.map((p,i)=>{const t=TYPE[p.k];const n=GROUPS[t.gk].length*(t.nosex?1:2);return `<tr><td><div class="row" style="gap:4px;flex-wrap:nowrap"><button type="button" class="btn small" data-act="omove" data-i="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Move up">&uarr;</button><button type="button" class="btn small" data-act="omove" data-i="${i}" data-d="1" ${i<prog.length-1?"":"disabled"} aria-label="Move down">&darr;</button></div></td>
-    <td>${esc(t.start)}</td><td><b>${esc(t.name)}</b>${t.optional?` <span class="muted">(if time allows)</span>`:""}</td><td>${esc(GROUPS[t.gk].map(grpName).join(", "))}</td><td class="num">${n}</td>
-    <td><button type="button" class="switch" role="switch" aria-checked="${p.on}" data-act="oswitch" data-i="${i}" aria-label="${esc(t.name)} on or off"></button></td></tr>`}).join("")}
+  ${prog.map((p,i)=>{const t=TYPE[p.k];const no=pri&&t.noPrimary;const n=no?0:GROUPS[t.gk].length*(t.nosex?1:2);return `<tr${no?` style="opacity:.55"`:""}><td><div class="row" style="gap:4px;flex-wrap:nowrap"><button type="button" class="btn small" data-act="omove" data-i="${i}" data-d="-1" ${i?"":"disabled"} aria-label="Move up">&uarr;</button><button type="button" class="btn small" data-act="omove" data-i="${i}" data-d="1" ${i<prog.length-1?"":"disabled"} aria-label="Move down">&darr;</button></div></td>
+    <td>${esc(t.start)}</td><td><b>${esc(t.name)}</b>${t.optional?` <span class="muted">(if time allows)</span>`:""}</td><td>${no?`<span class="muted">Not swum at primary</span>`:esc(GROUPS[t.gk].map(g=>pri&&BAND_AGES[g]?bandName(g):grpName(g)).join(", "))}</td><td class="num">${n}</td>
+    <td><button type="button" class="switch" role="switch" aria-checked="${no?false:p.on}" data-act="oswitch" data-i="${i}" ${no?"disabled":""} aria-label="${esc(t.name)} on or off"></button></td></tr>`}).join("")}
   </tbody></table></div><p style="margin:0"><b>${A.R.events.length} races on the program</b></p>
   ${notSwumPanel()}
   <p class="muted" style="margin:0;font-size:.88rem">Printing the program and blank lane cards comes with the GitHub version; the Claude page cannot open the print dialog.</p>`};
+/* Swim Opt 2.18 (S1.44, decisions 160 to 164): Primary or Secondary, then a switch for each age.
+   Fixed once the first race is sent, so groups never change under results already in. */
+function bandName(g){const a=BAND_AGES[g];return grpName(g)+" ("+(a.length>2?a[0]+" to "+a[a.length-1]:a.join(" and "))+")"}
+/* a student list loaded for the other carnival (ages outside this carnival's range) */
+function listOtherLevel(){const L=LEVELS[carnLevel(A.cfg)].ages;const all=A.roster.F.concat(A.roster.M);return all.length>0&&all.some(s=>!L.includes(String(s.g)))}
+function agesFixed(){return A.heats.length>0||locked()}
+function agesPanel(){
+  const lv=carnLevel(A.cfg),L=LEVELS[lv];const on=levelAgesOn(A.cfg);const fx=agesFixed()?"disabled":"";
+  const perAge=enabledTypes().filter(t=>t.gk==="age").length*2;
+  const lab=a=>!on.includes(a)?a:a===on[0]&&on.length>1?a+" & under":a===on[on.length-1]?a+" and over":a;
+  const choice=(k,sub)=>`<button type="button" class="choice" data-act="olevel" data-v="${k}" aria-pressed="${lv===k}" ${fx} style="min-width:220px;text-align:left">${LEVELS[k].name}<small style="display:block;font-size:.8rem;font-weight:600">${sub}</small></button>`;
+  return `<h3>Carnival</h3>
+  <p class="muted" style="margin:0">Primary and secondary are separate carnivals. Choose which one this is. It sets the ages and the races.</p>
+  <div class="choices">${choice("primary","Ages 8 to 12")}${choice("secondary","Ages 13 to 18")}</div>
+  <h3>Age groups</h3>
+  <p class="muted" style="margin:0">Turn off any age not swimming. The youngest age on is called "&amp; under" and the oldest "and over".</p>
+  <div class="tablewrap"><table><thead><tr><th>Age group</th><th class="num">Races</th><th>On</th></tr></thead><tbody>
+  ${L.ages.map(a=>`<tr><td><b>${esc(lab(a))}</b></td><td class="num">${on.includes(a)?perAge:0}</td><td><button type="button" class="switch" role="switch" aria-checked="${on.includes(a)}" data-act="oage" data-v="${a}" ${fx} aria-label="Age ${a} on or off"></button></td></tr>`).join("")}
+  </tbody></table></div>
+  <p style="margin:0"><b>${on.length} age group${on.length===1?"":"s"} on: ${esc(lab(on[0]))}${on.length>1?" to "+esc(lab(on[on.length-1])):""}</b></p>
+  <div class="msg warn">${agesFixed()&&A.heats.length?"Races have been sent, so the carnival and ages are fixed.":"Choose the carnival and ages before the first race is sent. Results already in stay in."}</div>
+  ${listOtherLevel()?`<div class="msg warn">The student list was loaded for a ${LEVELS[carnLevel(A.cfg)==="primary"?"secondary":"primary"].name.toLowerCase()} carnival. Import the student list again.</div>`:""}
+  <h3>Races</h3>`;
+}
 /* A9: a group nobody swam (no heats sent) can be marked "Not swum", so the carnival can go final */
 function notSwumPanel(){
   const marked=A.cfg.notSwum||[];
@@ -72,7 +99,7 @@ OSEC.points=()=>{const P=Object.assign({},DEFAULT_CONFIG.points,A.cfg.points||{}
   return `<h2>Points</h2><div class="fields">
     <label>1st<input id="pt1" type="number" min="0" value="${P.p1}"></label><label>2nd<input id="pt2" type="number" min="0" value="${P.p2}"></label>
     <label>3rd<input id="pt3" type="number" min="0" value="${P.p3}"></label><label>4th and below, finished<input id="ptr" type="number" min="0" value="${P.rest}"></label></div>
-  <p class="muted" style="margin:0">DQ and DNS get 0. Placegetters get only their place points. Relay teams use the same scale, A and B teams alike, for house points only. Age champions count the 5 age races plus the 200 m freestyle. Relay points count for house totals only, never for individual points or age champions. Equal times share the place and split the points.</p>
+  <p class="muted" style="margin:0">DQ and DNS get 0. Placegetters get only their place points. Relay teams use the same scale, A and B teams alike, for house points only. Age champions count the 5 age races${carnLevel(A.cfg)==="primary"?"":" plus the 200 m freestyle"}. Relay points count for house totals only, never for individual points or age champions. Equal times share the place and split the points.</p>
   <div><button type="button" class="btn primary" data-act="osavepoints">Save points</button></div>`};
 OSEC.limits=()=>{const L=Object.assign({},DEFAULT_LIMITS,A.cfg.limits||{});
   return `<h2>Odd-time limits</h2><p class="muted" style="margin:0">A time outside these asks the recorder to check it (Keep or Fix). Type digits, for example 2600 for 26.00 or 13000 for 1:30.00.</p>
@@ -322,7 +349,7 @@ function wireInputs(){
     fr.onload=()=>{const b=readBackup(String(fr.result));if(!b){toast("That file is not a full backup from this app.");return}
       A.modal={t:"orgPin",title:"Restore this backup?",ok:"Restore the backup",go:"restore",b,body:`<p style="margin:0">Backup saved ${esc(String(b.savedAt||"").slice(0,16))}: ${plural(b.heats.length,"race")}, ${((b.roster&&b.roster.F||[]).length+(b.roster&&b.roster.M||[]).length)} students, ${(b.records||[]).length} records.</p><p style="margin:0;font-weight:700">It replaces everything in the current carnival. Past years are not changed.</p>`};render()};
     fr.readAsText(file)};
-  const of=document.getElementById("oFile");if(of)of.onchange=e=>{const file=e.target.files[0];if(!file)return;const fr=new FileReader();fr.onload=()=>{A.o.text=String(fr.result);A.o.preview=parseStudents(A.o.text,A.cfg.ageDate);render()};fr.readAsText(file)};
+  const of=document.getElementById("oFile");if(of)of.onchange=e=>{const file=e.target.files[0];if(!file)return;const fr=new FileReader();fr.onload=()=>{A.o.text=String(fr.result);A.o.preview=parseStudents(A.o.text,A.cfg.ageDate,carnLevel(A.cfg));render()};fr.readAsText(file)};
 }
 const ACT={
   key:el=>pressKey(el.dataset.k),
@@ -419,12 +446,17 @@ const ACT={
     if(clash){toast("That PIN is already used for "+clash[1]+". Pick a different one.");return}
     const name=PIN_ROLES.find(x=>x[0]===v)[1];
     saveCfg({pins:Object.assign({},A.cfg.pins||{},{[v]:h})},name+" PIN changed")},
-  ocheck:()=>{const ta=document.getElementById("oText");A.o.text=ta.value;A.o.preview=parseStudents(A.o.text,A.cfg.ageDate);render()},
-  otest:()=>{A.o.preview={ok:TEST_STUDENTS(),bad:[]};A.o.text="";render()},
+  ocheck:()=>{const ta=document.getElementById("oText");A.o.text=ta.value;A.o.preview=parseStudents(A.o.text,A.cfg.ageDate,carnLevel(A.cfg));render()},
+  otest:()=>{A.o.preview={ok:TEST_STUDENTS(carnLevel(A.cfg)),bad:[]};A.o.text="";render()},
   oimport:async()=>{const ok=A.o.preview.ok;const F=ok.filter(s=>s.x==="F"),M=ok.filter(s=>s.x==="M");
     const r1=await w0(()=>A.store.set("roster/F",{students:F,at:Date.now()}));const r2=r1&&await w0(()=>A.store.set("roster/M",{students:M,at:Date.now()}));
     if(r2){A.roster={F,M};A.o.preview=null;A.o.text="";recompute();toast(ok.length+" students imported");render()}},
   omove:el=>{const p=progList().map(x=>Object.assign({},x));const i=+el.dataset.i,j=i+(+el.dataset.d);[p[i],p[j]]=[p[j],p[i]];saveCfg({program:p},"Program order saved")},
+  olevel:el=>{const v=el.dataset.v;if(agesFixed()||carnLevel(A.cfg)===v)return;
+    saveCfg({level:v},LEVELS[v].name+" carnival saved"+(students().length?". Import the student list again.":""))},
+  oage:el=>{if(agesFixed())return;const lv=carnLevel(A.cfg);const off=new Set(((A.cfg.agesOff||{})[lv])||[]);const a=el.dataset.v;
+    if(off.has(a))off.delete(a);else{if(levelAgesOn(A.cfg).length<=1){toast("Keep at least one age on.");return}off.add(a)}
+    saveCfg({agesOff:Object.assign({},A.cfg.agesOff||{},{[lv]:LEVELS[lv].ages.filter(x=>off.has(x))})},"Ages saved")},
   oswitch:el=>{const p=progList().map(x=>Object.assign({},x));p[+el.dataset.i].on=!p[+el.dataset.i].on;saveCfg({program:p},"Program saved")},
   osavepoints:()=>saveCfg({points:{p1:+document.getElementById("pt1").value||0,p2:+document.getElementById("pt2").value||0,p3:+document.getElementById("pt3").value||0,rest:+document.getElementById("ptr").value||0}},"Points saved"),
   osavelimits:()=>{const L={};for(const t of TYPES){if(!DEFAULT_LIMITS[t.k])continue;const f=parseTime(document.getElementById("lf-"+t.k).value),s=parseTime(document.getElementById("ls-"+t.k).value);if(f.err||s.err){toast("Check the limits for "+t.name+".");return}L[t.k]=[f.cs,s.cs]}saveCfg({limits:L},"Limits saved")},
