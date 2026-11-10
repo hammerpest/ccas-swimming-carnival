@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version g. Replaces 10 November version f and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version h. Replaces 10 November version g and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version h): Jordan said "Yes, fix the test". Next step 32 done, no app change. Cause: on the real site the Time Slips PIN reads the photo for real and has no practice buttons (A4), but tests/flow.py and the offline step of tests/supabase_live.py still used the 2.0 practice reads; the flow stopped there, so the new-carnival checks failed too. Fix: on the real site both open Time Slips with the Organiser PIN (which shows the practice buttons) and pick Read OK; test mode is unchanged (flow passes). supabase_live.py now also saves the staging settings before its reset and puts them back at the end (this run had none to keep: the run before had already cleared them, so the staging settings are still the defaults). Run on staging: 39 of 39 pass, including the 8 parents checks. Committed on staging, not pushed. Ask now: 84.
 
 Changes on 10 November 2026 (version g): Jordan ran the new supabase/03-parent-results.sql on the staging project and tried 2.19 ("done and working"). Claude ran tests/supabase_live.py on staging: all 8 new parents checks pass on the real project (off until turned on, no table access, no student or device ids, unknown ids hashed, names off by default, unfinished event held back, tiny answer, first initial and surname). 12 older checks failed: the six-device flow run against the live address and the Time Slips offline photo step. That script has not changed since 28 October (Swim Opt 2.0) while the Time Slips screen has (multitimer and later); 2.19 does not touch flow.py or Time Slips, and the same flow passes in test mode. New next step 32: bring tests/supabase_live.py up to date. Note: its reset deletes the staging settings (config), so the parents page is off and settings are back to the defaults on staging. Jordan said "push": Swim Opt 2.19 pushed to main (bf08a26); both links checked serving 2.19. Next steps 30 and 31 closed except the privacy summary suggestions (31.4). Ask now: 84.
 
@@ -1308,7 +1310,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 26. (Done 9 November 2026) Swim Opt 2.15 pushed to staging and main (44e9f10), checks 1 to 3 passed.
 27. (Done 9 November 2026) Swim Opt 2.16 pushed to staging and main (f92443d), checks 1 to 3 passed.
 28. (Done 9 November 2026) Swim Opt 2.17 pushed to staging and main (4c260d8), checks 1 to 3 passed.
-32. NEXT: bring tests/supabase_live.py up to date with the current app (its flow and Time Slips offline steps date from Swim Opt 2.0, 28 October; 12 checks fail for that reason, version g). No app change. Also keep the staging settings (config) through its reset, or put them back after.
+32. (Done 10 November 2026, version h: 39 of 39 pass) bring tests/supabase_live.py up to date with the current app (its flow and Time Slips offline steps date from Swim Opt 2.0, 28 October; 12 checks fail for that reason, version g). No app change. Also keep the staging settings (config) through its reset, or put them back after.
 31. (Done 10 November 2026 except 31.4) Swim Opt 2.19 on both links (bf08a26). Jordan:
    1. (Done 10 November 2026: pushed to staging) says when to push main, after trying it on staging;
    2. after the push, runs the new SQL on the staging project: open supabase.com and sign in; open the project ccas-swimming-staging (Sydney); in the left menu click SQL Editor; click "+ New query" (always a new one: a saved query keeps its old text); open supabase/03-parent-results.sql from the ccas-swimming folder in TextEdit, press Cmd+A then Cmd+C; click in the query box and press Cmd+V; click Run; it should say "Success. No rows returned". This also does next step 30's re-run;
@@ -1324,7 +1326,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version g (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version h (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)

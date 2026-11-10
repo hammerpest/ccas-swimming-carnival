@@ -3,6 +3,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import sys, os
 URL=sys.argv[1] if len(sys.argv)>1 else 'http://localhost:8000/'
+LIVE='mode=local' not in URL  # Supabase: the real site's rules apply
 os.makedirs('flow-shots',exist_ok=True)
 os.chdir('flow-shots')
 errs=[]
@@ -57,7 +58,13 @@ async def main():
     await J.screenshot(path='s_j2.png')
     S=await mk('slips')()
     await S.set_viewport_size({'width':390,'height':844})
-    await pin(S,'4444'); await S.wait_for_timeout(200)
+    if LIVE:
+        # on the real site the Time Slips PIN reads the photo for real and has no practice buttons (A4);
+        # the Organiser PIN opens Time Slips with them, so the made-up reads below work the same as in test mode
+        await pin(S,'9999'); await S.click('[data-act=year][data-v=current]'); await S.click('.tile[data-job=slips]'); await S.wait_for_timeout(300)
+        await S.click('[data-act=stest][data-v=good]')
+    else:
+        await pin(S,'4444'); await S.wait_for_timeout(200)
     await S.screenshot(path='s_s1.png')
     await S.set_input_files('#camin',os.path.join(os.path.dirname(os.path.abspath(__file__)),'slip.jpg')); await S.wait_for_timeout(300); await S.screenshot(path='s_s_flash.png')
     await S.wait_for_timeout(1500); await S.screenshot(path='s_s2.png')

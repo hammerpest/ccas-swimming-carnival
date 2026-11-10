@@ -63,6 +63,8 @@ async def wait_for(fn, secs, step=0.5):
 
 async def main():
     org = device("org")
+    # the staging settings (config) are put back at the end, so a test run does not undo the organiser's settings
+    saved_cfg = [c for c in rows("config", org) if c["id"] == "main"]
     studs = reset(org)
     check(len(rows("roster", org)) == 2 and not rows("heats", org), "staging cleared, 620 test students in")
 
@@ -122,7 +124,9 @@ async def main():
 
         # 4. the phone offline: the photo waits on the phone and sends by itself later
         ctxP = await b.new_context(viewport={"width": 390, "height": 844})
-        P = await page(ctxP, "phone", "4444"); await asyncio.sleep(2)
+        # the Organiser PIN opens Time Slips with the practice reader (A4), so the photo needs no real slip read
+        P = await page(ctxP, "phone", "9999"); await P.click('[data-act=year][data-v=current]'); await P.click('.tile[data-job=slips]')
+        await asyncio.sleep(2); await P.click('[data-act=stest][data-v=good]')
         await ctxP.set_offline(True)
         await P.set_input_files("#camin", os.path.join(HERE, "slip.jpg"))
         check(await wait_for(lambda: P.evaluate("A.store.pending()>0"), 20), "offline: the photo and times wait on the phone")
@@ -188,6 +192,9 @@ async def main():
     check(anon()[1] == {"off": True}, "parents: turned off again")
 
     reset(org)
+    if saved_cfg:
+        req("/rest/v1/config", [{"id": "main", "doc": saved_cfg[0]["doc"]}], org)
+        check([c["doc"] for c in rows("config", org) if c["id"] == "main"] == [saved_cfg[0]["doc"]], "the staging settings are back as they were")
     print(f"\n{len(fails)} failed" if fails else "\nall passed")
     sys.exit(1 if fails else 0)
 
