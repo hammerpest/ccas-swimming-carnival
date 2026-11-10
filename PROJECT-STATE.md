@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version m. Replaces 10 November version l and all earlier PROJECT-STATE files.
+Date: 11 November 2026, version a. Replaces 10 November version m and all earlier PROJECT-STATE files.
+
+Changes on 11 November 2026 (version a): Jordan answered questions 84 and 85. 84: "yes do that" (decision 171): on the parents page, when two swimmers share a first initial and surname, show the first two letters of the first name for those two only ("Le Bell" and "Lu Bell"); everyone else stays "J Dennis". 85: the timer prints race 105 as "LANE MODE 1/105"; when the number before the "/" is not 1 (for example "2/105"), ignore it: the race is always the number after the "/" (decision 172). Problem 23 (races 100 and up always refused) to be fixed with 172. Neither is built yet: planned as Swim Opt 2.21 together (no look change for 172; 171 changes only names on the parents page). Swim Opt 2.21 slip reader second try (problem 24): Jordan said go on 10 November, then "stop for now" partway. Progress (nothing committed): the cleaned photo reads well, but the faint start time misreads (11.966 for 11.986), so every lane fails the stop-minus-start check; a scratch fix (a start time most lanes agree on) gets 7 of 8 lanes sure and right on tests/slip-photo-2.jpg, lane 5 yellow, no wrong sure lane in any test photo; the race number part is not solved yet (check 3's race 10 slip votes 19). Notes and scripts: side-session notes folder local_4e38e21f.../slip-reader/2.21-progress.md. Uncommitted in the repo: js/core.js parseSlip also returns each lane's stop clock and the start clock (no change to what it decides). The second try may become Swim Opt 2.22 if 171 and 172 go first. Ask now: none. Next numbers: Swim Opt 2.21, design S1.46, decision 173, question 86.
 
 Changes on 10 November 2026 (version m): handover at Jordan's request. Jordan said "not yet, later" to Swim Opt 2.21 (the slip reader second try for speckled or shaded photos, problem 24). Section 0 brought up to date. The next session starts from section 0, then the "Ask now" line in section 6. Ask now: 84, 85. Waiting on Jordan: the four privacy summary suggestions (31.4), and when to build 2.21. Next numbers: Swim Opt 2.21, design S1.46, decision 171, question 86.
 
@@ -1167,6 +1169,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+172. (11 November 2026, answers question 85) The timer prints races over 99 as "LANE MODE 1/105". The race is always the number after the "/"; the number before it (for example "2/105") is ignored. The reader should read races 100 and up (problem 23). Not built yet.
+171. (11 November 2026, answers question 84) Jordan said "yes do that": on the parents page with names on, when two swimmers share a first initial and surname, those two show the first two letters of the first name ("Le Bell", "Lu Bell"); all other names stay first initial and surname. Not built yet.
 170. (10 November 2026) Jordan said "Yes, build 2.20": when the slip reader's two readings disagree on the race number, read the LANE MODE line again close up to settle it (Swim Opt 2.20).
 169. (10 November 2026, answers question 83) Jordan said "ok" to S1.45: build it as Swim Opt 2.19.
 168. (10 November 2026, answers question 81) Jordan said "J Dennis and start off": when the Organiser turns names on, parents see first initial and surname (J Dennis); names start off, and with names off parents see place, house and time with "Swimmer" in place of the name. Record holders follow the same choice ("A swimmer" when off). Replaces decision 149's first name and surname initial for the parents page. Check media consent (question 68) before turning names on.
@@ -1242,7 +1246,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 19. SOLVED by 152 (4 November 2026): the Marshal's name list opens down for lanes 1 to 4 and up for 5 to 8 (Swim Opt 2.10). Jordan approved it.
 24. (10 November 2026) A real phone photo of a photocopied slip (tests/slip-photo-2.jpg) reads as noise: the speckled grey background becomes black dots in the black-and-white step, so no line is found. Fix planned as Swim Opt 2.21 (version l).
 22. (10 November 2026, found by check 3 on 2.20, already in 2.19) A race 10 slip with wider spacing, tilted, can read as race 19 in both readings with confidence (a slashed zero read as 9) and is then accepted. On the right screen race (10) the phone would say "Wrong slip?"; only if the screen is on race 19 would it be saved there. To look at with real Quantum slips (question 30).
-23. (10 November 2026, check 3 on 2.20, already in 2.19) Races 100 to 120 are always refused: "1/100" reads as "1.100". Safe (the photo is asked for again), but every slip from race 100 on needs typed times. See question 85.
+23. (10 November 2026, check 3 on 2.20, already in 2.19) Races 100 to 120 are always refused: "1/100" reads as "1.100". Safe (the photo is asked for again), but every slip from race 100 on needs typed times. Decision 172 (11 November 2026): the slip prints "1/105"; fix to read races 100 and up.
 20. SOLVED by Swim Opt 2.11 (8 November 2026, 2.37): a multitimer send saves the race's times and finish places whole, without the server merge that photo slips get. If the phone sends late (no signal at the far end) after the Recorder typed a time or marked DNS, DQ or No time, the Recorder's work is replaced, against decision 136. The "Replace the results?" box only sees what the phone already knew. Fix: send multitimer times through the same merge as photo slips (phone and server). No look change.
 21. SOLVED by Swim Opt 2.11 (8 November 2026, 2.37): each saved record's time (updated_at) is set by the phone's clock. Only the parent page uses it (to tell if anything changed), so a slow phone clock or two saves in the same instant can hold back a parent update until the next save. Fix: a small server trigger that stamps the server's clock. No look change.
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
@@ -1251,9 +1255,9 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: 84, 85.
-- 85. (10 November 2026) How does the timer print a race number over 99, for example race 105: "LANE MODE 1/105", or something else? The reader refuses every slip from race 100 on (problem 23); the made-up day had 110 races. A photo of a slip from race 100 or later (from the new Quantum when it arrives) would settle it.
-- 84. (10 November 2026, seen in check 2) With names on, two swimmers with the same first initial and surname look the same (made-up data: Levi Bell and Lucas Bell are both "L Bell" in the 15 boys). Their houses and times still differ. Keep as is, or show two letters of the first name only when two names clash (for example "Le Bell" and "Lu Bell")?
+Ask now: none.
+- (Closed by 172) 85. (10 November 2026) How does the timer print a race number over 99, for example race 105: "LANE MODE 1/105", or something else? The reader refuses every slip from race 100 on (problem 23); the made-up day had 110 races. A photo of a slip from race 100 or later (from the new Quantum when it arrives) would settle it.
+- (Closed by 171) 84. (10 November 2026, seen in check 2) With names on, two swimmers with the same first initial and surname look the same (made-up data: Levi Bell and Lucas Bell are both "L Bell" in the 15 boys). Their houses and times still differ. Keep as is, or show two letters of the first name only when two names clash (for example "Le Bell" and "Lu Bell")?
 - (Closed by 169) 83. (10 November 2026) Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS): OK to build as Swim Opt 2.19?
 - (Closed by 165) 79. (10 November 2026, 2.45) Parents page plan: build the missing parts as Swim Opt 2.19 (names choice, server holds back unfinished results, show before final tick, Organiser section 9 with switch, ticks and copy link, test mode, tests), drawn first as S1.45?
 - (Closed by 166) 80. (10 November 2026) When "show before final" is not ticked, which results leave the server? Suggested: only events where every heat is in (Final, the rule the page already uses), since Times checked is optional (143). The athletics rule (Recorder ticked checked) would hold back most swimming races.
@@ -1353,7 +1357,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version m (this file; the latest)
+- PROJECT-STATE.md in the repo, 11 November 2026 version a (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
