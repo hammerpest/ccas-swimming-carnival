@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version h. Replaces 10 November version g and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version i. Replaces 10 November version h and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version i): Jordan said "Push both". The live test fix and version h pushed to staging and main (e542426). No app change: both links still run Swim Opt 2.19. Ask now: 84 (and the four privacy summary suggestions, step 31.4).
 
 Changes on 10 November 2026 (version h): Jordan said "Yes, fix the test". Next step 32 done, no app change. Cause: on the real site the Time Slips PIN reads the photo for real and has no practice buttons (A4), but tests/flow.py and the offline step of tests/supabase_live.py still used the 2.0 practice reads; the flow stopped there, so the new-carnival checks failed too. Fix: on the real site both open Time Slips with the Organiser PIN (which shows the practice buttons) and pick Read OK; test mode is unchanged (flow passes). supabase_live.py now also saves the staging settings before its reset and puts them back at the end (this run had none to keep: the run before had already cleared them, so the staging settings are still the defaults). Run on staging: 39 of 39 pass, including the 8 parents checks. Committed on staging, not pushed. Ask now: 84.
 
@@ -1326,7 +1328,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version h (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version i (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
