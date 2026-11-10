@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version e. Replaces 10 November version d and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version f. Replaces 10 November version e and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version f): Jordan said "Commit, push staging". Swim Opt 2.19 committed (551af1c) and pushed to staging; the staging link checked serving 2.19 (APP_VERSION "2.19", index.html comment, OSEC.parents in js/ui5.js, localAnswer in parents/parents.js). Main is still on 2.18. Next step 31 now starts at 31.2: Jordan runs the new supabase/03-parent-results.sql on the staging project, then tries it on the staging link, then says when to push main. Ask now: 84.
 
 Changes on 10 November 2026 (version e): Jordan said "ok" to S1.45 (decision 169, passed on from another session). Swim Opt 2.19 built (2.46): Carnival Organiser section 9 Parents page, names off by default (first initial and surname when on), unfinished events held back on the server unless "show before final" is ticked, tabs and home cards follow the ticks, test mode for the parents page. Checks 1 to 3 PASSED (check 3 failed once first; all fixed). Not committed, not pushed. Privacy summary: four suggestions laid in the doc for Jordan to accept (step 31). New question 84 (two swimmers with the same initial and surname). Next step 31: Jordan says when to push; then runs the new supabase/03-parent-results.sql (this also covers next step 30's re-run). Next numbers: Swim Opt 2.20, design S1.46, decision 170, question 85. Ask now: 84.
 
@@ -656,7 +658,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
-### 2.46 Swim Opt 2.19: parents page names, show before final and Organiser section 9 (10 November 2026, local staging, not committed or pushed)
+### 2.46 Swim Opt 2.19: parents page names, show before final and Organiser section 9 (10 November 2026; on staging 551af1c, main still 2.18)
 
 Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS), decisions 165 to 169.
 - Carnival Organiser, new section 9 Parents page (js/ui5.js): on/off switch (off to start), the link with Copy link, six ticks (House points, Points by age group, Event results, Find a swimmer, Age champions, Records broken; all ticked to start), names choice No names (default) or First initial and surname (J Smith), "show results before an event is final" tick, consent warning. Status in the section list: Off, On, no names, or On, names shown. Text changed from the mock-up after check 3: "Then the page shows only what is ticked below" and "Never sent to parents: PINs, device names, slip photos, dates of birth and student ids" (each lane's slip time is sent, so the page can show "Slip differs").
@@ -1304,8 +1306,8 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 26. (Done 9 November 2026) Swim Opt 2.15 pushed to staging and main (44e9f10), checks 1 to 3 passed.
 27. (Done 9 November 2026) Swim Opt 2.16 pushed to staging and main (f92443d), checks 1 to 3 passed.
 28. (Done 9 November 2026) Swim Opt 2.17 pushed to staging and main (4c260d8), checks 1 to 3 passed.
-31. NOW: Swim Opt 2.19 is built and checked on local staging, not committed or pushed. Jordan:
-   1. says when to push (staging first, then main);
+31. NOW: Swim Opt 2.19 is on staging (551af1c, 10 November 2026); main is still on 2.18. Jordan:
+   1. (Done 10 November 2026: pushed to staging) says when to push main, after trying it on staging;
    2. after the push, runs the new SQL on the staging project: open supabase.com and sign in; open the project ccas-swimming-staging (Sydney); in the left menu click SQL Editor; click "+ New query" (always a new one: a saved query keeps its old text); open supabase/03-parent-results.sql from the ccas-swimming folder in TextEdit, press Cmd+A then Cmd+C; click in the query box and press Cmd+V; click Run; it should say "Success. No rows returned". This also does next step 30's re-run;
    3. tries it: Carnival Organiser 9999, 9. Parents page, turn it on, open the link on a phone; then turn names on and off. Turn the page off again afterwards (the link is not for parents yet: questions 1 and 68);
    4. opens the privacy summary and accepts or rejects the four suggestions (each card has a tick and a cross).
@@ -1319,7 +1321,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version e (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version f (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
