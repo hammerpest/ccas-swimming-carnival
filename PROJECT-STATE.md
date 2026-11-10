@@ -1,6 +1,16 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 9 November 2026, version v. Replaces 9 November version u and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version e. Replaces 10 November version d and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version e): Jordan said "ok" to S1.45 (decision 169, passed on from another session). Swim Opt 2.19 built (2.46): Carnival Organiser section 9 Parents page, names off by default (first initial and surname when on), unfinished events held back on the server unless "show before final" is ticked, tabs and home cards follow the ticks, test mode for the parents page. Checks 1 to 3 PASSED (check 3 failed once first; all fixed). Not committed, not pushed. Privacy summary: four suggestions laid in the doc for Jordan to accept (step 31). New question 84 (two swimmers with the same initial and surname). Next step 31: Jordan says when to push; then runs the new supabase/03-parent-results.sql (this also covers next step 30's re-run). Next numbers: Swim Opt 2.20, design S1.46, decision 170, question 85. Ask now: 84.
+
+Changes on 10 November 2026 (version d): Design S1.45 drawn (look only, nothing built): https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS. Carnival Organiser section 9 Parents page (switch, link and Copy link, six ticks, No names or First initial and surname, show before final tick) on MacBook light and dark, iPad portrait and iPhone; the parents page on an iPhone in light and dark with names off, names on (J Smith style), Find by surname, Provisional, tabs that follow the ticks, and off. Drawn with the app's own CSS and made-up test data; no sideways scroll, no page errors. Mock-up script and page copy in the side-session notes folder (local_4e38e21f.../s145). Seen in passing, already in the 2.8 look: on Houses, "=2nd" sits tight against the house name. Ask now: Jordan's OK on S1.45 (new question 83).
+
+Changes on 10 November 2026 (version c): Jordan answered question 81 (passed on from another session): "J Dennis and start off" (decision 168). Names on the parents page are first initial and surname, and start off. Decision 149's name format replaced for the parents page. Next: draw S1.45. Ask now: none.
+
+Changes on 10 November 2026 (version b): Jordan answered (passed on from another session): 79 "GO" (decision 165), 80 "ok" (166), 82 "Yes" (167). On 81 Jordan wants names shown as first initial and surname, for example "J Dennis"; question 81 rewritten (default off or on, and the full surname). Ask now: none.
+
+Changes on 10 November 2026 (version a): Jordan asked for a parents results page like the athletics one (Aths Opt 1.7). Step 1 done (nothing built): the existing swimming parent page (Swim Opt 2.8, S1.43) compared with the athletics version, in new section 2.45. Most of it is already there; missing are the names choice (off by default), holding back unfinished results on the server, the "show before final" tick, the Organiser section with its switch, ticks and copy link, a test mode for the page, and parent tests. Planned as Swim Opt 2.19, design S1.45, Organiser section 9 (swimming has 8 sections, so not 10). New questions 79 to 82. Ask now: 81.
 
 Changes on 9 November 2026 (version v): Jordan said "Push both". Swim Opt 2.18 pushed to staging and main (e793adf); both links checked serving 2.18 (APP_VERSION "2.18", index.html comment, agesPanel in js/ui5.js, ageGrp in parents/parents.js). Next step 30 now: Jordan runs supabase/03-parent-results.sql again on the staging project, and tries 2.18. Handover: the next session starts from section 0. Ask now: none.
 
@@ -646,6 +656,28 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.46 Swim Opt 2.19: parents page names, show before final and Organiser section 9 (10 November 2026, local staging, not committed or pushed)
+
+Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS), decisions 165 to 169.
+- Carnival Organiser, new section 9 Parents page (js/ui5.js): on/off switch (off to start), the link with Copy link, six ticks (House points, Points by age group, Event results, Find a swimmer, Age champions, Records broken; all ticked to start), names choice No names (default) or First initial and surname (J Smith), "show results before an event is final" tick, consent warning. Status in the section list: Off, On, no names, or On, names shown. Text changed from the mock-up after check 3: "Then the page shows only what is ticked below" and "Never sent to parents: PINs, device names, slip photos, dates of birth and student ids" (each lane's slip time is sent, so the page can show "Slip differs").
+- supabase/03-parent-results.sql (safe to run again; replaces 2.8 and 2.18's version): names leave the server only when parentsNames is "short" (first initial and full surname; record holders the same); otherwise "Swimmer" and "A swimmer". Unless parentsProv is true, times and places of every heat of an event that still has a heat not in are held back (the rule is never stricter than the app's own, so a finished event always shows; held heats say whether they are in, for the "1 of 2 heats in" count). Values read like the app (private.jnum, private.jtrue), so one odd record cannot break the answer. Row-level security on private.parent_secret. Unknown ids hashed, empty lanes left out.
+- parents/parents.js: names off shows Swimmer and A swimmer, no Find tab; Find searches by surname; tabs and home cards follow the ticks; a saved link to a hidden screen goes to Home; Provisional events with a yellow note when the tick is on; test mode (?mode=local) builds the same answer from this browser's test data.
+- APP_VERSION 2.19, index.html comment.
+- Tests: tests/sql_test.py 31 parent checks (all pass); new tests/parents_test.py, 31 checks (all pass); tests/supabase_live.py has a new parents block (run after the SQL is on staging). Engine, ages, HY3, flow, flow27, flow216, flow218 all pass.
+- Check 1: 91 shots differ, all Organiser screens: the new "9. Parents page" item makes the section list 72 px longer (20 px on iPad landscape, where jobmenu, lock, points, students and new-carnival-records now scroll a little), and the badge reads v2.19. Nothing else moved (checked by shifting each shot). Reference shots for the next build: scratchpad of session ec55a5e7 (shots219).
+- Check 2: Claude in Chrome on the MacBook size: section 9, switch, names choice, parents page names off and on, held-back results; no console errors; network only the page's own files and Google Fonts. Chrome screenshots still time out (hidden window), so the page was read by script; phone and iPad sizes come from Playwright and check 3.
+- Check 3: run 1 FAIL (panel said slip readings are never sent; "only what is ticked" wording; odd values like gen 1.0 could break the answer; a heat with no race number or a missing sex could hold an event back; test mode differed from the server; old comment). All fixed. Run 2 PASS.
+- Notes from check 3, not fixed: each swimmer keeps one code all day, so in a small age group someone could follow a code from event to event (by design; for the privacy summary); the Records section status says "1 records" (older wording bug); the clear (x) in the Find box is the phone's own search box (as in 2.8).
+- Privacy summary (https://claude.ai/artifact/W4ZLx85ckd3h6Y584Yueox): four suggestions laid for Jordan: the Students and parents row (two), a new section "The results page for parents (swimming)" (names off by default, what is and is not sent, results wait until final, Google Fonts, not listed by search engines), and a new risk row (a name on the public page). Not accepted yet. The summary still says the carnival is "around 10 February 2027"; the date is 3 February (decision 130).
+
+### 2.45 Parents page like athletics: comparison (10 November 2026, nothing built)
+
+Jordan asked for a parents results page like the athletics one (Aths Opt 1.7, read only, ATHS 2027- App/ccas-athletics). Swimming already has one (2.34). Compared piece by piece:
+- Already done in 2.8: public page /parents/ with no PIN or sign-in; parent_results(have) callable by anon, {"off": true} unless config/main parents is true; swimmers as p plus 10 letters of a salted hash (private.parent_secret); only swimmers in a heat; an id the roster does not know is hashed too (codes come from the heats, relay teams keep their house names); record holders shortened; config sent as an allow list (safer than athletics, which sends the config minus some keys); no PINs, devices, slip readings or photos (swimming has no chief official name); version from count and latest updated_at of each table, tiny {v, same} answer; server clock (2.11); same look, light and dark, phone first; last results kept offline; same engine as the app (js/core.js).
+- Missing: (a) names choice parentsNames none or short, default none (2.8 always sends first name and initial); (b) unfinished results are held back on the page only: their times leave the server (decision 149); (c) parentsProv tick; (d) Organiser section with the on/off switch, names choice, show before final tick, copy link and tick boxes (parentsShow); tabs follow the ticks; (e) test mode (?mode=local) for the page, so tests and check 1 run without Supabase; (f) tests: a parents Playwright test, more sql_test checks (names off, held back, unknown id), a supabase_live check; (g) small hardening from athletics: row-level security on private.parent_secret, a guard when a heat has no lanes object.
+- Swimming differences: Times checked is optional here (143), so "checked" cannot be the rule; Final (every heat in) is. The Organiser has 8 sections, so Parents page is section 9. The ticks map to swimming's screens: House points (Home and Houses), Points by age group (Houses table), Event results (Events, Latest results), Find a swimmer, Age champions, Records broken.
+- Plan: Swim Opt 2.19, design S1.45 (Organiser section 9, and the parent page with names off, provisional marks and tabs that follow the ticks), one new supabase/03-parent-results.sql (also covers next step 30). Waiting on questions 79 to 82 and the S1.45 OK.
+
 ### 2.44 Swim Opt 2.18: Primary or Secondary carnival and age switches (9 November 2026, local staging, not pushed)
 
 Design S1.44 (decision 164), rules 160 to 163. No SQL table change; supabase/03-parent-results.sql now also sends level and agesOff to the parent page (run it again on the staging project before the parent page is used for a primary carnival).
@@ -1107,6 +1139,11 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+169. (10 November 2026, answers question 83) Jordan said "ok" to S1.45: build it as Swim Opt 2.19.
+168. (10 November 2026, answers question 81) Jordan said "J Dennis and start off": when the Organiser turns names on, parents see first initial and surname (J Dennis); names start off, and with names off parents see place, house and time with "Swimmer" in place of the name. Record holders follow the same choice ("A swimmer" when off). Replaces decision 149's first name and surname initial for the parents page. Check media consent (question 68) before turning names on.
+165. (10 November 2026, answers question 79) Jordan said "GO": the parents page parts missing against athletics are built as Swim Opt 2.19, drawn first as S1.45 (Organiser section 9 Parents page).
+166. (10 November 2026, answers question 80) With "show before final" unticked, only Final events (every heat in) leave the server; Times checked is not the rule (143).
+167. (10 November 2026, answers question 82) Six tick boxes, all ticked to start: House points, Points by age group, Event results, Find a swimmer, Age champions, Records broken.
 160. (9 November 2026, answers question 75) The primary carnival is separate from the secondary carnival: its own day, results and house points. The age on and off setting (S1.44) chooses the ages for each carnival.
 159. (9 November 2026, answers question 73) Jordan said "Yes, fix it": any place taken off after "fewer places confirmed" clears it, so the Place Judge confirms again with Next race. Built as Swim Opt 2.17.
 158. (9 November 2026) Jordan said "Yes, build 2.16": Place Judge Start again clears "fewer places confirmed"; Undo last brings the places back and the judge confirms again. Built as Swim Opt 2.16.
@@ -1182,7 +1219,13 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: none.
+Ask now: 84.
+- 84. (10 November 2026, seen in check 2) With names on, two swimmers with the same first initial and surname look the same (made-up data: Levi Bell and Lucas Bell are both "L Bell" in the 15 boys). Their houses and times still differ. Keep as is, or show two letters of the first name only when two names clash (for example "Le Bell" and "Lu Bell")?
+- (Closed by 169) 83. (10 November 2026) Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS): OK to build as Swim Opt 2.19?
+- (Closed by 165) 79. (10 November 2026, 2.45) Parents page plan: build the missing parts as Swim Opt 2.19 (names choice, server holds back unfinished results, show before final tick, Organiser section 9 with switch, ticks and copy link, test mode, tests), drawn first as S1.45?
+- (Closed by 166) 80. (10 November 2026) When "show before final" is not ticked, which results leave the server? Suggested: only events where every heat is in (Final, the rule the page already uses), since Times checked is optional (143). The athletics rule (Recorder ticked checked) would hold back most swimming races.
+- (Closed by 168) 81. (10 November 2026, rewritten in version b) Jordan wants names as first initial and surname ("J Dennis") instead of first name and surname initial. To confirm: (a) are names still off until the Organiser turns them on (the athletics default)? (b) A full surname is easier to search than a first name and initial, and it changes decision 149; OK with that, given the consent check (question 68) and the approval wait (question 1)? (c) With names off, parents see place, house and time, with "Swimmer" in place of the name.
+- (Closed by 167) 82. (10 November 2026) The tick boxes: six (House points, Points by age group, Event results, Find a swimmer, Age champions, Records broken), all ticked to start, so the page looks as now once turned on?
 - (Closed by 163) 78. (9 November 2026, after 161) Primary 4 x 50 m relays: what groups? For example one group per age (8 & under to 12), or Junior primary (8 to 10) and Senior primary (11 and 12), or one Open primary relay?
 - (Closed by 160) 75. Primary and secondary together or separate?
 - (Closed by 161) 76. Which races do primary students swim?
@@ -1261,7 +1304,13 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 26. (Done 9 November 2026) Swim Opt 2.15 pushed to staging and main (44e9f10), checks 1 to 3 passed.
 27. (Done 9 November 2026) Swim Opt 2.16 pushed to staging and main (f92443d), checks 1 to 3 passed.
 28. (Done 9 November 2026) Swim Opt 2.17 pushed to staging and main (4c260d8), checks 1 to 3 passed.
-30. NOW: (Swim Opt 2.18 pushed to staging and main, 9 November 2026, e793adf.) Jordan runs supabase/03-parent-results.sql again on the staging project (Supabase, SQL Editor, paste it all, Run) so the parent page knows the carnival level. Then tries 2.18 on either link: Carnival Organiser 9999, 3. Program, choose Primary, then 2. Students, Load the 620 test students, then the Marshal (1111). Close and reopen the tab first. Set Secondary back afterwards, as both links share the staging project and its made-up data is secondary.
+31. NOW: Swim Opt 2.19 is built and checked on local staging, not committed or pushed. Jordan:
+   1. says when to push (staging first, then main);
+   2. after the push, runs the new SQL on the staging project: open supabase.com and sign in; open the project ccas-swimming-staging (Sydney); in the left menu click SQL Editor; click "+ New query" (always a new one: a saved query keeps its old text); open supabase/03-parent-results.sql from the ccas-swimming folder in TextEdit, press Cmd+A then Cmd+C; click in the query box and press Cmd+V; click Run; it should say "Success. No rows returned". This also does next step 30's re-run;
+   3. tries it: Carnival Organiser 9999, 9. Parents page, turn it on, open the link on a phone; then turn names on and off. Turn the page off again afterwards (the link is not for parents yet: questions 1 and 68);
+   4. opens the privacy summary and accepts or rejects the four suggestions (each card has a tick and a cross).
+   Claude then runs tests/supabase_live.py on staging (about 25 sign-ins; leave 20 minutes between runs).
+30. (Covered by 31.2) (Swim Opt 2.18 pushed to staging and main, 9 November 2026, e793adf.) Jordan runs supabase/03-parent-results.sql again on the staging project (Supabase, SQL Editor, paste it all, Run) so the parent page knows the carnival level. Then tries 2.18 on either link: Carnival Organiser 9999, 3. Program, choose Primary, then 2. Students, Load the 620 test students, then the Marshal (1111). Close and reopen the tab first. Set Secondary back afterwards, as both links share the staging project and its made-up data is secondary.
 23. (Done 9 November 2026, Swim Opt 2.16, 2.42) After Start again on the Place Judge screen, the race no longer counts as done with no places.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice. (9 November 2026: Jordan said "Not yet" to making it a checklist with a person and a date.)
 29. NEXT: practice sit-down. About 5 or 6 people, each on the device they will use on the day (iPad Marshal, iPhone Place Judge, Time Slips and Announcer, MacBook Recorder and Organiser), run a few races to test and learn. Date and people not set yet. Practice pack (race script and job cards): https://claude.ai/artifact/1cJ2Wc1arDzLCFZMVncqVz (version n). Before: wake the Supabase project if unused for 7 days, close and reopen each tab so every device runs the current version (check the Organiser badge). After: Clear practice data (A7, 140), and note what people found for the next Swim Opt change.
@@ -1270,7 +1319,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 9 November 2026 version l (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version e (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
@@ -1281,5 +1330,6 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 - claude/ccas-xc-app-opt13.html (cross country reference only)
 - Swimming design doc: https://claude.ai/artifact/HZ925j4FKGWoxwPeJWE6cS
 - Design canvas S1.1 to S1.38: https://claude.ai/artifact/XhQHZdJAwjyhP2K27GApn8
+- S1.45 parents page and Organiser section 9: https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS
 - Student data summary for principal and ICT: https://claude.ai/artifact/W4ZLx85ckd3h6Y584Yueox
 - Jordan's program sheet and sketches: IMG_8474 to IMG_8476 and two screenshots (27 October 2026) in Project Knowledge

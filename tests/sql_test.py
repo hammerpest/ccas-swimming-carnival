@@ -212,7 +212,8 @@ check(m.q("select my_role()")[0][0] == "marshal", "my_role")
 m.q("select release_role()")
 check(m.q("select count(*) from roster")[0][0] == 0, "signed out: cannot read")
 
-# results for parents (Swim Opt 2.8): no sign-in, off until the organiser turns it on, trimmed names
+# results for parents (Swim Opt 2.8, 2.19): no sign-in, off until turned on, codes not ids, names only when chosen,
+# unfinished events held back unless "show before final" is ticked
 import json as _json
 pa = psycopg.connect(URI, autocommit=True); pa.execute("set role anon")
 pr = lambda have="": pa.execute("select parent_results(%s)", (have,)).fetchone()[0]
@@ -220,31 +221,80 @@ check(pr() == {"off": True}, "parents: nothing until parent results are turned o
 check(pa.execute("select count(*) from information_schema.role_table_grants where grantee='anon' and table_schema='public'").fetchone()[0] == 0, "parents: no table access, only the function")
 admin.execute("insert into config (id, doc) values ('main', '{}') on conflict (id) do nothing")
 admin.execute("update config set doc = doc || '{\"parents\": true, \"pins\": {\"x\": 1}}' where id = 'main'")
-admin.execute("delete from heats"); admin.execute("delete from extras")
+admin.execute("delete from heats"); admin.execute("delete from extras"); admin.execute("delete from times"); admin.execute("delete from finish")
 st = admin.execute("select doc->'students'->0 from roster where id='F'").fetchone()[0]
-admin.execute("insert into heats (id, doc) values ('r0050', %s)", (_json.dumps({"race": 50, "k": "free50", "x": "F", "g": st["g"], "heat": 1, "lanes": {"4": st["id"], "5": "B-A"}, "dev": "secret-device"}),))
-admin.execute("insert into times (id, doc) values ('r0050', %s)", (_json.dumps({"lanes": {"4": {"t": 3500, "st": "ok", "src": "photo", "chk": False}}, "checked": True, "checkedBy": "secret-device", "by": "secret-device"}),))
-admin.execute("insert into records (id, doc) values ('all', %s) on conflict (id) do update set doc = excluded.doc", (_json.dumps({"list": [{"key": "free50|F|13", "t": 3000, "holders": [{"n": "Jane Mary Citizen", "h": "B", "y": "2019"}]}]}),))
+st1 = admin.execute("select doc->'students'->1 from roster where id='F'").fetchone()[0]
+H = lambda rid, doc: admin.execute("insert into heats (id, doc) values (%s, %s) on conflict (id) do update set doc = excluded.doc", (rid, _json.dumps(doc)))
+T = lambda rid, doc: admin.execute("insert into times (id, doc) values (%s, %s) on conflict (id) do update set doc = excluded.doc", (rid, _json.dumps(doc)))
+F = lambda rid, doc: admin.execute("insert into finish (id, doc) values (%s, %s) on conflict (id) do update set doc = excluded.doc", (rid, _json.dumps(doc)))
+# race 50: a finished 50 m freestyle (one heat, places in); a relay team in lane 5
+H("r0050", {"race": 50, "k": "free50", "x": "F", "g": st["g"], "heat": 1, "lanes": {"4": st["id"], "5": "B-A"}, "dev": "secret-device"})
+T("r0050", {"lanes": {"4": {"t": 3500, "st": "ok", "src": "photo", "chk": False}, "5": {"t": 3600, "st": "ok"}}, "checked": False, "checkedBy": "secret-device", "by": "secret-device"})
+F("r0050", {"order": [[4], [5]], "ok": True, "dev": "secret-device"})
+# races 60 and 61: a 50 m backstroke in two heats; heat 1 is in, heat 2 has no times yet. An id the list does not know in heat 2.
+H("r0060", {"race": 60, "k": "back50", "x": "F", "g": st1["g"], "heat": 1, "lanes": {"3": st1["id"]}})
+T("r0060", {"lanes": {"3": {"t": 4100, "st": "ok"}}}); F("r0060", {"order": [[3]], "ok": True})
+H("r0061", {"race": 61, "k": "back50", "x": "F", "g": st1["g"], "heat": 2, "lanes": {"2": "Ghost-Removed-1999", "6": ""}})
+admin.execute("insert into records (id, doc) values ('all', %s) on conflict (id) do update set doc = excluded.doc", (_json.dumps({"list": [{"key": "free50|F|13", "t": 3000, "holders": [{"n": "Test: Jane Mary Citizen", "h": "B", "y": "2019"}]}]}),))
 d = pr(); raw = _json.dumps(d)
-check(not d.get("off") and len(d["heats"]) == 1 and d["heats"][0]["_id"] == "r0050", "parents: heats come through")
-check("secret-device" not in raw, "parents: no device ids anywhere")
-code = d["heats"][0]["lanes"]["4"]
-check(st["id"] not in raw and code.startswith("p") and len(code) == 11 and d["heats"][0]["lanes"]["5"] == "B-A", "parents: student ids replaced by codes, relay teams kept")
-check([x["id"] for x in d["students"]] == [code], "parents: only swimmers who are in a heat")
-st0 = admin.execute("select doc->'students'->1 from roster where id='F'").fetchone()[0]
-admin.execute("insert into heats (id, doc) values ('r0051', %s)", (_json.dumps({"race": 51, "k": "free50", "x": "F", "g": st0["g"], "heat": 2, "lanes": {"1": "a-aaa-first-1", "2": st0["id"]}}),))
-d2 = pr()
-check([h for h in d2["heats"] if h["_id"] == "r0050"][0]["lanes"]["4"] == code, "parents: a swimmer keeps their code when others are added")
-admin.execute("delete from heats where id = 'r0051'")
+check(not d.get("off") and len(d["heats"]) == 3, "parents: heats come through")
+check("secret-device" not in raw and "checkedBy" not in raw and "pins" not in d["config"], "parents: no device ids or PIN settings")
+code = [h for h in d["heats"] if h["_id"] == "r0050"][0]["lanes"]["4"]
+check(st["id"] not in raw and st1["id"] not in raw and code.startswith("p") and len(code) == 11, "parents: no student id anywhere, a code instead")
+check([h for h in d["heats"] if h["_id"] == "r0050"][0]["lanes"]["5"] == "B-A", "parents: relay teams keep their names")
+gh = [h for h in d["heats"] if h["_id"] == "r0061"][0]["lanes"]
+check("Ghost" not in raw and gh["2"].startswith("p") and len(gh["2"]) == 11 and "6" not in gh, "parents: an id the student list does not know is hashed (fails closed); empty lanes are left out")
+check(sorted(x["id"] for x in d["students"]) == sorted([code, [h for h in d["heats"] if h["_id"] == "r0060"][0]["lanes"]["3"]]), "parents: only swimmers who are in a heat")
+check(all(x["f"] == "Swimmer" and x["s"] == "" for x in d["students"]) and st["f"] not in raw and st["s"] not in raw, "parents: names off by default, no name leaves the server")
+check(d["records"][0]["holders"][0]["n"] == "A swimmer" and "Citizen" not in raw, "parents: record holders are A swimmer when names are off")
+check(d["config"]["parentsNames"] == "none" and d["config"]["parentsProv"] is False, "parents: the page is told names are off and show before final is off")
+check("r0050" in d["times"] and "r0050" in d["finish"], "parents: a finished event's times and places come through")
+check("r0060" not in d["times"] and "r0060" not in d["finish"] and "r0061" not in d["times"], "parents: an event with a heat not in is held back, every heat of it")
+hin = {h["_id"]: h.get("in") for h in d["heats"]}
+check(hin["r0060"] is True and hin["r0061"] is False and hin["r0050"] is None, "parents: held-back heats say whether they are in, for the heats-in count")
+check(set(d["times"]["r0050"]["lanes"]["4"]) == {"t", "st", "slip"}, "parents: times carry only what the results need")
+check(pr(d["v"]) == {"v": d["v"], "same": True} and len(_json.dumps(pr(d["v"]))) < 200, "parents: the same version gives a tiny answer")
 check(not admin.execute("select has_table_privilege('anon', 'private.parent_secret', 'select')").fetchone()[0], "parents: the secret cannot be read")
-check(d["students"][0]["s"] == st["s"][0] + "." and d["students"][0]["f"] == st["f"], "parents: surname cut to its initial")
-check(set(d["times"]["r0050"]["lanes"]["4"]) == {"t", "st", "slip"} and "checkedBy" not in d["times"]["r0050"], "parents: times carry only what the results need")
-check(d["records"][0]["holders"][0]["n"] == "Jane C.", "parents: record holders as first name and initial")
-check("pins" not in d["config"], "parents: no PIN settings")
-check(pr(d["v"]) == {"v": d["v"], "same": True}, "parents: tiny answer when nothing changed")
+# a swimmer keeps their code when others are added
+H("r0051", {"race": 51, "k": "free50", "x": "F", "g": st["g"], "heat": 2, "lanes": {"1": "a-aaa-first-1"}})
+check([h for h in pr()["heats"] if h["_id"] == "r0050"][0]["lanes"]["4"] == code, "parents: a swimmer keeps their code when others are added")
+admin.execute("delete from heats where id = 'r0051'")
+# names on: first initial and surname (decision 168)
+admin.execute("update config set doc = doc || '{\"parentsNames\": \"short\"}' where id = 'main'")
+d = pr(); raw = _json.dumps(d)
+me = [x for x in d["students"] if x["id"] == code][0]
+check(me["f"] == st["f"][0] and me["s"] == st["s"], "parents: names on gives first initial and surname (" + st["f"][0] + " " + st["s"] + ")")
+check(st["f"] not in raw or st["f"] == st["f"][0], "parents: names on still never sends the first name")
+check(d["records"][0]["holders"][0]["n"] == "J Citizen", "parents: record holders as first initial and surname")
+admin.execute("update config set doc = doc || '{\"parentsNames\": \"full\"}' where id = 'main'")
+check(all(x["f"] == "Swimmer" for x in pr()["students"]), "parents: any other names setting counts as off")
+# show before final ticked: the unfinished event comes through
+admin.execute("update config set doc = doc || '{\"parentsNames\": \"none\", \"parentsProv\": true}' where id = 'main'")
+d = pr()
+check("r0060" in d["times"] and "r0060" in d["finish"] and all(h.get("in") is None for h in d["heats"]), "parents: show before final ticked sends unfinished events")
+admin.execute("update config set doc = doc || '{\"parentsProv\": false}' where id = 'main'")
+# heat 2 of the backstroke comes in: all DNS and no places still counts as in, so the event comes through
+T("r0061", {"lanes": {"2": {"t": None, "st": "DNS"}}})
+check("r0060" in pr()["times"], "parents: once every heat is in (here all DNS, no places) the event comes through")
+# a re-swum race: the earlier run's times do not count, so the event is held back again
+H("r0061", {"race": 61, "k": "back50", "x": "F", "g": st1["g"], "heat": 2, "gen": 1, "lanes": {"2": st1["id"]}})
+check("r0060" not in pr()["times"], "parents: a re-swum heat with only the earlier run's times holds the event back")
+# a cancelled heat does not hold an event back
+H("r0061", {"race": 61, "k": "back50", "x": "F", "g": st1["g"], "heat": 2, "cancelled": True, "lanes": {"2": st1["id"]}})
+check("r0060" in pr()["times"], "parents: a cancelled heat does not hold the event back")
+# odd records (check 3): gen 1.0, ok 2 and a heat with no race number never break the answer or hold a finished event back
+H("r0061", {"race": 61, "k": "back50", "x": "F", "g": st1["g"], "heat": 2, "gen": 1.0, "lanes": {"2": st1["id"]}})
+T("r0061", {"gen": 1.0, "lanes": {"2": {"t": 4300, "st": "ok"}}}); F("r0061", {"gen": 1, "order": [], "ok": 2})
+H("r0062", {"race": None, "k": "back50", "x": "F", "g": st1["g"], "heat": 3, "lanes": {"1": st1["id"]}})
+try:
+    dd = pr(); okq = True
+except Exception as e:
+    dd = {}; okq = False
+check(okq and "r0060" in dd.get("times", {}) and "r0061" in dd.get("times", {}), "parents: odd values (gen 1.0, ok 2, a heat with no race) are read like the app and do not hold a finished event back")
+admin.execute("delete from heats where id = 'r0062'")
 admin.execute("update config set doc = doc || '{\"parents\": false}' where id = 'main'")
 check(pr() == {"off": True}, "parents: turned off again")
-admin.execute("delete from heats where id = 'r0050'"); admin.execute("delete from times where id = 'r0050'"); admin.execute("delete from records")
+admin.execute("delete from heats"); admin.execute("delete from times"); admin.execute("delete from finish"); admin.execute("delete from records")
 
 srv.cleanup()
 print(f"\n{len(fails)} failed" if fails else "\nall passed")

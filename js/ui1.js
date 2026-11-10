@@ -1,6 +1,6 @@
 /* ===== Swim Opt 1: app shell, PIN, header, shared helpers ===== */
 /* Swim Opt 2.15 (decision 157): the running version, shown in the Carnival Organiser badge. Update it with each release. */
-const APP_VERSION="2.18";
+const APP_VERSION="2.19";
 const JOBS=[
   {k:"marshal",n:1,name:"Marshal",badge:"MARSHAL",dev:"iPad",desc:"Put swimmers in lanes and send each heat"},
   {k:"judge",n:2,name:"Place Judge",badge:"PLACE JUDGE",dev:"iPad",desc:"Tap the top places in each heat"},

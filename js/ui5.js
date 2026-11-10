@@ -1,5 +1,5 @@
 /* ===== Carnival Organiser ===== */
-const SECS=[["details","Carnival details"],["students","Students"],["program","Program"],["points","Points"],["limits","Odd-time limits"],["records","Records"],["export","Export"],["lock","Lock and new carnival"]];
+const SECS=[["details","Carnival details"],["students","Students"],["program","Program"],["points","Points"],["limits","Odd-time limits"],["records","Records"],["export","Export"],["lock","Lock and new carnival"],["parents","Parents page"]];
 function secStatus(k){
   const c=A.cfg;
   if(k==="details")return c.dateConfirmed?{t:c.date}:{t:"Date not confirmed yet",a:1};
@@ -10,6 +10,7 @@ function secStatus(k){
   if(k==="records")return A.records.length?{t:A.records.length+" records"}:{t:"Waiting for the CCAS records list",a:1};
   if(k==="export")return {t:"No automatic backups. Export after."};
   if(k==="lock")return c.locked?{t:"Results locked",a:1}:{t:"Results open"};
+  if(k==="parents"){const p=parentsCfg();return p.on?{t:p.names==="short"?"On, names shown":"On, no names"}:{t:"Off"}}
 }
 function renderOrganiser(){
   const sec=A.o.sec;
@@ -18,6 +19,25 @@ function renderOrganiser(){
   return `${lockBar()}<div class="org"><nav class="secnav" aria-label="Organiser sections">${nav}</nav><div class="panel stack" style="min-width:0">${body}</div></div>`;
 }
 const OSEC={};
+/* Swim Opt 2.19 (S1.45, decisions 165 to 168): the parents page, on or off, and what parents can see.
+   The server (supabase/03-parent-results.sql) applies the same choices, so a hidden name never leaves Supabase. */
+const PSHOW=[["house","House points","The three houses, their points and the bars on the home screen."],["age","Points by age group","House points for each age group, and relays."],["events","Event results","Places, times and points for each event, once every heat is in."],["find","Find a swimmer","Type a surname to see a swimmer's results. Only when names are shown."],["champs","Age champions","The girl and boy age champion for each age."],["records","Records broken","New and equalled school records from the day."]];
+function parentsCfg(){const c=A.cfg;return {on:c.parents===true,show:Object.assign({house:true,age:true,events:true,find:true,champs:true,records:true},c.parentsShow||{}),names:c.parentsNames==="short"?"short":"none",prov:c.parentsProv===true}}
+function parentsUrl(){return new URL("parents/",location.origin+location.pathname).href}
+OSEC.parents=()=>{const p=parentsCfg();const dis=A.past?"disabled":"";
+  return `<h2>Parents page</h2>
+  <p class="muted" style="margin:0">A results page for parents' phones. No PIN and no sign-in. It shows nothing until you turn it on. Then the page shows only what is ticked below.</p>
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:12px"><div class="row" style="gap:12px"><button type="button" class="switch" role="switch" aria-checked="${p.on}" aria-label="Parents page on or off" data-act="ptog" ${dis}></button><b>Parents page is ${p.on?"on":"off"}</b></div>
+   <div class="row" style="gap:10px;flex-wrap:wrap;min-width:0"><span style="font-family:var(--font-mono);overflow-wrap:anywhere;min-width:0">${esc(parentsUrl())}</span><button type="button" class="btn" data-act="pcopy">Copy link</button></div></div>
+  <h3>What parents can see</h3>
+  <div class="tablewrap"><table><thead><tr><th>Show</th></tr></thead><tbody>${PSHOW.map(([k,l,d])=>`<tr><td><label style="display:flex;align-items:center;gap:12px;min-height:48px;cursor:pointer"><input type="checkbox" style="width:24px;height:24px;flex:none" data-act="pshow" data-v="${k}" ${p.show[k]?"checked":""} ${dis}><span><b>${esc(l)}</b><span class="muted" style="display:block;font-size:.9rem">${esc(d)}</span></span></label></td></tr>`).join("")}</tbody></table></div>
+  <h3>Names</h3>
+  <div class="choices"><button type="button" class="choice" data-act="pnames" data-v="none" aria-pressed="${p.names==="none"}" ${dis} style="min-width:220px;text-align:left">No names<small style="display:block;font-size:.8rem;font-weight:600">Place, house and time only</small></button><button type="button" class="choice" data-act="pnames" data-v="short" aria-pressed="${p.names==="short"}" ${dis} style="min-width:220px;text-align:left">First initial and surname<small style="display:block;font-size:.8rem;font-weight:600">For example, J Smith</small></button></div>
+  <div class="msg warn">Check newsletter and media consent before you show names. Real student names also wait for the principal and ICT.</div>
+  <h3>When results show</h3>
+  <label style="display:flex;align-items:center;gap:10px;min-height:48px;cursor:pointer"><input type="checkbox" style="width:24px;height:24px" data-act="pprov" ${p.prov?"checked":""} ${dis}>Show results before an event is final, marked Provisional</label>
+  <p class="muted" style="margin:0">Not ticked: an event shows once every heat of it is in.</p>
+  <div class="msg info">Never sent to parents: PINs, device names, slip photos, dates of birth and student ids.</div>`};
 function progList(){return (A.cfg.program||DEFAULT_CONFIG.program).filter(p=>TYPE[p.k])}
 OSEC.details=()=>{const c=A.cfg;
   return `<h2>Carnival details</h2><div class="fields">
@@ -477,6 +497,11 @@ const ACT={
   oorgpinok:async()=>{const M=A.modal;if(!M)return;const ok=await orgPinOk(document.getElementById("opPin").value.trim());if(ok==null)return;
     if(!ok){M.err="That PIN is not right. Try again.";render();return}
     if(M.go==="clear")clearPractice();else if(M.go==="restore")restoreBackup(M.b)},
+  ptog:()=>{const on=!parentsCfg().on;saveCfg({parents:on},on?"Parents page is on":"Parents page is off")},
+  pshow:el=>{const p=parentsCfg();saveCfg({parentsShow:Object.assign({},p.show,{[el.dataset.v]:!p.show[el.dataset.v]})},"Saved")},
+  pnames:el=>saveCfg({parentsNames:el.dataset.v==="short"?"short":"none"},el.dataset.v==="short"?"Names shown as first initial and surname":"Names hidden from parents"),
+  pprov:()=>saveCfg({parentsProv:!parentsCfg().prov},"Saved"),
+  pcopy:async()=>{try{await navigator.clipboard.writeText(parentsUrl());toast("Link copied")}catch(e){toast("Could not copy. Select the link and copy it.")}},
   olock:()=>saveCfg({locked:!A.cfg.locked,lockedAt:A.cfg.locked?null:Date.now()},A.cfg.locked?"Results unlocked":"Results locked"),
   onew:()=>{if(A.past){toast("Past years are look only.");return}const yr=(A.cfg.date||"2027").slice(0,4);if(A.years.some(y=>String(y.year)===yr)){A.modal={t:"info",title:"Year already kept",body:`<p style="margin:0">The ${esc(yr)} carnival has already been kept. Change the carnival date in section 1 to the right year first.</p>`};render();return}A.modal={t:"newCarnival",step:1};A.o.newMsg="";render()},
   onew1:async()=>{const p=document.getElementById("ncPin").value.trim();

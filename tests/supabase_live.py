@@ -163,6 +163,30 @@ async def main():
     check(s >= 400, "past year open: nothing can be written")
     req("/rest/v1/rpc/set_year", {"y": "current"}, org)
 
+    # 6. the parents page (Swim Opt 2.19): no sign-in, off until turned on, codes not ids, names only when chosen,
+    # unfinished events held back. Run supabase/03-parent-results.sql first.
+    studs = reset(org)
+    anon = lambda have="": req("/rest/v1/rpc/parent_results", {"have": have})
+    check(anon()[1] == {"off": True}, "parents: nothing is given while the page is off")
+    check(req("/rest/v1/roster?select=*")[0] >= 400 or req("/rest/v1/roster?select=*")[1] == [], "parents: the public key cannot read tables")
+    a1, a2 = [x for x in studs if x["x"] == "F" and x["g"] == "14"][:2]
+    req("/rest/v1/config", [{"id": "main", "doc": {"name": "Live test", "parents": True}}], org)
+    req("/rest/v1/heats", [{"id": "r0001", "doc": {"race": 1, "k": "free50", "x": "F", "g": "14", "heat": 1, "lanes": {"4": a1["id"], "5": "Nobody-Known-1980"}, "dev": "secret-device"}},
+                           {"id": "r0002", "doc": {"race": 2, "k": "back50", "x": "F", "g": "14", "heat": 1, "lanes": {"3": a2["id"]}, "dev": "secret-device"}}], org)
+    req("/rest/v1/times", [{"id": "r0001", "doc": {"lanes": {"4": {"t": 3400, "st": "ok"}, "5": {"t": None, "st": "DNS"}}, "by": "secret-device"}}], org)
+    req("/rest/v1/finish", [{"id": "r0001", "doc": {"order": [[4]], "ok": True, "dev": "secret-device"}}], org)
+    s_, d = anon(); raw = json.dumps(d)
+    check(s_ == 200 and isinstance(d, dict) and len(d.get("heats", [])) == 2, "parents: on, results come through with no sign-in")
+    check(a1["id"] not in raw and "Nobody" not in raw and "secret-device" not in raw, "parents: no student id or device id; an unknown id is hashed")
+    check(a1["f"] not in raw and a1["s"] not in raw and all(x["f"] == "Swimmer" for x in d["students"]), "parents: names off by default")
+    check("r0001" in d["times"] and "r0002" not in d["times"], "parents: an unfinished event is held back")
+    check(anon(d["v"])[1] == {"v": d["v"], "same": True}, "parents: the same version gives a tiny answer")
+    req("/rest/v1/rpc/doc_update", {"tbl": "config", "doc_id": "main", "patch": {"parentsNames": "short"}}, org)
+    d = anon()[1]
+    check(any(x["f"] == a1["f"][0] and x["s"] == a1["s"] for x in d["students"]), "parents: names on gives first initial and surname")
+    req("/rest/v1/rpc/doc_update", {"tbl": "config", "doc_id": "main", "patch": {"parents": False}}, org)
+    check(anon()[1] == {"off": True}, "parents: turned off again")
+
     reset(org)
     print(f"\n{len(fails)} failed" if fails else "\nall passed")
     sys.exit(1 if fails else 0)
