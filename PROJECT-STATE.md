@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version j. Replaces 10 November version i and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version k. Replaces 10 November version j and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version k): Jordan said "Push both". Swim Opt 2.20 pushed to staging and main (c04d3ae); both links checked serving 2.20 (APP_VERSION "2.20", index.html comment, slipRaceVote in js/slip-reader.js). No SQL change. Jordan can try the printed test slips again on either link (close and reopen the tab first; the Organiser badge shows v2.20). Ask now: 84, 85.
 
 Changes on 10 November 2026 (version j): Jordan printed test slips and the phone kept saying "Could not read the slip". Jordan sent a sample photo (tests/slip-sample-1.png, made-up times, the decision 110 layout; the real Quantum slip comes when the new timer arrives). Cause: every lane and time read right, but the printer's wide gap in "LANE MODE 1/ 1" made the two readings give different race numbers ("/59" and "/7 1"), so the race was unsure and the photo refused. Jordan said "Yes, build 2.20" (decision 170). Swim Opt 2.20 built (2.47): when the two readings disagree on the race number, the LANE MODE line is read again close up to settle it. No screen change. Checks 1 to 3 PASSED (check 3 failed once first: a blurred race 10 slip was accepted as 19; fixed). Committed on staging, not pushed. New problems 22 and 23, new question 85. Ask now: 84, 85.
 
@@ -233,7 +235,7 @@ Owner: Jordan (PDHPE Head of Department, Central Coast Adventist School, Erina N
 - The look is approved and must not change (CLAUDE.md, decision 98). Design canvas COMPLETE at S1.38.
 - Six PINs, one per job (decision 88). Test PINs: Marshal 1111, Place Judge 2222, Recorder 3333, Time Slips 4444, Announcer 5555, Carnival Organiser 9999. Keep 4 digits (104).
 - Made-up data only: the 620 test students (src/test-students.json). No real names until the principal and ICT approve (question 1, problem 14).
-- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.19 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 10 November 2026. The Carnival Organiser badge shows the running version (decision 157); bump APP_VERSION in js/ui1.js with each release. The parent page is at /parents/. Jordan has run the latest supabase/01-setup.sql (2.11) and 03-parent-results.sql (2.12) on the staging project. Claude can push when Jordan says; each repo keeps its own token in the Keychain (credential.useHttpPath is on in the swimming and athletics repos).
+- The app is built in Claude Code, in the folder "SWIM 2027- App/ccas-swimming" on Jordan's Mac. Swim Opt 2.20 is live on both links: https://hammerpest.github.io/ccas-swimming-carnival/ (main) and /staging/ (staging), since 10 November 2026. The Carnival Organiser badge shows the running version (decision 157); bump APP_VERSION in js/ui1.js with each release. The parent page is at /parents/. Jordan has run the latest supabase/01-setup.sql (2.11) and 03-parent-results.sql (2.12) on the staging project. Claude can push when Jordan says; each repo keeps its own token in the Keychain (credential.useHttpPath is on in the swimming and athletics repos).
   - Both links use the staging Supabase project ccas-swimming-staging in Sydney (decision 108), URL and publishable key in js/config.js. Made-up data only.
   - Built so far: 2.0 port, Supabase and GitHub Pages (2.12 to 2.15); 2.1 colours, tap sizes and slip reader (2.19 to 2.24); 2.2 change marshalling after sending, job order (2.25); 2.3 multitimer (2.27); 2.4 multitimer fixes (2.28); 2.5 part 1 HY3 writer (2.30); 2.6 phone Place Judge and Announcer, no Dead heat (2.32); 2.7 the job review's must-fix list, step 13 (2.33); 2.8 to 2.10 (2.34 to 2.36); 2.11 multitimer sends keep typed and DNS, DQ or No time lanes, server clock for updated_at, older re-swim sends ignored (2.37); 2.12 multitimer places skip DNS, DQ and No time, worked out live (2.38); 2.13 and 2.14 Replace box wording (2.39, 2.40); 2.15 version in the Organiser badge (2.41); 2.16 Place Judge Start again clears "fewer places confirmed" (2.42); 2.17 any place taken off clears it (2.43); 2.18 Primary or Secondary carnival and age switches (2.44, S1.44). Jordan confirmed on their iPhone that 2.4 works and the screen stays on during a long race.
   - Every build passes checks 1 to 3 before Jordan sees it. Check 2 for 2.3 and 2.4 ran in the built-in browser (124, 129); for 2.6 in the built-in browser and partly in Claude in Chrome (141). Claude in Chrome stays the rule. Chrome cannot hold phone or iPad widths (problem 18), so those sizes come from the Playwright runs and check 3. Chrome can cache old local files: fetch each script with cache 'reload', then reload the page.
@@ -666,7 +668,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
-### 2.47 Swim Opt 2.20: slip reader settles a misread race number (10 November 2026, local staging, committed, not pushed)
+### 2.47 Swim Opt 2.20: slip reader settles a misread race number (10 November 2026; on staging and main the same day, c04d3ae)
 
 Decision 170. js/slip-reader.js only; no screen change; APP_VERSION 2.20.
 - readSlipPhoto still reads the photo twice (grey, black and white). New: when the two readings give different race numbers (or only one finds it), slipRaceClose reads the LANE MODE line again close up, digits and "/" only: from each reading's prepared picture (2 and 3 times larger, the surer counts once) and from the original photo (grey, and black and white set for that piece). slipRaceText drops a "7" straight after the "/" (the printer's "/ " often reads as "/7"). slipRaceVote accepts a number only when a close-up at the usual confidence (70) agrees with one of the two readings, it has two readings, and no other number has two. When both readings agree but are not sure, the photo is still refused, as before.
@@ -1344,7 +1346,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version j (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version k (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
