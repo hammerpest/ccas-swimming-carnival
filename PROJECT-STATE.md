@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version i. Replaces 10 November version h and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version j. Replaces 10 November version i and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version j): Jordan printed test slips and the phone kept saying "Could not read the slip". Jordan sent a sample photo (tests/slip-sample-1.png, made-up times, the decision 110 layout; the real Quantum slip comes when the new timer arrives). Cause: every lane and time read right, but the printer's wide gap in "LANE MODE 1/ 1" made the two readings give different race numbers ("/59" and "/7 1"), so the race was unsure and the photo refused. Jordan said "Yes, build 2.20" (decision 170). Swim Opt 2.20 built (2.47): when the two readings disagree on the race number, the LANE MODE line is read again close up to settle it. No screen change. Checks 1 to 3 PASSED (check 3 failed once first: a blurred race 10 slip was accepted as 19; fixed). Committed on staging, not pushed. New problems 22 and 23, new question 85. Ask now: 84, 85.
 
 Changes on 10 November 2026 (version i): Jordan said "Push both". The live test fix and version h pushed to staging and main (e542426). No app change: both links still run Swim Opt 2.19. Ask now: 84 (and the four privacy summary suggestions, step 31.4).
 
@@ -664,6 +666,16 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.47 Swim Opt 2.20: slip reader settles a misread race number (10 November 2026, local staging, committed, not pushed)
+
+Decision 170. js/slip-reader.js only; no screen change; APP_VERSION 2.20.
+- readSlipPhoto still reads the photo twice (grey, black and white). New: when the two readings give different race numbers (or only one finds it), slipRaceClose reads the LANE MODE line again close up, digits and "/" only: from each reading's prepared picture (2 and 3 times larger, the surer counts once) and from the original photo (grey, and black and white set for that piece). slipRaceText drops a "7" straight after the "/" (the printer's "/ " often reads as "/7"). slipRaceVote accepts a number only when a close-up at the usual confidence (70) agrees with one of the two readings, it has two readings, and no other number has two. When both readings agree but are not sure, the photo is still refused, as before.
+- Jordan's sample now reads as race 1 with all 8 times right (some lanes yellow for the Recorder because one reading differed; their times are right).
+- Tests: new tests/slip220.py (the sample, 8 harder copies, a race 3 copy and check 3's race 10 blurred copy): the sample, both tilted, dim and shadowed copies read race 1, the race 3 copy reads 3; the blurred, smaller and heavy JPEG copies and the race 10 copy are refused (asked again); none wrong. All other tests pass.
+- Check 1: 44 Organiser shots differ, MacBook and iPad landscape only, all in the header strip (badge v2.20). Reference shots for the next build: scratchpad of session ec55a5e7 (shots220).
+- Check 2: Claude in Chrome on the live staging page: the real reader reads the sample as race 1 with all times right, no console errors. Nothing saved (staging has a Race 1 of Jordan's, left as it was).
+- Check 3: run 1 FAIL (a blurred, tilted race 10 slip accepted as 19, where 2.19 refused it). Fixed by running the close-up only when the readings disagree. Run 2 PASS: 340 test reads of 20 race numbers, 2.20 adds no wrong race; 16 reads settled by the close-up, all right; about 180 ms more on a laptop when it runs.
+
 ### 2.46 Swim Opt 2.19: parents page names, show before final and Organiser section 9 (10 November 2026; on staging and main the same day, bf08a26; SQL run on staging)
 
 Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS), decisions 165 to 169.
@@ -1147,6 +1159,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+170. (10 November 2026) Jordan said "Yes, build 2.20": when the slip reader's two readings disagree on the race number, read the LANE MODE line again close up to settle it (Swim Opt 2.20).
 169. (10 November 2026, answers question 83) Jordan said "ok" to S1.45: build it as Swim Opt 2.19.
 168. (10 November 2026, answers question 81) Jordan said "J Dennis and start off": when the Organiser turns names on, parents see first initial and surname (J Dennis); names start off, and with names off parents see place, house and time with "Swimmer" in place of the name. Record holders follow the same choice ("A swimmer" when off). Replaces decision 149's first name and surname initial for the parents page. Check media consent (question 68) before turning names on.
 165. (10 November 2026, answers question 79) Jordan said "GO": the parents page parts missing against athletics are built as Swim Opt 2.19, drawn first as S1.45 (Organiser section 9 Parents page).
@@ -1219,6 +1232,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 17. NEW (3 November 2026): GitHub Pages and phone browsers keep old files for up to about 10 minutes, so a phone may run the old version straight after a push. Close and reopen the tab before testing.
 18. NEW (3 November 2026): Claude in Chrome cannot shrink the window below 500 px and its screenshots time out on this page (141).
 19. SOLVED by 152 (4 November 2026): the Marshal's name list opens down for lanes 1 to 4 and up for 5 to 8 (Swim Opt 2.10). Jordan approved it.
+22. (10 November 2026, found by check 3 on 2.20, already in 2.19) A race 10 slip with wider spacing, tilted, can read as race 19 in both readings with confidence (a slashed zero read as 9) and is then accepted. On the right screen race (10) the phone would say "Wrong slip?"; only if the screen is on race 19 would it be saved there. To look at with real Quantum slips (question 30).
+23. (10 November 2026, check 3 on 2.20, already in 2.19) Races 100 to 120 are always refused: "1/100" reads as "1.100". Safe (the photo is asked for again), but every slip from race 100 on needs typed times. See question 85.
 20. SOLVED by Swim Opt 2.11 (8 November 2026, 2.37): a multitimer send saves the race's times and finish places whole, without the server merge that photo slips get. If the phone sends late (no signal at the far end) after the Recorder typed a time or marked DNS, DQ or No time, the Recorder's work is replaced, against decision 136. The "Replace the results?" box only sees what the phone already knew. Fix: send multitimer times through the same merge as photo slips (phone and server). No look change.
 21. SOLVED by Swim Opt 2.11 (8 November 2026, 2.37): each saved record's time (updated_at) is set by the phone's clock. Only the parent page uses it (to tell if anything changed), so a slow phone clock or two saves in the same instant can hold back a parent update until the next save. Fix: a small server trigger that stamps the server's clock. No look change.
 12. PARKED with 11. Supabase free plan allows 200 live connections. A parent page should poll every 30 to 60 seconds instead of holding a live connection, or be kept separate.
@@ -1227,7 +1242,8 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: 84.
+Ask now: 84, 85.
+- 85. (10 November 2026) How does the timer print a race number over 99, for example race 105: "LANE MODE 1/105", or something else? The reader refuses every slip from race 100 on (problem 23); the made-up day had 110 races. A photo of a slip from race 100 or later (from the new Quantum when it arrives) would settle it.
 - 84. (10 November 2026, seen in check 2) With names on, two swimmers with the same first initial and surname look the same (made-up data: Levi Bell and Lucas Bell are both "L Bell" in the 15 boys). Their houses and times still differ. Keep as is, or show two letters of the first name only when two names clash (for example "Le Bell" and "Lu Bell")?
 - (Closed by 169) 83. (10 November 2026) Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS): OK to build as Swim Opt 2.19?
 - (Closed by 165) 79. (10 November 2026, 2.45) Parents page plan: build the missing parts as Swim Opt 2.19 (names choice, server holds back unfinished results, show before final tick, Organiser section 9 with switch, ticks and copy link, test mode, tests), drawn first as S1.45?
@@ -1328,7 +1344,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version i (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version j (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
