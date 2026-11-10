@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 10 November 2026, version k. Replaces 10 November version j and all earlier PROJECT-STATE files.
+Date: 10 November 2026, version l. Replaces 10 November version k and all earlier PROJECT-STATE files.
+
+Changes on 10 November 2026 (version l): Jordan sent a real phone photo of a printed (photocopied) test slip that 2.20 cannot read (saved as tests/slip-photo-2.jpg; made-up times, same as the sample). Cause found (problem 24): the photocopy's grey speckle and darker shaded box turn into black dots when the photo is made black and white, so the reader sees mostly specks and finds no LANE MODE line; the race-number fix in 2.20 never runs. A scratch test that first evens out the background shading and removes specks (prototype in the side-session notes folder, slip-reader/prep_proto.js) gets race 1 and 7 of 8 lanes from this photo, but some times are misread (lane 7 29211, lane 5 27.78) and the race number is still unsure; used on clean photos it makes them worse, so it must only be a second try when the first reading fails. Not built. Next: Swim Opt 2.21, slip reader second try for shaded or speckled photos, tested on both photos (question 30 still wants a real Quantum slip). Ask now: 84, 85, and the go-ahead for 2.21.
 
 Changes on 10 November 2026 (version k): Jordan said "Push both". Swim Opt 2.20 pushed to staging and main (c04d3ae); both links checked serving 2.20 (APP_VERSION "2.20", index.html comment, slipRaceVote in js/slip-reader.js). No SQL change. Jordan can try the printed test slips again on either link (close and reopen the tab first; the Organiser badge shows v2.20). Ask now: 84, 85.
 
@@ -1234,6 +1236,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 17. NEW (3 November 2026): GitHub Pages and phone browsers keep old files for up to about 10 minutes, so a phone may run the old version straight after a push. Close and reopen the tab before testing.
 18. NEW (3 November 2026): Claude in Chrome cannot shrink the window below 500 px and its screenshots time out on this page (141).
 19. SOLVED by 152 (4 November 2026): the Marshal's name list opens down for lanes 1 to 4 and up for 5 to 8 (Swim Opt 2.10). Jordan approved it.
+24. (10 November 2026) A real phone photo of a photocopied slip (tests/slip-photo-2.jpg) reads as noise: the speckled grey background becomes black dots in the black-and-white step, so no line is found. Fix planned as Swim Opt 2.21 (version l).
 22. (10 November 2026, found by check 3 on 2.20, already in 2.19) A race 10 slip with wider spacing, tilted, can read as race 19 in both readings with confidence (a slashed zero read as 9) and is then accepted. On the right screen race (10) the phone would say "Wrong slip?"; only if the screen is on race 19 would it be saved there. To look at with real Quantum slips (question 30).
 23. (10 November 2026, check 3 on 2.20, already in 2.19) Races 100 to 120 are always refused: "1/100" reads as "1.100". Safe (the photo is asked for again), but every slip from race 100 on needs typed times. See question 85.
 20. SOLVED by Swim Opt 2.11 (8 November 2026, 2.37): a multitimer send saves the race's times and finish places whole, without the server merge that photo slips get. If the phone sends late (no signal at the far end) after the Recorder typed a time or marked DNS, DQ or No time, the Recorder's work is replaced, against decision 136. The "Replace the results?" box only sees what the phone already knew. Fix: send multitimer times through the same merge as photo slips (phone and server). No look change.
@@ -1346,7 +1349,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 10 November 2026 version k (this file; the latest)
+- PROJECT-STATE.md in the repo, 10 November 2026 version l (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
