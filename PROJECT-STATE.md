@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 12 November 2026, version c. Replaces 12 November version b and all earlier PROJECT-STATE files.
+Date: 12 November 2026, version d. Replaces 12 November version c and all earlier PROJECT-STATE files.
+
+Changes on 12 November 2026 (version d): Jordan said "Keep both" (decision 177): the landing page keeps the darker light-theme Cross Country green (#15783e) and the lanes above the pointer glow. Swim Opt 2.21 stands as committed (5815521), not pushed. Ask now: none. Next: Swim Opt 2.22 (decisions 171 and 172) when Jordan says; the domain steps when Jordan is ready. Next numbers: Swim Opt 2.22, design S1.46, decision 178, question 86.
 
 Changes on 12 November 2026 (version c): Jordan said "Yes, fix all four" (decision 176). Swim Opt 2.21, the onlinecarnivals.au landing page in landing/index.html, now has: lanes that never shrink below their buttons on screens up to 760 px tall (the page scrolls a little instead; the ticker, bar, headline and footer keep their size); light-theme "MARKS." in #8a6c00; dark navy text on the gold Athletics lane when hovered or focused; focus rings that show on every background. The same checks found two more of the same kind, fixed the same way and to confirm with Jordan: the light-theme Cross Country green is a little darker (#15783e, was #1a8a4a) so white text on its hover passes; and the lanes now sit above the pointer glow, so a hovered lane is no longer tinted by it (dark Cross Country text was 4.36:1). Also: the theme button's screen reader name matches its text, and reduced motion stops every movement. Check 1 PASSED (0 of the app screens differ from 2.20; the app is unchanged). Check 2 PASSED (Claude in Chrome: no buttons cut off in a short window, no console errors). Check 3 PASSED on the third review (lowest contrast 4.79:1; no sideways scroll, no button cut off, ticker 36 px, at 9 sizes, both themes, motion on and off). Committed on staging, not pushed. The athletics session's mock (docs/landing-mock/d-track.html) still has the old faults. Next numbers: Swim Opt 2.22, design S1.46, decision 177, question 86.
 
@@ -1175,6 +1177,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+177. (12 November 2026) Jordan said "Keep both": the landing page keeps the darker light-theme Cross Country green (#15783e) and the lanes drawn above the pointer glow.
 176. (12 November 2026) Jordan said "Yes, fix all four" to the landing page fixes (small screens, light "MARKS.", Athletics hover text, focus rings). Built in Swim Opt 2.21.
 175. (12 November 2026) Selling to other schools and the multi-school work are parked. Testing the apps comes first.
 174. (12 November 2026) The business is planned to be called "On Your Marks". Name and trade mark searches still to do.
@@ -1367,7 +1370,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 12 November 2026 version c (this file; the latest)
+- PROJECT-STATE.md in the repo, 12 November 2026 version d (this file; the latest)
 - Landing page for onlinecarnivals.au: landing/index.html (Swim Opt 2.21; moves to the hammerpest.github.io repo when the domain goes live)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
