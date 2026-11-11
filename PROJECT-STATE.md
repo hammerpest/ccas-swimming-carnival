@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 12 November 2026, version a. Replaces 11 November version a and all earlier PROJECT-STATE files.
+Date: 12 November 2026, version b. Replaces 12 November version a and all earlier PROJECT-STATE files.
+
+Changes on 12 November 2026 (version b): Jordan said "lets not worry about selling at this point. Lots of testing to come." Selling to other schools and the multi-school work are parked (decision 175); testing comes first. The domain steps (Crazy Domains DNS, the hammerpest.github.io repo, renaming the app repos) are given to Jordan but not done. Ask now: the OK on the four landing page look fixes. Next numbers: Swim Opt 2.22, design S1.46, decision 176, question 86.
 
 Changes on 12 November 2026 (version a): Jordan bought onlinecarnivals.au from Crazy Domains (decision 173). The business is planned to be called "On Your Marks" (decision 174; ASIC business name and IP Australia trade mark searches not done yet). Jordan says the apps were built at home, in their own time, with their own Claude account (recorded, not legal advice). Long-term aim: many schools sign in at onlinecarnivals.au and get 1, 2 or 3 carnivals depending on what they buy (needs school accounts, per-school data rules, a paid Supabase plan, a privacy policy and data terms; and house names and colours set per school, since Bradman, Jackson and Newcombe and the navy and yellow are CCAS's). Not planned in detail yet; the February 2027 swimming carnival comes first. Landing page (the athletics session's design D, "The Track"): placed in landing/index.html as Swim Opt 2.21, with relative links (swimming/, swimming/parents/, athletics/, athletics/parents/, crosscountry/, crosscountry/parents/), title "Online Carnivals" and a new footer line. Check 1 PASSED (0 of the app screens differ from 2.20), check 2 PASSED (Claude in Chrome, no console errors), check 3 FAILED on five faults that are also in the approved mock: buttons cut off on small phones (375 x 667, 320 x 568), light-theme "MARKS." at 2.69:1, white on the gold Athletics hover at 2.7:1, a faint focus ring in light theme, and the focus glitch still moving with reduced motion. The reduced motion fault and a screen reader label on the theme button are fixed (no look change); the other four wait for Jordan's OK (look change). Not committed. Planned addresses (paths): onlinecarnivals.au, /swimming, /athletics, /crosscountry, from a new repo hammerpest.github.io with the custom domain, and the three app repos renamed swimming, athletics and crosscountry. No DNS change, repo rename or push yet. Swim Opt numbers move on: 2.21 the landing page, 2.22 decisions 171 and 172, 2.23 the slip reader second try. Ask now: the OK on the four landing page fixes. Next numbers: Swim Opt 2.22, design S1.46, decision 175, question 86.
 
@@ -1171,6 +1173,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+175. (12 November 2026) Selling to other schools and the multi-school work are parked. Testing the apps comes first.
 174. (12 November 2026) The business is planned to be called "On Your Marks". Name and trade mark searches still to do.
 173. (12 November 2026) Jordan bought the domain onlinecarnivals.au from Crazy Domains. Addresses use paths: onlinecarnivals.au/swimming, /athletics, /crosscountry.
 172. (11 November 2026, answers question 85) The timer prints races over 99 as "LANE MODE 1/105". The race is always the number after the "/"; the number before it (for example "2/105") is ignored. The reader should read races 100 and up (problem 23). Not built yet.
@@ -1361,7 +1364,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 
 ## 8. Files and links
 
-- PROJECT-STATE.md in the repo, 12 November 2026 version a (this file; the latest)
+- PROJECT-STATE.md in the repo, 12 November 2026 version b (this file; the latest)
 - Job review reports (3 November 2026): side-session notes folder local_3875fa25-d29d-4ed1-9ae2-3c6788ef88db/job-review/ (COMBINED.md and one file per job), outside the repo
 - CLAUDE.md (repo rules, how to run and test), HANDOVER.md (original handover), SETUP.md (Jordan's Supabase steps)
 - Supabase staging: https://uutmoyqpynfllhacwhok.supabase.co (project ccas-swimming-staging, Sydney)
