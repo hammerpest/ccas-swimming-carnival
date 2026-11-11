@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 12 November 2026, version e. Replaces 12 November version d and all earlier PROJECT-STATE files.
+Date: 12 November 2026, version f. Replaces 12 November version e and all earlier PROJECT-STATE files.
+
+Changes on 12 November 2026 (version f): Jordan said "Yes, carry on" to mock-ups from the redesign prompt. Design S1.46 drawn (look only, nothing built, no app file changed): https://claude.ai/artifact/TwFDWcuA9FokXy54E6fhss. Part A, the parents page (home, one event, all events, houses, find), and part B, the app PIN, Which carnival and Choose your job screens, each shown now beside S1.46, light and dark, iPhone, iPad and MacBook (parents page iPhone and MacBook). The landing theme: yellow ticker, big uppercase headings with the last word yellow, dashed lane lines in place of cards, outlined numbers, Mono labels, yellow picked buttons, the runner dot on the house bars; job tiles become full-width lanes; the navy app header stays. Left off: grain, glitch, scramble, pointer glow, magnetic buttons. Medals, house colours, chips, NEW RECORD tag and every word unchanged. Checks on the shots: no sideways scroll, no new buttons under 48 px, no page errors, lowest text contrast 4.56:1 (light-theme dark yellow). Part C (job screens) waits for Jordan's OK on A and B. Mock-up script and theme layer: side-session notes folder local_47ebf7a9.../s146. New questions 86 to 89 (Ask now). Next numbers: Swim Opt 2.22, design S1.47, decision 178, question 90.
 
 Changes on 12 November 2026 (version e): new session (SWIM 08). Checked GitHub: both branches are still at version k (Swim Opt 2.20); local staging is 7 commits ahead (versions l and m of 10 November, 11 November a, 12 November a to d, and Swim Opt 2.21 the landing page). Jordan said push "later". Claude gave Jordan the domain steps in order (new next step 33). Jordan asked for a prompt to redesign the other pages to match the landing page: written as design/landing-theme-redesign-prompt.md (design only, S1.46, parents page and home first, calm job screens, nothing built without Jordan's OK; new next step 34). Section 0 corrected: the slip reader second try is Swim Opt 2.23, not 2.21. Ask now: none. Next numbers: Swim Opt 2.22, design S1.46, decision 178, question 86.
 
@@ -1270,7 +1272,11 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 
 ## 6. Unresolved questions (ask Jordan)
 
-Ask now: none.
+Ask now: 86, 87, 88, 89.
+- 86. (12 November 2026, S1.46) How far should the landing look go: parents page only, parents page and PIN screens, or every screen? Suggested: parents page and PIN screens before February; job screens after the carnival.
+- 87. (S1.46) The yellow ticker: parents page yes, app PIN screens yes, job screens no?
+- 88. (S1.46) Keep the runner dot that runs once along each house bar?
+- 89. (S1.46) The job screens: keep the navy CCAS header (as drawn) or give it the landing brand bar?
 - (Closed by 172) 85. (10 November 2026) How does the timer print a race number over 99, for example race 105: "LANE MODE 1/105", or something else? The reader refuses every slip from race 100 on (problem 23); the made-up day had 110 races. A photo of a slip from race 100 or later (from the new Quantum when it arrives) would settle it.
 - (Closed by 171) 84. (10 November 2026, seen in check 2) With names on, two swimmers with the same first initial and surname look the same (made-up data: Levi Bell and Lucas Bell are both "L Bell" in the 15 boys). Their houses and times still differ. Keep as is, or show two letters of the first name only when two names clash (for example "Le Bell" and "Lu Bell")?
 - (Closed by 169) 83. (10 November 2026) Design S1.45 (https://claude.ai/artifact/2yzUeX8uMwzpZtsdcfPUvS): OK to build as Swim Opt 2.19?
@@ -1367,7 +1373,7 @@ Done: Swim Opt 2.7 on both links (3 November 2026: the job review's must-fix lis
 23. (Done 9 November 2026, Swim Opt 2.16, 2.42) After Start again on the Place Judge screen, the race no longer counts as done with no places.
 14. Before the day, the "to plan" list in 2.31: signal test at Mingara, power, phone settings, paper fallback, job cards and practice. (9 November 2026: Jordan said "Not yet" to making it a checklist with a person and a date.)
 33. Domain steps for onlinecarnivals.au (decision 173), in order, each on Jordan's word: push staging and main; make a public repo hammerpest.github.io holding the landing page, Pages on; in its Pages settings set the custom domain onlinecarnivals.au; in Crazy Domains DNS add four A records for @ (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a CNAME www to hammerpest.github.io, removing any parking records; wait for GitHub's DNS check, then tick Enforce HTTPS; verify the domain in GitHub account settings, Pages; rename ccas-swimming-carnival to swimming (the app then lives at onlinecarnivals.au/swimming/, staging at /swimming/staging/; the old hammerpest.github.io/ccas-swimming-carnival/ link stops working, so send staff the new one); Claude updates the git remote and Jordan's Keychain token for the new repo path; the athletics and cross country sessions rename theirs; check all six landing page links on a phone.
-34. Redesign to match the landing page: when Jordan wants it, paste design/landing-theme-redesign-prompt.md into a fresh session. Design only (S1.46); nothing built without Jordan's OK.
+34. Redesign to match the landing page: S1.46 parts A and B drawn (version f). Waiting on Jordan's OK and questions 86 to 89; then part C (job screens) is drawn, or the build is planned. Nothing built without Jordan's OK.
 29. NEXT: practice sit-down. About 5 or 6 people, each on the device they will use on the day (iPad Marshal, iPhone Place Judge, Time Slips and Announcer, MacBook Recorder and Organiser), run a few races to test and learn. Date and people not set yet. Practice pack (race script and job cards): https://claude.ai/artifact/1cJ2Wc1arDzLCFZMVncqVz (version n). Before: wake the Supabase project if unused for 7 days, close and reopen each tab so every device runs the current version (check the Organiser badge). After: Clear practice data (A7, 140), and note what people found for the next Swim Opt change.
 
 ---
