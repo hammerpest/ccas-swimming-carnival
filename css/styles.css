@@ -390,6 +390,10 @@ html.jobs .barw .bar::after{content:"";position:absolute;right:-6px;top:50%;widt
 html.jobs .podium .pr{background:transparent;border-top:1px solid var(--lt-line);border-radius:0;padding-left:4px;padding-right:4px}
 html.jobs .podium .pr b{font-weight:900;text-transform:uppercase}
 html.jobs .water{background:transparent;color:var(--lt-ink);border:3px solid #ffc907;border-radius:12px}
+/* Swim Opt 2.28 (question 90): "In the water now" label navy in the light theme so it can be read; the dark theme keeps its pale label */
+html.jobs .water .label{color:#1d3160}
+@media (prefers-color-scheme:dark){html.jobs:not([data-theme="light"]) .water .label{color:var(--navy-muted)}}
+html.jobs[data-theme="dark"] .water .label{color:var(--navy-muted)}
 
 /* buttons and choices: yellow is the main action, as on the landing page */
 html.jobs .btn{background:transparent;border:2px solid var(--lt-line);border-radius:12px;font-family:var(--font-display);font-weight:800;color:var(--lt-ink)}
