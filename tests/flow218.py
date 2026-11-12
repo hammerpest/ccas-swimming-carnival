@@ -20,7 +20,7 @@ async def main():
         for k in c: await p.click(f'[data-act=key][data-k="{k}"]')
         await p.wait_for_timeout(120)
     ev = lambda p, js: p.evaluate(js)
-    txt = lambda p: p.evaluate("document.body.innerText")
+    txt = lambda p: p.evaluate("""(sel)=>{const s=document.createElement('style');s.textContent='*{text-transform:none!important}';document.head.appendChild(s);const t=document.querySelector(sel).innerText;s.remove();return t}""", "body")  # Swim Opt 2.25: words as written, not uppercase
 
     O = await page("org"); await pin(O, "9999"); await O.click('[data-act=year][data-v=current]'); await O.click('.tile[data-job=organiser]')
     await O.click('[data-act=osec][data-v=program]'); await O.wait_for_timeout(150)

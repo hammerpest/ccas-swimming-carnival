@@ -266,6 +266,15 @@ me = [x for x in d["students"] if x["id"] == code][0]
 check(me["f"] == st["f"][0] and me["s"] == st["s"], "parents: names on gives first initial and surname (" + st["f"][0] + " " + st["s"] + ")")
 check(st["f"] not in raw or st["f"] == st["f"][0], "parents: names on still never sends the first name")
 check(d["records"][0]["holders"][0]["n"] == "J Citizen", "parents: record holders as first initial and surname")
+# Swim Opt 2.22 (decision 171): two swimmers with the same first initial and surname show two letters of the first name
+twin = {"id": "a-twin-2-22", "f": st["f"][0] + "q", "s": st["s"], "h": st["h"], "x": st["x"], "g": st["g"]}
+admin.execute("insert into extras (id, doc) values (%s, %s) on conflict (id) do update set doc = excluded.doc", (twin["id"], _json.dumps(twin)))
+H("r0052", {"race": 52, "k": "free50", "x": "F", "g": st["g"], "heat": 3, "lanes": {"2": twin["id"]}})
+d = pr(); me = [x for x in d["students"] if x["id"] == code][0]; others = [x for x in d["students"] if x["s"] == st["s"] and x["id"] != code and x["f"][0] == st["f"][0]]
+check(me["f"] == st["f"][:2] and len(others) == 1 and others[0]["f"] == twin["f"][:2], "parents: same first initial and surname show two letters (" + me["f"] + " and " + others[0]["f"] + " " + st["s"] + ")")
+check(all(len(x["f"]) == 1 for x in d["students"] if x["id"] != code and x not in others), "parents: everyone else keeps one letter " + str([(x["f"], x["s"]) for x in d["students"]]))
+admin.execute("delete from heats where id = 'r0052'"); admin.execute("delete from extras where id = %s", (twin["id"],))
+check([x for x in pr()["students"] if x["id"] == code][0]["f"] == st["f"][0], "parents: back to one letter when the clash is gone")
 admin.execute("update config set doc = doc || '{\"parentsNames\": \"full\"}' where id = 'main'")
 check(all(x["f"] == "Swimmer" for x in pr()["students"]), "parents: any other names setting counts as off")
 # show before final ticked: the unfinished event comes through

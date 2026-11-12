@@ -1,4 +1,4 @@
--- Results for parents (the page at /parents/). Swim Opt 2.8, names and "show before final" in Swim Opt 2.19 (S1.45). Safe to run again.
+-- Results for parents (the page at /parents/). Swim Opt 2.8, names and "show before final" in Swim Opt 2.19 (S1.45), name clashes in Swim Opt 2.22. Safe to run again.
 -- Run it after 01-setup.sql, in the Supabase SQL Editor (paste it all into a new query, then Run).
 --
 -- Parents need no PIN and no sign-in, so hundreds of phones never touch the hourly sign-in limit.
@@ -149,12 +149,15 @@ begin
     'students', coalesce((
       with everyone as (
         select s from public.roster r, jsonb_array_elements(case when jsonb_typeof(r.doc->'students') = 'array' then r.doc->'students' else '[]'::jsonb end) s
-        union all select x.doc from public.extras x)
+        union all select x.doc from public.extras x),
+      -- Swim Opt 2.22 (decision 171): two swimmers with the same first initial and surname show two letters ("Le Bell", "Lu Bell")
+      sent as (select s, count(*) over (partition by lower(left(btrim(coalesce(s->>'f', '')), 1)), lower(btrim(coalesce(s->>'s', '')))) as same
+        from everyone where ids ? (s->>'id'))
       select jsonb_agg(jsonb_build_object('id', ids->>(s->>'id'),
-        'f', case when names_on then left(btrim(coalesce(s->>'f', '')), 1) else 'Swimmer' end,
+        'f', case when not names_on then 'Swimmer' when same > 1 then left(btrim(coalesce(s->>'f', '')), 2) else left(btrim(coalesce(s->>'f', '')), 1) end,
         's', case when names_on then btrim(coalesce(s->>'s', '')) else '' end,
         'h', s->>'h', 'x', s->>'x', 'g', s->>'g'))
-      from everyone where ids ? (s->>'id')), '[]'::jsonb)
+      from sent), '[]'::jsonb)
   );
 end $$;
 

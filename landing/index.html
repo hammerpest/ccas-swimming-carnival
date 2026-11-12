@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-AU">
-<!-- Swim Opt 2.21: onlinecarnivals.au landing page (design D, The Track). Lives at the root of the site: links are relative (swimming/, athletics/, crosscountry/). -->
+<!-- Swim Opt 2.21: onlinecarnivals.au landing page (design D, The Track). Swim Opt 2.27: the runner dot crosses a finish line (S1.47 B, decision 185). Lives at the root of the site: links are relative (swimming/, athletics/, crosscountry/). -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -49,9 +49,10 @@ body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",syst
 .b.p{background:var(--yellow);color:#14203f}
 .b.s{border:2px solid var(--line);color:var(--ink)}
 .runner{position:absolute;left:0;bottom:14px;width:18px;height:18px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(255,201,7,.25);z-index:1;transform:translateX(-30px)}
-.lane:hover .runner,.lane:focus-within .runner{animation:run 1.4s cubic-bezier(.5,0,.2,1) forwards}
-.lane.go .runner{animation:run 1.6s cubic-bezier(.5,0,.2,1) forwards}
-@keyframes run{from{left:0}to{left:calc(100% - 28px)}}
+/* S1.47 B: a chequered finish line at the end of each lane; the dot crosses it at speed (the line flashes) and fades off the edge */
+.finish{position:absolute;top:0;bottom:0;right:4px;width:12px;z-index:1;opacity:.7;pointer-events:none;
+  background:repeating-conic-gradient(var(--ink) 0 25%,transparent 0 50%) 0 0/12px 12px;transition:opacity .2s}
+.finish.flash{opacity:1;background:repeating-conic-gradient(var(--yellow) 0 25%,transparent 0 50%) 0 0/12px 12px}
 .lane:hover,.lane:focus-within{flex-grow:1.4}
 .lane:hover::before,.lane:focus-within::before{opacity:.92}
 .lane:hover .no,.lane:focus-within .no{-webkit-text-stroke-color:#fff}
@@ -77,7 +78,7 @@ body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",syst
 @media (prefers-reduced-motion:reduce){
   .ticker div{animation:none;padding-left:16px}
   .lane{animation:none;opacity:1;transform:none}
-  .lane:hover .runner,.lane.go .runner{animation:none}
+  .runner,.finish{display:none}
 }
 
 /* Effects */
@@ -152,6 +153,18 @@ document.querySelectorAll('.name h2').forEach(function(h,n){h.setAttribute('aria
 setTimeout(function(){sc(h)},500+n*150);
 h.closest('.lane').addEventListener('pointerenter',function(){sc(h)});
 h.closest('.lane').addEventListener('focusin',function(){sc(h)})})}
+/* runner dot (S1.47 B): runs once as the page opens, and again when a lane is pointed at or focused */
+document.querySelectorAll('.lane').forEach(function(l){var f=document.createElement('span');f.className='finish';f.setAttribute('aria-hidden','true');l.appendChild(f)});
+function run(lane,ms){if(rm||!lane.animate)return;var d=lane.querySelector('.runner'),f=lane.querySelector('.finish');
+  if(d._a)d._a.cancel();
+  /* positions in % of the lane, so a lane that changes width mid-run is still crossed at its line */
+  var dw=d.offsetWidth||18,T=ms+250;
+  d._a=d.animate([{left:'-30px',transform:'none',opacity:1},{left:'calc(100% - '+(10+dw/2)+'px)',transform:'none',opacity:1,offset:.82},{left:'calc(100% + 40px)',transform:'none',opacity:0}],
+    {duration:T,easing:'cubic-bezier(.45,0,.75,.55)',fill:'forwards'});
+  clearTimeout(f._t);f._t=setTimeout(function(){f.classList.add('flash');setTimeout(function(){f.classList.remove('flash')},500)},T*.79)}
+document.querySelectorAll('.lane').forEach(function(l,n){setTimeout(function(){run(l,1600)},n*120+200);
+  if(fine)l.addEventListener('pointerenter',function(){run(l,1400)});
+  l.addEventListener('focusin',function(){run(l,1400)})});
 t.onclick=function(){var l=r.getAttribute('data-theme')==='light';r.setAttribute('data-theme',l?'dark':'light');t.textContent=l?'Light':'Dark';t.setAttribute('aria-label',(l?'Light':'Dark')+' theme')};})();
 </script>
 </body>

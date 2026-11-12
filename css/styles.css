@@ -352,3 +352,71 @@ html.homes .tile[data-v=current] .row b{display:inline-block;padding:2px 18px 4p
 @keyframes lanerun{from{left:0}to{left:calc(100% - 26px)}}
 @keyframes flick{0%{filter:drop-shadow(5px 0 #ff2d55) drop-shadow(-5px 0 #00e5ff)}40%{filter:drop-shadow(-4px 1px #ff2d55) drop-shadow(4px -1px #00e5ff);transform:translateX(2px)}70%{filter:drop-shadow(3px 0 #ff2d55) drop-shadow(-3px 0 #00e5ff)}100%{filter:none;transform:none}}
 @media (prefers-reduced-motion:reduce){html.homes .ticker div{animation:none;padding-left:16px}}
+
+/* ===== Swim Opt 2.25 (design S1.46 version 4, decisions 179 to 182): the landing look on every job screen (html.jobs, set
+   in renderHeader). Kept exactly: the navy CCAS header, the pool and its lanes and lane numbers, medals, house colours, pink
+   judge-swapped times, yellow check boxes, chips and messages, the race badge, the clock, time sizes, tap sizes. No ticker. ===== */
+html.jobs body{background:var(--lt-bg)}
+html.jobs{--bg:var(--lt-bg)}
+
+
+/* headings */
+html.jobs main h2{font:900 clamp(26px,3vw,40px)/1 var(--font-display);text-transform:uppercase;letter-spacing:-.01em}
+html.jobs main h3{text-transform:uppercase;font-weight:900}
+html.jobs .racebar .info b{font:900 clamp(24px,2.6vw,34px)/1 var(--font-display);text-transform:uppercase;letter-spacing:-.01em}
+html.jobs .racebar .info span{font-family:var(--font-mono);font-size:.92rem;text-transform:uppercase;letter-spacing:.03em}
+html.jobs .label,html.jobs th,html.jobs .ghead .meta,html.jobs .fields label{font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+
+/* boxes become lanes */
+html.jobs .panel,html.jobs .gcard{background:transparent;border:0;border-top:3px dashed var(--lt-line);border-radius:0;padding-left:4px;padding-right:4px}
+html.jobs .gcard{padding:0}
+html.jobs .ghead{background:transparent;color:var(--lt-ink);padding:14px 4px 10px}
+html.jobs .ghead h3{font:900 20px/1.1 var(--font-display);text-transform:uppercase}
+html.jobs .ghead .meta{color:var(--lt-muted)}
+html.jobs th{background:transparent;border-bottom:2px solid var(--lt-line)}
+html.jobs td{border-bottom-color:var(--lt-line)}
+html.jobs .checkline{background:transparent;border:0;border-top:3px dashed var(--lt-line);border-bottom:3px dashed var(--lt-line);border-radius:0;padding:14px 4px}
+html.jobs .checkline .what{font-weight:900;text-transform:uppercase}
+
+/* house points: like the parents page */
+html.jobs .hcard{background:transparent;border:0;border-top:3px dashed var(--lt-line);border-left:6px solid var(--hc);border-radius:0}
+html.jobs .hcard b,html.jobs .hcard h3{text-transform:uppercase;font-weight:900}
+html.jobs .hcard .pts{font:900 3rem/1 var(--font-display)}
+html.jobs .barw{background:transparent;border-bottom:2px dashed var(--lt-line);border-radius:0;height:12px;overflow:visible}
+html.jobs .barw .bar{position:relative;border-radius:999px}
+html.jobs .barw .bar::after{content:"";position:absolute;right:-6px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:#ffc907;box-shadow:0 0 0 4px rgba(255,201,7,.25)}
+
+/* announcer */
+html.jobs .podium .pr{background:transparent;border-top:1px solid var(--lt-line);border-radius:0;padding-left:4px;padding-right:4px}
+html.jobs .podium .pr b{font-weight:900;text-transform:uppercase}
+html.jobs .water{background:transparent;color:var(--lt-ink);border:3px solid #ffc907;border-radius:12px}
+
+/* buttons and choices: yellow is the main action, as on the landing page */
+html.jobs .btn{background:transparent;border:2px solid var(--lt-line);border-radius:12px;font-family:var(--font-display);font-weight:800;color:var(--lt-ink)}
+html.jobs .btn.primary,html.jobs .btn.navy{background:#ffc907;border-color:#ffc907;color:#14203f;font-weight:900}
+html.jobs .btn.go{background:var(--ok);border-color:var(--ok);color:var(--on-ok)}
+html.jobs .btn.redfill{background:var(--bad);border-color:var(--bad);color:var(--on-bad)}
+html.jobs .btn.danger{color:var(--bad);border-color:var(--bad)}
+html.jobs .choice{background:transparent;font-weight:900}
+html.jobs .choice[aria-pressed="true"],html.jobs .tabs button[aria-pressed="true"]{background:#ffc907;border-color:#ffc907;color:#14203f}
+html.jobs .tabs button{background:transparent;border-radius:12px;border-width:2px;font-family:var(--font-display);font-weight:900}
+html.jobs .stbtn{background:transparent;border-width:2px}
+html.jobs .cam{background:#1d3160;color:#fff;border:3px dashed #ffc907;border-radius:16px;text-transform:uppercase;font-weight:900}
+html.jobs .pbar{background:var(--lt-bg);border-top:3px dashed var(--lt-line);box-shadow:none}
+
+/* organiser */
+html.jobs .secnav{gap:0}
+html.jobs .secnav button{background:transparent;border:0;border-top:3px dashed var(--lt-line);border-radius:0;padding:10px 12px 10px 16px}
+html.jobs .secnav button:last-child{border-bottom:3px dashed var(--lt-line)}
+html.jobs .secnav button b{text-transform:uppercase;font-weight:900;letter-spacing:-.01em}
+html.jobs .secnav button span{font-family:var(--font-mono);font-size:.78rem}
+html.jobs .secnav button[aria-pressed="true"]{border:0;border-top:3px dashed var(--lt-line);background:var(--lt-glow);box-shadow:inset 6px 0 0 #ffc907}
+html.jobs input:not([type=checkbox]):not([type=radio]):not(.timein),html.jobs select,html.jobs textarea{background:transparent;border:2px solid var(--lt-line);border-radius:12px}
+html.jobs .jobmenu{border-radius:12px}
+/* fixes after the first shots: the slim phone header must fit 390 px; the Recorder race title has its own inline size */
+html.jobs .recgrid .info>b{font:900 clamp(24px,2.6vw,34px)/1 var(--font-display)!important;text-transform:uppercase;letter-spacing:-.01em}
+html.jobs .recgrid .info>span{font-family:var(--font-mono);text-transform:uppercase;font-size:.92rem}
+/* version 4: Marshal Go much bigger, easy to find and press */
+html.jobs .btn.go[data-act=mgo]{min-width:clamp(150px,20vw,260px);min-height:104px;border-radius:16px;font:900 clamp(2rem,3.4vw,2.8rem)/1 var(--font-display);text-transform:uppercase;letter-spacing:.02em;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+html.jobs .checkline{gap:18px}
+@media (max-width:640px){html.jobs .btn.go[data-act=mgo]{width:100%;min-height:96px}}

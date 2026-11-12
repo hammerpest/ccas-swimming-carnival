@@ -55,6 +55,12 @@ a(C.parseSlip('nothing useful here').race===null,'slip unreadable');
 sl=C.parseSlip('LANE MODE 1/7 1\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec\nstop 8 09:19:42.550\n35.95 sec',8);
 a(sl.race===1&&sl.unsure.length===1&&sl.unsure[0]===8,'slip: race is the last number; a time that disagrees with the clock is unsure');
 a(C.parseSlip('LANE MODE 1/ 40\nstart 11:00:00.000\nstop 3 11:01:12.340\n1:12.34 sec',8).lanes[3]===7234,'slip 1:12.34 over a minute, as the printer shows it');
+// Swim Opt 2.22 (decision 172): races 100 and up, "1/105" (the number before the "/" ignored), and "1.105" when the "/" is misread
+{const S='\nstart 09:19:07.000\nstop 4 09:19:41.700\n34.70 sec';
+ a(C.parseSlip('LANE MODE 1/105'+S,8).race===105,'slip race 105 as printed');
+ a(C.parseSlip('LANE MODE 2/105'+S,8).race===105,'slip race 105, number before the slash ignored');
+ a(C.parseSlip('LANE MODE 1.100'+S,8).race===100,'slip race 100 with the slash read as a point');
+ a(C.parseSlip('LANE MODE 1/ 12'+S,8).race===12&&C.parseSlip('LANE MODE 1.10'+S,8).race===null,'slip: two-digit races unchanged');}
 // slip time for an empty lane must not change the results (check 3 on 2.1, defect 1)
 {const S2={config:{},students:[{id:'a',s:'A',f:'Ann',h:'B',x:'F',g:'14'},{id:'b',s:'B',f:'Bea',h:'J',x:'F',g:'14'}],
  heats:[{race:1,k:'back50',x:'F',g:'14',heat:1,lanes:{1:'a',2:'b'}}],

@@ -7,6 +7,8 @@ fails, errs = [], []
 def check(ok, name):
     print(("ok  " if ok else "FAIL"), name); ok or fails.append(name)
 
+# Swim Opt 2.25: the job screens show some words in uppercase; read the words as written
+WORDS = """(sel)=>{const s=document.createElement('style');s.textContent='*{text-transform:none!important}';document.head.appendChild(s);const t=document.querySelector(sel).innerText;s.remove();return t}"""
 async def main():
   async with async_playwright() as pw:
     b = await pw.chromium.launch()
@@ -34,7 +36,7 @@ async def main():
 
     # ---- Organiser section 9
     await O.click('[data-act=osec][data-v=parents]'); await O.wait_for_timeout(200)
-    t = await O.inner_text("body")
+    t = await O.evaluate(WORDS, "body")
     check(await O.locator('[data-act=osec]').count() == 9 and "9. Parents page" in t and "Parents page is off" in t, "Organiser: section 9 is Parents page, off to start")
     check(await O.locator('[data-act=pshow]').count() == 6 and await O.evaluate("[...document.querySelectorAll('[data-act=pshow]')].every(c=>c.checked)"), "Organiser: six ticks, all ticked to start")
     check(await O.get_attribute('[data-act=pnames][data-v=none]', "aria-pressed") == "true", "Organiser: No names to start")
@@ -54,7 +56,7 @@ async def main():
     check("Results are not open yet" in pt, "off: parents see Results are not open yet")
 
     await O.click('[data-act=ptog]'); await O.wait_for_timeout(250)
-    check(await O.evaluate("A.cfg.parents") is True and "Parents page is on" in await O.inner_text("body") and "On, no names" in await O.inner_text("nav.secnav"), "Organiser: the switch turns the page on")
+    check(await O.evaluate("A.cfg.parents") is True and "Parents page is on" in await O.evaluate(WORDS, "body") and "On, no names" in await O.evaluate(WORDS, "nav.secnav"), "Organiser: the switch turns the page on")
     pt = await load()
     check(all(h in pt for h in ["Bradman", "Jackson", "Newcombe"]) and "Age champions" in pt, "on: Home shows house points and age champions")
     tabs = await P.locator("#tabs a").all_text_contents()
@@ -109,7 +111,7 @@ async def main():
     # ---- off again
     await O.click('[data-act=ptog]'); await O.wait_for_timeout(250)
     pt = await load()
-    check("Results are not open yet" in pt and "Off" in await O.inner_text("nav.secnav"), "turned off again")
+    check("Results are not open yet" in pt and "Off" in await O.evaluate(WORDS, "nav.secnav"), "turned off again")
     check(errs == [], "no page errors " + str(errs[:3]))
     await b.close()
   print(f"\n{len(fails)} failed" if fails else "\nall passed"); sys.exit(1 if fails else 0)

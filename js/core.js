@@ -377,7 +377,8 @@ function compute(S){
    when both readings agree on that). Weaker signs that a misread can also cause (a lane twice, a time
    more than a second faster than the one above it, as a real slip is in finish order) set "mixed"; a
    smaller dip makes both lanes unsure. A line with a clock or a time on it that cannot be used is never
-   skipped quietly: it goes in "problems". The race number is the last number after the slash; when
+   skipped quietly: it goes in "problems". The race number is the last number after the slash ("1/105" for
+   races 100 and up, decision 172; "1.105" is read as "1/105"); when
    the slash is lost the last number after "MODE" is used. Extra numbers make it unsure ("raceLow").
    Input is the text, or the reader's lines with a confidence (0 to 100) for each word. */
 const SLIP_CONF=70;
@@ -411,7 +412,7 @@ function parseSlip(input,maxLanes){
   const STOPISH=/^\W{0,2}(?:s\s*)?t?\s*[o0]\s*p/i;
   const TIME=new RegExp("("+D+"{0,2}\\s*:?\\s*"+D+"{1,3}\\s*[.,]\\s*"+D+"{2})(?=\\s*s|\\s*$)","i");
   let race=null,raceLow=false,start=null,clock=null,lane=null,laneLow=false,heads=0,starts=0,above=false,strong=false,weak=false;
-  const lanes={},order=[],problems=[],unsure=[],missed=[],far=[];
+  const lanes={},order=[],problems=[],unsure=[],missed=[],far=[],clocks={};
   const doubt=l=>{if(!unsure.includes(l))unsure.push(l)};
   const noTime=()=>{if(lane!=null){problems.push("Lane "+lane+": no time read");if(!missed.includes(lane))missed.push(lane)}lane=null};
   const lastConfLow=L=>{if(!L.w)return false;const d=L.w.filter(x=>/[\dOolI|]/.test(x.t));return !d.length||!(d[d.length-1].c>=SLIP_CONF)};
@@ -423,7 +424,9 @@ function parseSlip(input,maxLanes){
     const mm=line.match(/M[O0]DE(.*)$/i);
     if(mm){
       if(race==null){
-        const tail=mm[1],sl=tail.lastIndexOf("/");
+        /* Swim Opt 2.22 (decision 172): races 100 and up print as "1/105" with no gap after the "/", which the reader
+           often sees as "1.105"; a point or comma before three digits is taken as that "/" */
+        const tail=mm[1].lastIndexOf("/")<0?mm[1].replace(/([\dOolI|])\s*[.,]\s*([\dOolI|]{3})(?![\dOolI|])/,"$1/$2"):mm[1],sl=tail.lastIndexOf("/");
         let ns=(sl>=0?tail.slice(sl+1):tail).trim().split(/\s+/).filter(x=>/^[\dOolI|]+$/.test(x));
         if(sl<0&&ns.length>=2)ns=ns.slice(1);
         const n=ns[ns.length-1];
@@ -443,7 +446,7 @@ function parseSlip(input,maxLanes){
       const cs=slipTime(tm[1]);
       if(cs==null){noTime();continue}
       if(lanes[lane]!=null){problems.push("Lane "+lane+" twice");doubt(lane);weak=true}
-      else{lanes[lane]=cs;order.push(lane);
+      else{lanes[lane]=cs;order.push(lane);if(clock!=null)clocks[lane]=clock;
         if(laneLow||slipLow(L,/\d[.,]\d/))doubt(lane);
         if(start==null||clock==null)doubt(lane);
         else{const dur=((clock-start)%3600000+3600000)%3600000,gap=Math.abs(dur/10-cs);if(gap>1)doubt(lane);if(gap>1000)far.push(lane)}}
@@ -454,7 +457,7 @@ function parseSlip(input,maxLanes){
   }
   noTime();
   for(let i=1;i<order.length;i++){const d=lanes[order[i]]-lanes[order[i-1]];if(d<-100)weak=true;else if(d<0){doubt(order[i]);doubt(order[i-1])}}
-  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,far,head:heads>0,
+  return {race:race!=null&&race>0?race:null,raceLow,lanes,order,problems,unsure,missed,far,clocks,start,head:heads>0,
     twoSlips:heads>1||strong||(above&&heads>0),mixed:weak};
 }
 

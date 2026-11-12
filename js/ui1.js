@@ -1,6 +1,6 @@
 /* ===== Swim Opt 1: app shell, PIN, header, shared helpers ===== */
 /* Swim Opt 2.15 (decision 157): the running version, shown in the Carnival Organiser badge. Update it with each release. */
-const APP_VERSION="2.26";
+const APP_VERSION="2.27";
 const JOBS=[
   {k:"marshal",n:1,name:"Marshal",badge:"MARSHAL",dev:"iPad",desc:"Put swimmers in lanes and send each heat"},
   {k:"judge",n:2,name:"Place Judge",badge:"PLACE JUDGE",dev:"iPad",desc:"Tap the top places in each heat"},
@@ -140,6 +140,8 @@ function renderHeader(){
   /* Swim Opt 2.26: Change year shows on Choose your job and the Carnival Organiser only (and while a past year is open, to get back) */
   /* Swim Opt 2.24 (S1.46): the PIN, Which carnival and Choose your job screens take the landing look and the ticker */
   document.documentElement.classList.toggle("homes",!j);
+  /* Swim Opt 2.25 (S1.46 version 4): every job screen takes the landing look, under the navy header */
+  document.documentElement.classList.toggle("jobs",!!j);
   if(!j)renderTicker();
   const slim=slimHdr();h.classList.toggle("slim",slim);
   if(slim){h.innerHTML=`<div class="wrap"><div class="topin"><span class="live ${cls}"><i></i>${esc(live)}</span>${jobPill(jobs,esc(pillName()))}</div></div>`;return}

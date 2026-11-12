@@ -39,7 +39,10 @@ function localAnswer(){
     times:Object.fromEntries(Object.entries(times).filter(([k])=>!(k in held)).map(([k,t])=>[k,{gen:t.gen,checked:t.checked,checkedAt:t.checkedAt,at:t.at,lanes:Object.fromEntries(Object.entries(t.lanes||{}).map(([l,v])=>[l,{t:v.t,st:v.st,slip:v.slip}]))}])),
     finish:Object.fromEntries(Object.entries(finish).filter(([k])=>!(k in held)).map(([k,f])=>[k,{order:f.order,gen:f.gen,ck:f.ck,ok:f.ok,at:f.at,multi:f.multi,taps:f.taps,n:f.n}])),
     records:((mem["records/all"]||{}).list||[]).map(r=>({key:r.key,t:r.t,holders:(r.holders||[]).map(x=>({n:on?ini(x.n):"A swimmer",h:x.h,y:x.y}))})),
-    students:studs.filter(x=>used.has(x.id)).map(x=>({id:code(x.id),f:on?String(x.f||"").trim().slice(0,1):"Swimmer",s:on?String(x.s||"").trim():"",h:x.h,x:x.x,g:x.g}))};
+    students:(()=>{const sent=studs.filter(x=>used.has(x.id)),key=x=>String(x.f||"").trim().slice(0,1).toLowerCase()+"|"+String(x.s||"").trim().toLowerCase(),n={};
+      for(const x of sent)n[key(x)]=(n[key(x)]||0)+1;
+      /* Swim Opt 2.22 (decision 171): two swimmers with the same first initial and surname show two letters ("Le Bell", "Lu Bell") */
+      return sent.map(x=>({id:code(x.id),f:on?String(x.f||"").trim().slice(0,n[key(x)]>1?2:1):"Swimmer",s:on?String(x.s||"").trim():"",h:x.h,x:x.x,g:x.g}))})()};
 }
 async function pull(){
   const C=window.SWIM_CONFIG||{};

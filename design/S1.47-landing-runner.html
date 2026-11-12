@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en-AU">
+<!-- Design S1.47 sample: the landing page runner dot, three endings to choose from. A copy of landing/index.html (Swim Opt 2.21); look only, not live. -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Carnivals</title>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;900&family=Red+Hat+Mono:wght@500;700&family=Red+Hat+Text:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1d3160; --yellow:#ffc907;
+  --bg:#0b1226; --ink:#ffffff; --muted:#b9c2de; --line:rgba(255,255,255,.28);
+  --l1:#1f5fbf; --l2:#d4a300; --l3:#1a8a4a;
+  --ticker:#ffc907; --tickink:#14203f;
+}
+:root[data-theme="light"]{
+  --bg:#f3f5fb; --ink:#14203f; --muted:#4a5573; --line:rgba(20,32,63,.3);
+  --l1:#1f5fbf; --l2:#b8920a; --l3:#15783e;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.5 "Red Hat Text",system-ui,sans-serif;overflow-x:hidden;height:100dvh;display:flex;flex-direction:column;overflow-y:auto}
+.ticker{background:var(--ticker);color:var(--tickink);overflow:hidden;white-space:nowrap;font:700 14px/36px "Red Hat Mono",ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase}
+.ticker div{display:inline-block;padding-left:100%;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:6px 20px}
+.brand{font:900 18px "Red Hat Display",sans-serif;letter-spacing:.5px}
+.brand span{color:var(--yellow)}
+:root[data-theme="light"] .brand span{color:#8a6c00}
+.theme{min-height:48px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:transparent;color:var(--ink);font:700 15px "Red Hat Display",sans-serif;cursor:pointer}
+.hero{padding:4px 20px 12px;max-width:1200px;width:100%;margin:0 auto}
+.hero h1{font:900 clamp(40px,min(13vw,15vh),150px)/.86 "Red Hat Display",sans-serif;margin:0;text-transform:uppercase;letter-spacing:-.03em}
+.hero h1 .o{color:transparent;-webkit-text-stroke:2px var(--ink)}
+.hero h1 .y{color:var(--yellow)}
+:root[data-theme="light"] .hero h1 .y{color:#8a6c00}
+.hero p{max-width:60ch;color:var(--muted);margin:10px 0 0;font-size:clamp(14px,2.2vh,19px)}
+.track{max-width:1200px;width:100%;margin:0 auto;padding:0 20px 8px;flex:1 1 auto;position:relative;z-index:1;display:flex;flex-direction:column}
+.lane{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;flex:1 1 0;min-height:104px;padding:8px 20px;margin:0;border-top:3px dashed var(--line);color:inherit;text-decoration:none;overflow:hidden;transition:flex-grow .35s ease;opacity:0;transform:translateX(-40px);animation:in .6s cubic-bezier(.2,.8,.2,1) forwards}
+.lane:last-child{border-bottom:3px dashed var(--line)}
+.lane:nth-child(2){animation-delay:.12s}.lane:nth-child(3){animation-delay:.24s}
+@keyframes in{to{opacity:1;transform:none}}
+.lane::before{content:"";position:absolute;inset:0;background:var(--c);opacity:0;transition:opacity .3s;z-index:0}
+.lane>*{position:relative;z-index:1}
+.no{font:900 clamp(48px,min(10vw,13vh),110px)/1 "Red Hat Display",sans-serif;color:transparent;-webkit-text-stroke:2px var(--c);min-width:1.1ch;transition:color .3s}
+.name h2{font:900 clamp(26px,min(5.5vw,7vh),60px)/1 "Red Hat Display",sans-serif;margin:0;text-transform:uppercase;letter-spacing:-.01em}
+.name p{margin:6px 0 0;color:var(--muted);font:500 15px "Red Hat Mono",ui-monospace,monospace}
+.cta{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:180px}
+.b{display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:12px;font:900 16px "Red Hat Display",sans-serif;text-decoration:none;white-space:nowrap}
+.b.p{background:var(--yellow);color:#14203f}
+.b.s{border:2px solid var(--line);color:var(--ink)}
+.runner{position:absolute;left:0;bottom:14px;width:18px;height:18px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(255,201,7,.25);z-index:1;transform:translateX(-30px)}
+/* S1.47 sample: the run is scripted so it can end three ways */
+.finish{position:absolute;top:0;bottom:0;right:4px;width:12px;z-index:1;opacity:.7;pointer-events:none;
+  background:repeating-conic-gradient(var(--ink) 0 25%,transparent 0 50%) 0 0/12px 12px;transition:opacity .2s}
+.finish.flash{opacity:1;background:repeating-conic-gradient(var(--yellow) 0 25%,transparent 0 50%) 0 0/12px 12px}
+body:not(.optB):not(.optC) .finish{display:none}
+.spark{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--yellow);z-index:2;pointer-events:none}
+.pick{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:60;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+  background:#14203f;color:#fff;padding:8px;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:calc(100% - 32px);font:700 14px "Red Hat Display",sans-serif}
+.pick span{align-self:center;padding:0 6px;font:700 13px "Red Hat Mono",monospace;color:#ffc907}
+.pick button{min-height:48px;padding:0 14px;border-radius:10px;border:2px solid rgba(255,255,255,.3);background:transparent;color:#fff;font:inherit;cursor:pointer}
+.pick button[aria-pressed="true"]{background:#ffc907;color:#14203f;border-color:#ffc907}
+@media (max-width:720px){.pick{display:grid;grid-template-columns:1fr 1fr;width:calc(100% - 32px)}.pick span{display:none}.pick button{padding:0 8px;font-size:13px}}
+.lane:hover,.lane:focus-within{flex-grow:1.4}
+.lane:hover::before,.lane:focus-within::before{opacity:.92}
+.lane:hover .no,.lane:focus-within .no{-webkit-text-stroke-color:#fff}
+.lane:hover .name h2,.lane:hover .name p,.lane:focus-within .name h2,.lane:focus-within .name p{color:#fff}
+.lane:hover .b.s,.lane:focus-within .b.s{border-color:#fff;color:#fff}
+.b:focus-visible,.theme:focus-visible{outline:3px solid #8db6ff;outline-offset:2px}
+:root[data-theme="light"] .b:focus-visible,:root[data-theme="light"] .theme:focus-visible{outline-color:#1d3160}
+.lane:focus-within .b:focus-visible{outline-color:#fff}
+.lane:nth-child(2):hover .no,.lane:nth-child(2):focus-within .no{-webkit-text-stroke-color:#14203f}
+.lane:nth-child(2):hover .name h2,.lane:nth-child(2):hover .name p,.lane:nth-child(2):hover .cd,.lane:nth-child(2):focus-within .name h2,.lane:nth-child(2):focus-within .name p,.lane:nth-child(2):focus-within .cd{color:#14203f}
+.lane:nth-child(2):hover .b.s,.lane:nth-child(2):focus-within .b.s{border-color:#14203f;color:#14203f}
+.lane:nth-child(2):focus-within .b:focus-visible{outline-color:#14203f}
+.foot{max-width:1200px;width:100%;margin:0 auto;padding:0 20px 10px;font-size:12px;color:var(--muted);font:500 14px "Red Hat Mono",ui-monospace,monospace}
+@media (max-width:720px){
+  .lane{grid-template-columns:auto 1fr;grid-template-areas:"no name" "cta cta";row-gap:12px;padding:8px 16px}
+  .hero p{display:none}
+  .runner{bottom:2px;width:12px;height:12px}
+  .no{grid-area:no}.name{grid-area:name}.cta{grid-area:cta;flex-direction:row}.cta .b{flex:1}
+  .lane{min-height:112px}
+}
+/* short screens: lanes never shrink below their full height; the page scrolls instead of cutting a button off */
+@media (max-height:760px){.lane{flex:1 0 auto}.ticker,.bar,.hero,.foot{flex-shrink:0}}
+@media (prefers-reduced-motion:reduce){
+  .ticker div{animation:none;padding-left:16px}
+  .lane{animation:none;opacity:1;transform:none}
+  .runner,.finish{display:none}
+}
+
+/* Effects */
+body::before{content:"";position:fixed;inset:-10%;pointer-events:none;z-index:50;opacity:.09;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");animation:grain .7s steps(4) infinite}
+@keyframes grain{25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(520px circle at var(--mx,50%) var(--my,25%),rgba(255,201,7,.14),transparent 62%)}
+:root[data-theme="light"] body::after{background:radial-gradient(520px circle at var(--mx,50%) var(--my,25%),rgba(31,95,191,.13),transparent 62%)}
+.hero h1{animation:wipe .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0);transform:skewX(-6deg) translateX(-20px)}to{clip-path:inset(0 0 0 0);transform:none}}
+.runner::after{content:"";position:absolute;right:100%;top:50%;height:3px;width:110px;transform:translateY(-50%);background:linear-gradient(90deg,transparent,var(--yellow));border-radius:3px}
+.lane:hover .no,.lane:focus-within .no{animation:glitch .45s steps(2) 1}
+@keyframes glitch{0%{filter:drop-shadow(5px 0 #ff2d55) drop-shadow(-5px 0 #00e5ff)}40%{filter:drop-shadow(-4px 1px #ff2d55) drop-shadow(4px -1px #00e5ff);transform:translateX(2px)}70%{filter:drop-shadow(3px 0 #ff2d55) drop-shadow(-3px 0 #00e5ff)}100%{filter:none;transform:none}}
+.b{transition:transform .15s ease-out}
+.cd{color:var(--yellow)}
+:root[data-theme="light"] .cd{color:#8a6c00}
+.lane:hover .cd,.lane:focus-within .cd{color:#fff}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}.hero h1{animation:none}.lane:hover .no,.lane:focus-within .no{animation:none}.b,.lane,.lane::before,.no{transition:none}}
+</style>
+</head>
+<body>
+<div class="ticker" aria-hidden="true"><div>Carnival season &nbsp;/&nbsp; Athletics: Friday 18 June 2027, Mingara Athletics Track &nbsp;/&nbsp; Staff sign in with your job PIN &nbsp;/&nbsp; Parents: results go live on the day &nbsp;/&nbsp; Bradman &nbsp;/&nbsp; Jackson &nbsp;/&nbsp; Newcombe &nbsp;/&nbsp;</div></div>
+<div class="bar"><div class="brand">ONLINE<span>CARNIVALS</span>.AU</div><button class="theme" id="t" type="button" aria-label="Light theme">Light</button></div>
+<section class="hero">
+  <h1>On <span class="o">your</span><br><span class="y">marks.</span></h1>
+  <p>Pick your lane. Three carnivals, one start line. Parents see live results. Staff run the day.</p>
+</section>
+<main class="track">
+  <article class="lane go" style="--c:var(--l1)">
+    <div class="no" aria-hidden="true">1</div>
+    <div class="name"><h2>Swimming</h2><p>/swimming</p></div>
+    <div class="cta"><a class="b p" href="swimming/parents/">Results</a><a class="b s" href="swimming/">Staff sign in</a></div>
+    <span class="runner" aria-hidden="true"></span>
+  </article>
+  <article class="lane go" style="--c:var(--l2)">
+    <div class="no" aria-hidden="true">2</div>
+    <div class="name"><h2>Athletics</h2><p>/athletics &nbsp;&middot;&nbsp; Fri 18 June 2027 &nbsp;&middot;&nbsp; <span class="cd" id="cd"></span></p></div>
+    <div class="cta"><a class="b p" href="athletics/parents/">Results</a><a class="b s" href="athletics/">Staff sign in</a></div>
+    <span class="runner" aria-hidden="true"></span>
+  </article>
+  <article class="lane go" style="--c:var(--l3)">
+    <div class="no" aria-hidden="true">3</div>
+    <div class="name"><h2>Cross Country</h2><p>/crosscountry</p></div>
+    <div class="cta"><a class="b p" href="crosscountry/parents/">Results</a><a class="b s" href="crosscountry/">Staff sign in</a></div>
+    <span class="runner" aria-hidden="true"></span>
+  </article>
+</main>
+<div class="foot">Parents: Results. Staff: sign in with your job PIN.</div>
+<div class="pick" role="group" aria-label="Sample endings"><span>S1.47</span>
+<button type="button" data-o="optA" aria-pressed="false">A Fizzle out</button>
+<button type="button" data-o="optB" aria-pressed="true">B Finish line</button>
+<button type="button" data-o="optC" aria-pressed="false">C Line and sparks</button>
+<button type="button" id="again">Run again</button></div>
+<script>
+(function(){var r=document.documentElement,t=document.getElementById('t');
+
+var rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+/* countdown to athletics */
+(function(){var e=document.getElementById('cd');if(!e)return;
+var t=new Date(2027,5,18,8,0,0)-new Date();
+if(t<0){e.textContent='Race day';return}
+var d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5);
+e.textContent=d+' days '+h+' h to go'})();
+/* spotlight follows the pointer */
+if(fine&&!rm){addEventListener('pointermove',function(ev){r.style.setProperty('--mx',ev.clientX+'px');r.style.setProperty('--my',ev.clientY+'px')},{passive:true})}
+/* magnetic buttons */
+if(fine&&!rm){document.querySelectorAll('.b').forEach(function(b){
+b.addEventListener('pointermove',function(ev){var q=b.getBoundingClientRect();
+b.style.transform='translate('+((ev.clientX-q.left-q.width/2)*.18)+'px,'+((ev.clientY-q.top-q.height/2)*.28)+'px)'});
+b.addEventListener('pointerleave',function(){b.style.transform=''})})}
+/* name scramble */
+if(!rm){var C='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&';
+function sc(el){var t=el.dataset.t||(el.dataset.t=el.textContent),i=0;clearInterval(el._i);
+el._i=setInterval(function(){el.textContent=t.split('').map(function(c,k){return c===' '||k<i?c:C[Math.floor(Math.random()*C.length)]}).join('');
+if(i++>=t.length){clearInterval(el._i);el.textContent=t}},38)}
+document.querySelectorAll('.name h2').forEach(function(h,n){h.setAttribute('aria-label',h.textContent);
+setTimeout(function(){sc(h)},500+n*150);
+h.closest('.lane').addEventListener('pointerenter',function(){sc(h)});
+h.closest('.lane').addEventListener('focusin',function(){sc(h)})})}
+/* S1.47 sample: the runner and its three endings */
+document.body.classList.add('optB');
+document.querySelectorAll('.lane').forEach(function(l){var f=document.createElement('span');f.className='finish';f.setAttribute('aria-hidden','true');l.appendChild(f)});
+function opt(){return document.body.classList.contains('optA')?'A':document.body.classList.contains('optC')?'C':'B'}
+function sparks(lane,x,y,n,size){for(var i=0;i<n;i++){var s=document.createElement('span');s.className='spark';
+  s.style.left=(x-3)+'px';s.style.top=(y-3)+'px';if(size){s.style.width=s.style.height=size+'px'}lane.appendChild(s);
+  var a=Math.PI*2*i/n+Math.random()*.5,d=18+Math.random()*26;
+  s.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+Math.cos(a)*d+'px,'+Math.sin(a)*d+'px) scale(.2)',opacity:0}],
+    {duration:520+Math.random()*200,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'}).onfinish=function(){this.effect.target.remove()}}}
+function run(lane,ms){if(rm)return;var d=lane.querySelector('.runner'),f=lane.querySelector('.finish'),o=opt();
+  if(d._a)d._a.cancel();d.style.opacity='';
+  var W=lane.clientWidth,dw=d.offsetWidth,fx=W-4-6; /* centre of the finish line */
+  var cy=d.offsetTop+dw/2;
+  if(o==='A'){ /* runs to the end of the lane, then fizzles into sparks */
+    var end=W-dw-12;
+    d._a=d.animate([{transform:'translateX(-30px)',opacity:1},{transform:'translateX('+end+'px)',opacity:1}],{duration:ms,easing:'cubic-bezier(.5,0,.2,1)',fill:'forwards'});
+    d._a.onfinish=function(){sparks(lane,end+dw/2,cy,10,dw>14?5:4);
+      d._a=d.animate([{transform:'translateX('+end+'px) scale(1)',opacity:1},{transform:'translateX('+end+'px) scale(1.5)',opacity:.6,offset:.3},{transform:'translateX('+end+'px) scale(0)',opacity:0}],{duration:420,easing:'ease-out',fill:'forwards'})};
+    return}
+  /* B and C: the dot is still at full speed as it crosses the line */
+  var cross=fx-dw/2,past=W+40,T=ms+250,k=.82;
+  var kf=o==='B'
+    ?[{transform:'translateX(-30px)',opacity:1},{transform:'translateX('+cross+'px)',opacity:1,offset:k},{transform:'translateX('+past+'px)',opacity:0}]
+    :[{transform:'translateX(-30px)',opacity:1},{transform:'translateX('+cross+'px)',opacity:1,offset:k},{transform:'translateX('+(cross+14)+'px)',opacity:0}];
+  d._a=d.animate(kf,{duration:T,easing:'cubic-bezier(.45,0,.75,.55)',fill:'forwards'});
+  setTimeout(function(){f.classList.add('flash');setTimeout(function(){f.classList.remove('flash')},500);
+    if(o==='C')sparks(lane,fx,cy,12,dw>14?5:4)},T*0.79)}
+var hov=fine;
+document.querySelectorAll('.lane').forEach(function(l,n){setTimeout(function(){run(l,1600)},n*120+200);
+  l.addEventListener(hov?'pointerenter':'focusin',function(){run(l,1400)});
+  if(hov)l.addEventListener('focusin',function(){run(l,1400)})});
+document.querySelectorAll('.pick [data-o]').forEach(function(b){b.onclick=function(){
+  document.body.classList.remove('optA','optB','optC');document.body.classList.add(b.dataset.o);
+  document.querySelectorAll('.pick [data-o]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+  document.querySelectorAll('.lane').forEach(function(l,n){setTimeout(function(){run(l,1600)},n*120)})}});
+document.getElementById('again').onclick=function(){document.querySelectorAll('.lane').forEach(function(l,n){setTimeout(function(){run(l,1600)},n*120)})};
+t.onclick=function(){var l=r.getAttribute('data-theme')==='light';r.setAttribute('data-theme',l?'dark':'light');t.textContent=l?'Light':'Dark';t.setAttribute('aria-label',(l?'Light':'Dark')+' theme')};})();
+</script>
+</body>
+</html>
