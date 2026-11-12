@@ -318,6 +318,7 @@ function renderInner(){
   document.documentElement.style.setProperty("--hdrh",document.getElementById("hdr").offsetHeight+"px");
   const main=document.getElementById("main");
   let html="";
+  if(A.role&&A.job)A.tilesSeen=false;
   if(!A.role||!A.job)html=renderHome();
   else if(A.job==="marshal")html=renderMarshal();
   else if(A.job==="judge")html=renderJudge();
@@ -336,6 +337,7 @@ function renderInner(){
   window.scrollTo(sx,sy);
   wireInputs();
   fitPicklist();
+  if(document.querySelector(".tiles")){tilesFx(A.tilesFxFirst);A.tilesFxFirst=false}
 }
 /* Swim Opt 2.10: the Marshal's name list opens downwards for the top half of the pool (lanes 1 to 4) and
    upwards for the bottom half (5 to 8). An upward list stops under the bar with Next heat and New race,

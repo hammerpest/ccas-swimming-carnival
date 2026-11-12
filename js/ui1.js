@@ -1,6 +1,6 @@
 /* ===== Swim Opt 1: app shell, PIN, header, shared helpers ===== */
 /* Swim Opt 2.15 (decision 157): the running version, shown in the Carnival Organiser badge. Update it with each release. */
-const APP_VERSION="2.20";
+const APP_VERSION="2.24";
 const JOBS=[
   {k:"marshal",n:1,name:"Marshal",badge:"MARSHAL",dev:"iPad",desc:"Put swimmers in lanes and send each heat"},
   {k:"judge",n:2,name:"Place Judge",badge:"PLACE JUDGE",dev:"iPad",desc:"Tap the top places in each heat"},
@@ -137,6 +137,9 @@ function renderHeader(){
   const jobs=A.role==="org"?[...JOBS,ORG_JOB]:[];
   /* slim banner on the phone multitimer (S1.41) and the phone Place Judge and Announcer (Swim Opt 2.6):
      only the signal dot and the Job pill */
+  /* Swim Opt 2.24 (S1.46): the PIN, Which carnival and Choose your job screens take the landing look and the ticker */
+  document.documentElement.classList.toggle("homes",!j);
+  if(!j)renderTicker();
   const slim=slimHdr();h.classList.toggle("slim",slim);
   if(slim){h.innerHTML=`<div class="wrap"><div class="topin"><span class="live ${cls}"><i></i>${esc(live)}</span>${jobPill(jobs,esc(pillName()))}</div></div>`;return}
   h.innerHTML=`<div class="wrap"><div class="topin">
@@ -155,10 +158,34 @@ function jobPill(jobs,label){
 }
 
 /* ---------- home ---------- */
+/* Swim Opt 2.24: the ticker above the header on the home screens (decision 182). Built once; rebuilt only when its words change. */
+function renderTicker(){
+  const t=document.getElementById("tick");if(!t)return;
+  const c=A.cfg||{};let day="";
+  if(c.date&&c.dateConfirmed!==false){const d=new Date(c.date+"T00:00:00");if(!isNaN(d))day=d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+  const words=[c.name||"CCAS Swimming Carnival",c.pool,day,"Staff sign in with your job PIN","Bradman","Jackson","Newcombe"].filter(Boolean);
+  const html=`<div>${words.map(w=>esc(w)+" &nbsp;/&nbsp; ").join("")}</div>`;
+  if(t.dataset.w!==html){t.dataset.w=html;t.innerHTML=html}
+}
+/* Swim Opt 2.24: on a Mac the job names scramble in the first time Choose your job shows, and again when the pointer
+   comes onto a lane (the landing page's effect). Each tile keeps its real words as its name for screen readers. */
+const MAC_FX=matchMedia("(hover:hover) and (pointer:fine)");
+const CALM=matchMedia("(prefers-reduced-motion:reduce)");
+function tilesFx(first){
+  if(!MAC_FX.matches||CALM.matches)return;
+  const C="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&";
+  const sc=el=>{const t=el.dataset.t||(el.dataset.t=el.textContent);let i=0;clearInterval(el._i);
+    el._i=setInterval(()=>{el.textContent=t.split("").map((c,k)=>c===" "||k<i?c:C[Math.floor(Math.random()*C.length)]).join("");
+      if(i++>=t.length){clearInterval(el._i);el.textContent=t}},38)};
+  document.querySelectorAll(".tiles .tile").forEach((tile,n)=>{const b=tile.querySelector("b");if(!b)return;
+    tile.setAttribute("aria-label",[...tile.children].map(e=>e.textContent.trim()).filter(Boolean).join(" "));
+    if(first)setTimeout(()=>sc(b),300+n*120);
+    tile.addEventListener("pointerenter",()=>sc(b));tile.addEventListener("focus",()=>sc(b))});
+}
 function renderHome(){
-  if(A.role==="org"&&!A.yearPicked)return renderYearPick();
-  if(!A.role){
-    return `<div class="home"><h1>Swimming Carnival</h1><p class="muted" style="margin:0">Type the PIN to start.</p>
+  if(A.role==="org"&&!A.yearPicked){A.tilesSeen=false;return renderYearPick()}
+  if(!A.role){A.tilesSeen=false;
+    return `<div class="home"><h1>Swimming <span class="y">Carnival</span></h1><p class="muted" style="margin:0">Type the PIN to start.</p>
       <div class="dots" aria-label="PIN digits typed">${[0,1,2,3].map(i=>`<i class="${A.pin.length>i?"on":""}"></i>`).join("")}</div>
       ${A.pinErr?`<div class="msg bad" role="alert">That PIN is not right. Try again.</div>`:""}
       <div class="keypad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-act="key" data-k="${n}">${n}</button>`).join("")}<button type="button" data-act="key" data-k="c" aria-label="Clear" style="font-size:1rem">Clear</button><button type="button" data-act="key" data-k="0">0</button><button type="button" data-act="key" data-k="b" aria-label="Delete" style="font-size:1rem">Delete</button></div>
@@ -166,13 +193,15 @@ function renderHome(){
     </div>`;
   }
   const tiles=JOBS.map((j,i)=>`<button type="button" class="tile ${i===4?"wide":""}" data-act="goto" data-job="${j.k}"><span class="n">${j.n}</span><b>${j.name}</b><span>${esc(j.desc)}</span></button>`).join("");
-  return `<div class="home"><h1>Swimming Carnival</h1><p class="muted" style="margin:0">Choose your job.</p>
-    <div class="tiles">${tiles}${A.role==="org"?`<button type="button" class="tile orgtile wide" data-act="goto" data-job="organiser"><span class="n">6</span><b>Carnival Organiser</b><span>Organiser only</span></button>`:""}</div>
+  /* the lanes slide in only the first time this screen shows, not on every refresh */
+  const fx=!A.tilesSeen;A.tilesSeen=true;A.tilesFxFirst=fx;
+  return `<div class="home"><h1>Swimming <span class="y">Carnival</span></h1><p class="muted" style="margin:0">Choose your job.</p>
+    <div class="tiles${fx?" fx":""}">${tiles}${A.role==="org"?`<button type="button" class="tile orgtile wide" data-act="goto" data-job="organiser"><span class="n">6</span><b>Carnival Organiser</b><span>Organiser only</span></button>`:""}</div>
     <button type="button" class="linkbtn" data-act="signout">Sign out (back to PIN)</button></div>`;
 }
 function renderYearPick(){
   const cur=curYear();
-  return `<div class="home"><h1>Which carnival?</h1><p class="muted" style="margin:0">Pick the year. Past years are look only.</p>
+  return `<div class="home"><h1>Which <span class="y">carnival?</span></h1><p class="muted" style="margin:0">Pick the year. Past years are look only.</p>
     <div class="stack" style="width:100%;max-width:520px">
       <button type="button" class="tile wide" style="min-height:0" data-act="year" data-v="current"><span class="row" style="justify-content:space-between;width:100%"><b>${esc(cur)}</b><span class="chip final">Current carnival</span></span><span>${esc(A.L.cfg?A.L.cfg.name:A.cfg.name)} · live</span></button>
       ${A.years.filter(y=>String(y.year)!==cur).map(y=>`<button type="button" class="tile wide" style="min-height:0" data-act="year" data-v="${esc(y.year)}"><span class="row" style="justify-content:space-between;width:100%"><b>${esc(y.year)}</b><span class="chip">Look only</span></span><span>${esc(y.name||"")} · ${y.heats||0} races, ${y.students||0} students</span></button>`).join("")||`<p class="muted" style="margin:0">No past years kept yet. A year is kept when the organiser presses Start a new carnival.</p>`}

@@ -112,3 +112,55 @@ main{padding:16px max(16px,env(safe-area-inset-right,0px)) calc(88px + env(safe-
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 nav.tabs a{min-height:58px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;color:var(--muted);text-decoration:none;border-top:3px solid transparent}
 nav.tabs a[aria-current=page]{color:var(--ink);font-weight:800;border-top-color:var(--sun)}
+
+/* ===== Swim Opt 2.24 (design S1.46 version 4, decisions 178, 182, 183): the onlinecarnivals.au landing look.
+   Ticker, brand bar header with a big uppercase heading, lanes in place of cards, outlined house places, bars that
+   grow once with the yellow runner dot. Kept: medals, house dots and colours, chips, the NEW RECORD tag, Mono times, every word. ===== */
+:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.3);--lt-y:#8a6c00}
+@media (prefers-color-scheme:dark){:root{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907}}
+body{background:var(--lt-bg)}
+.ticker{background:#ffc907;color:#14203f;overflow:hidden;white-space:nowrap;font:700 14px/36px var(--font-mono);letter-spacing:1px;text-transform:uppercase;padding-top:env(safe-area-inset-top,0px)}
+.ticker div{display:inline-block;padding-left:100%;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+.top{padding-top:14px;background:var(--lt-bg);color:var(--lt-ink);border-bottom:3px dashed var(--lt-line)}
+.top h1{font:900 clamp(34px,9vw,64px)/.9 var(--font-display);text-transform:uppercase;letter-spacing:-.03em;margin-top:14px}
+.top h1 .y{color:var(--lt-y)}
+.top p,.top .upd{color:var(--lt-muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em}
+.back{color:var(--lt-ink)}
+main{gap:18px}
+.card{background:transparent;border:0;border-top:3px dashed var(--lt-line);border-radius:0}
+.head h2{font:900 26px/1 var(--font-display);text-transform:uppercase;letter-spacing:-.01em}
+.more,a.more{color:var(--lt-y);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;font-size:14px}
+.hrow .rank{font:900 40px/1 var(--font-display);color:transparent;-webkit-text-stroke:1.5px var(--lt-ink);width:auto;min-width:34px;white-space:nowrap} /* a tie shows "=1", wider than one figure */
+.hrow .n{font:900 20px var(--font-display);text-transform:uppercase}
+.hrow .t{font-size:22px;font-weight:700}
+.bar{height:12px;margin-left:44px;overflow:visible;background:transparent;border-bottom:2px dashed var(--lt-line);border-radius:0}
+.bar i{position:relative;height:12px}
+.bar i::after{content:"";position:absolute;right:-6px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:#ffc907;box-shadow:0 0 0 4px rgba(255,201,7,.25)}
+/* the bars grow once, when the page first shows results (html.grown is set after that, so the minute refresh does not replay it) */
+html:not(.grown) .bar i{animation:grow 1.4s cubic-bezier(.5,0,.2,1) both}
+@keyframes grow{from{width:0}}
+.link{border-radius:0}
+.link.recs{background:transparent;border-radius:12px;border-top:0}
+.ev{border-top:3px dashed var(--lt-line)}
+.ev .bar2{background:transparent;color:var(--lt-ink);padding:14px 4px 10px}
+.ev .bar2 h3{font:900 19px/1.1 var(--font-display);text-transform:uppercase}
+.ev .bar2 .sub{color:var(--lt-muted);font-family:var(--font-mono);font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+.res{border-top:1px solid var(--lt-line);padding:9px 4px}
+.res .nm b{font-weight:700}
+.res .pl{font:900 20px var(--font-display)}
+.recnote{border-radius:10px}
+.list a{border-top:1px solid var(--lt-line);padding-left:4px;padding-right:4px}
+.list a .grow b{font-family:var(--font-display);font-weight:800}
+.stats{border-top:1px solid var(--lt-line)}
+.stats div+div{border-left:1px dashed var(--lt-line)}
+.tbl th{background:transparent;font-family:var(--font-mono);text-transform:uppercase;border-bottom:2px solid var(--lt-line)}
+.tbl td{border-top:1px solid var(--lt-line)}
+.seg button{background:transparent;border:2px solid var(--lt-line);border-radius:12px;font-family:var(--font-display);font-weight:900}
+.seg button[aria-pressed=true]{background:#ffc907;border-color:#ffc907;color:#14203f}
+.field{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+.field select,.field input{background:transparent;border:2px solid var(--lt-line);border-radius:12px}
+nav.tabs{background:var(--lt-bg);border-top:3px dashed var(--lt-line)}
+nav.tabs a{font:700 14px var(--font-mono);text-transform:uppercase;letter-spacing:.04em;color:var(--lt-muted);border-top-width:4px;margin-top:-3px}
+nav.tabs a[aria-current=page]{color:var(--lt-ink);border-top-color:#ffc907}
+@media (prefers-reduced-motion:reduce){.ticker div{animation:none;padding-left:16px}html:not(.grown) .bar i{animation:none}}

@@ -285,3 +285,70 @@ body:has(.pbar) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .ann.ph .water{padding:10px 14px;gap:6px 10px}.ann.ph .water .label{flex:0 0 100%}
 .ann.ph h2{font-size:1.2rem}.ann.ph .phmeta{gap:6px;flex-wrap:nowrap}.ann.ph .phmeta .muted{font-size:.85rem}.ann.ph .podium{gap:8px}
 .ann.ph .podium .pr{gap:10px;padding:10px 12px}.ann.ph .podium .pr b{font-size:1.15rem}.ann.ph .podium .pr .t{font-size:1.3rem}.ann.ph .podium .medal{width:40px;height:40px;font-size:1.1rem}
+
+/* ===== Swim Opt 2.24 (design S1.46 version 4, decisions 178 to 183): the onlinecarnivals.au landing look on the
+   PIN, Which carnival and Choose your job screens (html.homes, set in renderHeader). Every job screen keeps the look above. ===== */
+:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.3);--lt-y:#8a6c00;--lt-glow:rgba(255,201,7,.16)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}}
+:root[data-theme="dark"]{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}
+html.homes body{background:var(--lt-bg)}
+html.homes body::before{background:var(--lt-bg)}
+/* ticker (decorative, hidden from screen readers; still under reduced motion) */
+.ticker{display:none}
+html.homes .ticker{display:block;background:#ffc907;color:#14203f;overflow:hidden;white-space:nowrap;font:700 14px/36px var(--font-mono);letter-spacing:1px;text-transform:uppercase;position:relative;z-index:21}
+html.homes .ticker div{display:inline-block;padding-left:100%;animation:tick 40s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+/* header: the landing brand bar */
+html.homes header.top{background:var(--lt-bg);color:var(--lt-ink);border-bottom:3px dashed var(--lt-line)}
+html.homes .ttl b{font-weight:900;text-transform:uppercase;letter-spacing:-.01em}
+html.homes .ttl small{color:var(--lt-muted);font-family:var(--font-mono)}
+html.homes .hlink{color:var(--lt-ink);border:2px solid var(--lt-line);border-radius:12px;font-family:var(--font-display);font-weight:800}
+html.homes .hlink:hover{background:var(--lt-glow)}
+html.homes .live{color:var(--lt-muted);background:transparent;border:1px solid var(--lt-line)}
+/* big uppercase heading, last word yellow */
+.home h1 .y{color:var(--lt-y)}
+html.homes .home{gap:20px;max-width:980px}
+html.homes .home h1{font:900 clamp(44px,min(9vw,11vh),104px)/.88 var(--font-display);text-transform:uppercase;letter-spacing:-.03em;color:var(--lt-ink)}
+html.homes .home>p.muted{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--lt-muted)}
+/* PIN */
+html.homes .dots i{border-color:var(--lt-ink);background:transparent}
+html.homes .dots i.on{background:var(--lt-y);border-color:var(--lt-y)}
+html.homes .keypad{grid-template-columns:repeat(3,88px)}
+html.homes .keypad button{background:transparent;border:2px solid var(--lt-line);border-radius:12px;font:900 1.8rem var(--font-display);color:var(--lt-ink)}
+html.homes .keypad button:active{background:#ffc907;border-color:#ffc907;color:#14203f}
+/* job tiles and year pick: lanes */
+html.homes .tiles{grid-template-columns:1fr;gap:0}
+html.homes .tile{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:22px;row-gap:4px;align-items:center;background:transparent;border:0;border-top:3px dashed var(--lt-line);border-radius:0;min-height:96px;padding:12px 16px;color:var(--lt-ink)}
+html.homes .tiles .tile:last-child{border-bottom:3px dashed var(--lt-line)}
+@media (hover:hover){html.homes .tile:hover{background:var(--lt-glow);border-color:var(--lt-line)}}
+html.homes .tile .n{grid-row:1/3;width:auto;min-width:1.1ch;height:auto;background:transparent;border-radius:0;color:transparent;-webkit-text-stroke:2px var(--lt-y);font:900 64px/1 var(--font-display);justify-content:flex-start}
+html.homes .tile b{font:900 clamp(22px,3vw,32px)/1 var(--font-display);text-transform:uppercase;letter-spacing:-.01em;align-self:end}
+html.homes .tile>span:not(.n):not(.row){font:500 14px var(--font-mono);color:var(--lt-muted);align-self:start}
+html.homes .tile.orgtile{background:#1d3160;color:#fff;border-top-color:transparent;border-radius:12px;margin-top:10px}
+html.homes .tiles .tile.orgtile:last-child{border-bottom:0}
+html.homes .tile.orgtile span.n{background:transparent;color:transparent;-webkit-text-stroke-color:#ffc907}
+html.homes .tile.orgtile>span:not(.n){color:#b9c3da}
+html.homes .tile .row{grid-column:1/-1}
+html.homes .tile .row b{font:900 clamp(22px,3vw,32px)/1 var(--font-display)}
+html.homes .tile .row ~ span{grid-column:1/-1}
+/* Which carnival: a yellow oval around the year being opened (decision 179) */
+html.homes .tile[data-v=current] .row b{display:inline-block;padding:2px 18px 4px;border:3px solid var(--lt-y);border-radius:999px;color:var(--lt-ink)}
+/* Choose your job on a Mac (mouse or trackpad only, not under reduced motion): the landing page's lane effects (decision 179).
+   .fx is on the tiles only the first time the screen shows, so a refresh does not replay the slide in. */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  html.homes .tiles .tile{position:relative;overflow:hidden;transition:background .25s,color .25s}
+  html.homes .tiles.fx .tile{opacity:0;transform:translateX(-40px);animation:lanein .6s cubic-bezier(.2,.8,.2,1) forwards}
+  html.homes .tiles.fx .tile:nth-child(2){animation-delay:.08s}html.homes .tiles.fx .tile:nth-child(3){animation-delay:.16s}html.homes .tiles.fx .tile:nth-child(4){animation-delay:.24s}html.homes .tiles.fx .tile:nth-child(5){animation-delay:.32s}html.homes .tiles.fx .tile:nth-child(6){animation-delay:.40s}
+  html.homes .tiles .tile:not(.orgtile):hover,html.homes .tiles .tile:not(.orgtile):focus-visible{background:#1d3160;color:#fff}
+  html.homes .tiles .tile:not(.orgtile):hover>span:not(.n),html.homes .tiles .tile:not(.orgtile):focus-visible>span:not(.n){color:#b9c3da}
+  html.homes .tiles .tile:not(.orgtile):hover .n,html.homes .tiles .tile:not(.orgtile):focus-visible .n{-webkit-text-stroke-color:#ffc907;animation:flick .45s steps(2) 1}
+  html.homes .tiles .tile.orgtile:hover,html.homes .tiles .tile.orgtile:focus-visible{background:#ffc907;color:#14203f}
+  html.homes .tiles .tile.orgtile:hover>span:not(.n),html.homes .tiles .tile.orgtile:focus-visible>span:not(.n){color:#14203f}
+  html.homes .tiles .tile.orgtile:hover .n,html.homes .tiles .tile.orgtile:focus-visible .n{-webkit-text-stroke-color:#14203f;animation:flick .45s steps(2) 1}
+  html.homes .tiles .tile::after{content:"";position:absolute;left:0;bottom:10px;width:16px;height:16px;border-radius:50%;background:#ffc907;box-shadow:0 0 0 4px rgba(255,201,7,.25);transform:translateX(-30px)}
+  html.homes .tiles .tile:hover::after,html.homes .tiles .tile:focus-visible::after{animation:lanerun 1.2s cubic-bezier(.5,0,.2,1) forwards}
+}
+@keyframes lanein{to{opacity:1;transform:none}}
+@keyframes lanerun{from{left:0}to{left:calc(100% - 26px)}}
+@keyframes flick{0%{filter:drop-shadow(5px 0 #ff2d55) drop-shadow(-5px 0 #00e5ff)}40%{filter:drop-shadow(-4px 1px #ff2d55) drop-shadow(4px -1px #00e5ff);transform:translateX(2px)}70%{filter:drop-shadow(3px 0 #ff2d55) drop-shadow(-3px 0 #00e5ff)}100%{filter:none;transform:none}}
+@media (prefers-reduced-motion:reduce){html.homes .ticker div{animation:none;padding-left:16px}}

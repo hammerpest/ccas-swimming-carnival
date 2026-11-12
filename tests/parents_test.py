@@ -48,7 +48,8 @@ async def main():
     await P.set_viewport_size({"width": 390, "height": 844})
     async def load(h="#/"):
         await P.goto("about:blank"); await P.goto(ROOT + "parents/index.html?mode=local" + h); await P.wait_for_timeout(500)
-        return await P.inner_text("body")
+        # Swim Opt 2.24: the words as written (the S1.46 look shows some in uppercase)
+        return await P.evaluate("[...document.querySelectorAll('#hdr,main,#tabs')].map(e=>e.textContent).join(' ')")
     pt = await load()
     check("Results are not open yet" in pt, "off: parents see Results are not open yet")
 
@@ -56,7 +57,7 @@ async def main():
     check(await O.evaluate("A.cfg.parents") is True and "Parents page is on" in await O.inner_text("body") and "On, no names" in await O.inner_text("nav.secnav"), "Organiser: the switch turns the page on")
     pt = await load()
     check(all(h in pt for h in ["Bradman", "Jackson", "Newcombe"]) and "Age champions" in pt, "on: Home shows house points and age champions")
-    tabs = await P.locator("#tabs a").all_inner_texts()
+    tabs = await P.locator("#tabs a").all_text_contents()
     check(tabs == ["Home", "Events", "Houses"], "names off: no Find tab " + str(tabs))
     data = await P.evaluate("JSON.stringify(P.data)"); html = await P.content()
     names = [w for s in who for w in (s["f"], s["s"])]
@@ -78,7 +79,7 @@ async def main():
     check(short in pt and "J Citizen" in pt, "names on: first initial and surname (" + short + "), record holder J Citizen")
     data = await P.evaluate("JSON.stringify(P.data)")
     check(a["f"] not in data or len(a["f"]) == 1, "names on: the first name itself is never sent")
-    tabs = await P.locator("#tabs a").all_inner_texts()
+    tabs = await P.locator("#tabs a").all_text_contents()
     check(tabs == ["Home", "Events", "Find", "Houses"], "names on: Find tab is back")
     await load("#/find"); await P.fill("#q", a["s"][:3]); await P.wait_for_timeout(250)
     check(short in await P.inner_text("#hits"), "Find a swimmer by surname")
@@ -97,12 +98,12 @@ async def main():
     check(await O.evaluate("A.cfg.parentsShow.age===false&&A.cfg.parentsShow.find===false&&A.cfg.parentsShow.champs===false"), "Organiser: ticks saved")
     pt = await load("#/houses")
     check("Points by age group" not in pt and "Newcombe" in pt, "Points by age group unticked: the table goes, the houses stay")
-    check(await P.locator("#tabs a").all_inner_texts() == ["Home", "Events", "Houses"], "Find unticked: no Find tab")
+    check(await P.locator("#tabs a").all_text_contents() == ["Home", "Events", "Houses"], "Find unticked: no Find tab")
     pt = await load()
     check("Age champions" not in pt and "By age group" not in pt, "Age champions unticked: gone from Home")
     await O.click('[data-act=pshow][data-v=events]'); await O.wait_for_timeout(150); await O.click('[data-act=pshow][data-v=house]'); await O.wait_for_timeout(200)
     pt = await load("#/events")
-    check(await P.locator("#tabs a").all_inner_texts() == ["Home"] and "Latest results" not in pt and "House points" not in await P.inner_text("main"), "Events and House points unticked: only Home, without those cards")
+    check(await P.locator("#tabs a").all_text_contents() == ["Home"] and "Latest results" not in pt and "House points" not in await P.text_content("main"), "Events and House points unticked: only Home, without those cards")
     check(await P.evaluate("document.documentElement.scrollWidth<=innerWidth"), "no sideways scroll on a phone")
 
     # ---- off again

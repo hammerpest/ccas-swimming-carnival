@@ -16,7 +16,9 @@ async def run(pw,dev,theme):
     async def page():
         p=await ctx.new_page()
         p.on("pageerror",lambda e:errs.append((dev,theme,str(e))))
-        await p.goto(URL); await p.wait_for_timeout(400); return p
+        await p.goto(URL); await p.wait_for_timeout(400)
+        # Swim Opt 2.24: hold the home screens' ticker still so shots are the same each run
+        await p.add_style_tag(content=".ticker div{animation:none!important;padding-left:16px!important}"); return p
     async def shot(p,name):
         await p.wait_for_timeout(150)
         await p.screenshot(path=os.path.join(OUT,f"{name}-{dev}-{theme}.png"),full_page=True)
@@ -27,7 +29,8 @@ async def run(pw,dev,theme):
     await shot(O,"home-pin")
     await pin(O,"0000"); await shot(O,"home-wrongpin")
     await pin(O,"9999"); await shot(O,"home-yearpick")
-    await O.click('[data-act=year][data-v=current]'); await shot(O,"home-orgtiles")
+    # Swim Opt 2.24: on a Mac-like browser the job lanes slide in and the names scramble; wait for them to settle, pointer off the lanes
+    await O.click('[data-act=year][data-v=current]'); await O.mouse.move(1,1); await O.wait_for_timeout(1800); await shot(O,"home-orgtiles")
     await O.click('.tile[data-job=organiser]')
     await O.click('[data-act=osec][data-v=students]'); await O.click('[data-act=otest]'); await shot(O,"org-students-preview")
     await O.click('[data-act=oimport]'); await O.wait_for_timeout(200)

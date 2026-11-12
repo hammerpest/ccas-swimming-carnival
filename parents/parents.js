@@ -240,10 +240,18 @@ function renderTop(){
   const sub=d&&d.config?[dateText(d.config),d.config.pool].filter(Boolean).join(", "):"";
   const back=["event","swimmer","champions","records"].includes(r.a)?`<a class="back" data-back href="${r.a==="swimmer"?"#/find":r.a==="event"?"#/events":"#/"}">&lt; Back</a>`:"";
   const upd=P.at||P.savedAt?`<p class="upd">Updated ${new Date(P.at||P.savedAt).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"})}</p>`:"";
-  $("hdr").innerHTML=`<div class="row"><span class="badge">LIVE RESULTS</span>${chip}</div>${back?`<div style="margin-top:8px">${back}</div>`:""}<h1>${r.a===""?esc(name):esc(title(r))}</h1>${r.a===""&&sub?`<p>${esc(sub)}</p>`:""}${r.a===""?upd:""}`;
-  drawTabs();
+  $("hdr").innerHTML=`<div class="row"><span class="badge">LIVE RESULTS</span>${chip}</div>${back?`<div style="margin-top:8px">${back}</div>`:""}<h1>${lastYellow(r.a===""?name:title(r))}</h1>${r.a===""&&sub?`<p>${esc(sub)}</p>`:""}${r.a===""?upd:""}`;
+  drawTabs();renderTicker();
   const tab={"":"home",events:"events",event:"events",find:"find",swimmer:"find",houses:"houses",champions:"home",records:"home"}[r.a]||"home";
   for(const a of document.querySelectorAll("#tabs a"))a.dataset.tab===tab?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current");
+}
+/* Swim Opt 2.24 (S1.46): the heading's last word in yellow, and the ticker words from the carnival's own details */
+function lastYellow(t){const w=String(t).trim().split(/\s+/);if(w.length<2)return esc(t);const l=w.pop();return esc(w.join(" "))+' <span class="y">'+esc(l)+"</span>"}
+function renderTicker(){
+  const c=P.data&&P.data.config||{};
+  const words=["Results update every minute",c.pool,dateText(c),"Bradman","Jackson","Newcombe"].filter(Boolean);
+  const html=`<div>${words.map(w=>esc(w)+" &nbsp;/&nbsp; ").join("")}</div>`;
+  const t=$("tick");if(t&&t.dataset.w!==html){t.dataset.w=html;t.innerHTML=html}
 }
 function dateText(c){if(!c.date||c.dateConfirmed===false)return "";const d=new Date(c.date+"T00:00:00");return isNaN(d)?"":d.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})}
 function render(){
@@ -257,6 +265,8 @@ function render(){
   const keep=document.activeElement&&document.activeElement.id==="q";
   m.innerHTML=r.a==="events"?events():r.a==="event"?eventPage(r.b):r.a==="find"?find():r.a==="swimmer"?swimmerPage(r.b):r.a==="houses"?houses():r.a==="champions"?champions():r.a==="records"?records():home();
   if(keep){const q=$("q");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}}
+  /* the house bars grow once: after the first screen with bars, later refreshes show them still */
+  if(!P.grown&&m.querySelector(".bar i")){P.grown=true;setTimeout(()=>document.documentElement.classList.add("grown"),1600)}
 }
 
 let moves=0;
