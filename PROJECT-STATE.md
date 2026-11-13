@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 13 November 2026, version h. Replaces 13 November version g and all earlier PROJECT-STATE files.
+Date: 13 November 2026, version i. Replaces 13 November version h and all earlier PROJECT-STATE files.
+
+Changes on 13 November 2026 (version i): Jordan said "Yes, push swimming". Swim Opt 2.29 (darker outlines) and versions g and h pushed to staging and main (f424a84). Checked live: /swimming/ and /swimming/staging/ show v2.29 and the new --lt-line in both themes; the parents page has the new colour; no console errors. Next numbers: decision 191, question 92, design S1.48, Swim Opt 2.30.
 
 Changes on 13 November 2026 (version h): Jordan said "lest get athlewtics to nearly ready like swimming,. then get cross country to the same level as the others. Go" (decision 190). Athletics Aths Opt 2.3 went to athletics staging (de34a4a) and then to athletics main through pull request 1 on github.com (merge ee24451); onlinecarnivals.au/athletics/ and /athletics/parents/ now open the app (checked live, no console errors). The landing page's Athletics Results and Staff sign in buttons point back to athletics/parents/ and athletics/ (landing/index.html; uploaded to hammerpest.github.io through github.com, f6dd093; checked live). This undoes the stop-gap in decision 188. Swim Opt 2.29 (darker outlines, version g) is still local only, not pushed. Cross country's move was passed to the cross country session. Next numbers: decision 191, question 92, design S1.48, Swim Opt 2.30.
 
@@ -728,7 +730,7 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
-### 2.50 Swim Opt 2.29: darker dashed lines and outlines (13 November 2026; committed locally, not pushed)
+### 2.50 Swim Opt 2.29: darker dashed lines and outlines (13 November 2026; on staging and main the same day, f424a84)
 
 Decision 189. Only the --lt-line token changes: light rgba(20,32,63,.3) to .5 (contrast 1.9 to 3.2 to 1 on #f3f5fb); dark rgba(255,255,255,.28) to .4 (2.5 to 3.8 to 1 on #0b1226), in css/styles.css (light, prefers-color-scheme dark, data-theme dark) and parents/parents.css (light, prefers-color-scheme dark; it has no data-theme rule). Badge v2.29 (js/ui1.js, index.html).
 - Check 1: tests/baseline_shots.py before (2.28) and after, 376 screens; plus 20 parents page shots (phone and MacBook, both themes, off, home, events, event, houses). Every screen changed (the lines are on every screen); no screen changed size. A control run of 2.29 with the old line colour forced matched the 2.28 shots except the Organiser badge, so nothing else moved. The only pixels that got lighter in light (or darker in dark) were the badge text and the parents page clock.
