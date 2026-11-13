@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 13 November 2026, version g. Replaces 13 November version f and all earlier PROJECT-STATE files.
+Date: 13 November 2026, version h. Replaces 13 November version g and all earlier PROJECT-STATE files.
+
+Changes on 13 November 2026 (version h): Jordan said "lest get athlewtics to nearly ready like swimming,. then get cross country to the same level as the others. Go" (decision 190). Athletics Aths Opt 2.3 went to athletics staging (de34a4a) and then to athletics main through pull request 1 on github.com (merge ee24451); onlinecarnivals.au/athletics/ and /athletics/parents/ now open the app (checked live, no console errors). The landing page's Athletics Results and Staff sign in buttons point back to athletics/parents/ and athletics/ (landing/index.html; uploaded to hammerpest.github.io through github.com, f6dd093; checked live). This undoes the stop-gap in decision 188. Swim Opt 2.29 (darker outlines, version g) is still local only, not pushed. Cross country's move was passed to the cross country session. Next numbers: decision 191, question 92, design S1.48, Swim Opt 2.30.
 
 Changes on 13 November 2026 (version g): In the cross country project (XC Opt 14) a fresh-eyes review found the landing look's outline colour, --lt-line, gave only 1.9 to 1 against the light background, under the 3 to 1 needed for control edges. Jordan approved a darker line there and said all three carnival apps should be the same (decision 189). Built as Swim Opt 2.29: --lt-line is rgba(20,32,63,.5) in light (was .3) and rgba(255,255,255,.4) in dark (was .28), in css/styles.css and parents/parents.css. Badge v2.29. Checks 1 to 3 passed (2.50). Committed locally only: not pushed to staging or main (Jordan's word first). The landing page (landing/index.html, --line) still has the old values; left alone (Jordan's word first). Next numbers: decision 190, question 92, design S1.48, Swim Opt 2.30.
 
@@ -1245,6 +1247,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+190. (13 November 2026) Jordan said "lest get athlewtics to nearly ready like swimming,. then get cross country to the same level as the others. Go": athletics main gets the app and the landing page Athletics buttons open /athletics/ and /athletics/parents/ again (replaces the stop-gap in 188). Done the same day.
 189. (13 November 2026, cross country decision 5) Jordan approved darker dashed lines and outlines (--lt-line rgba(20,32,63,.5) light, rgba(255,255,255,.4) dark) and said all three carnival apps should be similar. Built as Swim Opt 2.29.
 188. (13 November 2026) Jordan said "staging": the landing page's Athletics buttons open athletics staging (/athletics/staging/ and /athletics/staging/parents/) until athletics main has the app.
 187. (13 November 2026, answers question 90) Jordan said "yes change": the Announcer "In the water now" label is navy in the light theme. Built as Swim Opt 2.28.
