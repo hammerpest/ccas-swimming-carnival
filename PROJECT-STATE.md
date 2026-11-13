@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 13 November 2026, version e. Replaces 13 November version d and all earlier PROJECT-STATE files.
+Date: 13 November 2026, version f. Replaces 13 November version e and all earlier PROJECT-STATE files.
+
+Changes on 13 November 2026 (version f): Jordan found the landing page's Athletics Staff sign in did not work (athletics main has no app; only docs and design). Given the choice of putting athletics on main or pointing the buttons at staging, Jordan said "staging" (decision 188). The landing page's Athletics Results and Staff sign in now open athletics/staging/parents/ and athletics/staging/ (landing/index.html; uploaded to the hammerpest.github.io repo through github.com, 0a850b6, Pages deploy succeeded). When athletics main gets the app, point them back to athletics/parents/ and athletics/. Next numbers: decision 189, question 92, design S1.48, Swim Opt 2.29.
 
 Changes on 13 November 2026 (version e): Jordan said "Yes, push staging" for athletics: Aths Opt 2.2 (the swimming S1.46 look in the athletics app, built from this session) was uploaded through github.com (the athletics repo has no push token) and all five staging deploys succeeded (athletics PROJECT-STATE version bu). New problem 25: the school network's Fortinet filter blocks onlinecarnivals.au ("Fortiguard SDNS Blocked Page"), so devices on school Wi-Fi cannot open the apps at the new address; github.com still works. New question 91 (Jordan: "I'll sort that later"). Next numbers: decision 188, question 92, design S1.48, Swim Opt 2.29.
 
@@ -1234,6 +1236,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+188. (13 November 2026) Jordan said "staging": the landing page's Athletics buttons open athletics staging (/athletics/staging/ and /athletics/staging/parents/) until athletics main has the app.
 187. (13 November 2026, answers question 90) Jordan said "yes change": the Announcer "In the water now" label is navy in the light theme. Built as Swim Opt 2.28.
 186. (13 November 2026) Jordan said to do 2.22 (decisions 171, 172), 2.23 (slip reader, problem 24) and 2.25 (job screens, S1.46 version 4) together, plus more items Jordan is adding. Wait for Jordan's "Go" before building any of it.
 185. (13 November 2026, built in Swim Opt 2.27) Jordan picked S1.47 option B for the landing page runner dot: a thin chequered finish line at the right end of each lane; the dot keeps its speed, crosses the line (the line flashes yellow) and fades as it runs off the lane edge. It never stops under Staff sign in. No dot or line under reduced motion. Sample: design/S1.47-landing-runner.html. Not built.
