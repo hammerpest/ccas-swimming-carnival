@@ -116,8 +116,8 @@ nav.tabs a[aria-current=page]{color:var(--ink);font-weight:800;border-top-color:
 /* ===== Swim Opt 2.24 (design S1.46 version 4, decisions 178, 182, 183): the onlinecarnivals.au landing look.
    Ticker, brand bar header with a big uppercase heading, lanes in place of cards, outlined house places, bars that
    grow once with the yellow runner dot. Kept: medals, house dots and colours, chips, the NEW RECORD tag, Mono times, every word. ===== */
-:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.3);--lt-y:#8a6c00}
-@media (prefers-color-scheme:dark){:root{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907}}
+:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.5);--lt-y:#8a6c00}
+@media (prefers-color-scheme:dark){:root{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.4);--lt-y:#ffc907}}
 body{background:var(--lt-bg)}
 .ticker{background:#ffc907;color:#14203f;overflow:hidden;white-space:nowrap;font:700 14px/36px var(--font-mono);letter-spacing:1px;text-transform:uppercase;padding-top:env(safe-area-inset-top,0px)}
 .ticker div{display:inline-block;padding-left:100%;animation:tick 40s linear infinite}

@@ -288,9 +288,9 @@ body:has(.pbar) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
 /* ===== Swim Opt 2.24 (design S1.46 version 4, decisions 178 to 183): the onlinecarnivals.au landing look on the
    PIN, Which carnival and Choose your job screens (html.homes, set in renderHeader). Every job screen keeps the look above. ===== */
-:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.3);--lt-y:#8a6c00;--lt-glow:rgba(255,201,7,.16)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}}
-:root[data-theme="dark"]{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.28);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}
+:root{--lt-bg:#f3f5fb;--lt-ink:#14203f;--lt-muted:#4a5573;--lt-line:rgba(20,32,63,.5);--lt-y:#8a6c00;--lt-glow:rgba(255,201,7,.16)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.4);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}}
+:root[data-theme="dark"]{--lt-bg:#0b1226;--lt-ink:#ffffff;--lt-muted:#b9c2de;--lt-line:rgba(255,255,255,.4);--lt-y:#ffc907;--lt-glow:rgba(255,201,7,.08)}
 html.homes body{background:var(--lt-bg)}
 html.homes body::before{background:var(--lt-bg)}
 /* ticker (decorative, hidden from screen readers; still under reduced motion) */

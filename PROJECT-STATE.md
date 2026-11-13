@@ -1,6 +1,8 @@
 # PROJECT-STATE: CCAS Swimming Carnival App
 
-Date: 13 November 2026, version f. Replaces 13 November version e and all earlier PROJECT-STATE files.
+Date: 13 November 2026, version g. Replaces 13 November version f and all earlier PROJECT-STATE files.
+
+Changes on 13 November 2026 (version g): In the cross country project (XC Opt 14) a fresh-eyes review found the landing look's outline colour, --lt-line, gave only 1.9 to 1 against the light background, under the 3 to 1 needed for control edges. Jordan approved a darker line there and said all three carnival apps should be the same (decision 189). Built as Swim Opt 2.29: --lt-line is rgba(20,32,63,.5) in light (was .3) and rgba(255,255,255,.4) in dark (was .28), in css/styles.css and parents/parents.css. Badge v2.29. Checks 1 to 3 passed (2.50). Committed locally only: not pushed to staging or main (Jordan's word first). The landing page (landing/index.html, --line) still has the old values; left alone (Jordan's word first). Next numbers: decision 190, question 92, design S1.48, Swim Opt 2.30.
 
 Changes on 13 November 2026 (version f): Jordan found the landing page's Athletics Staff sign in did not work (athletics main has no app; only docs and design). Given the choice of putting athletics on main or pointing the buttons at staging, Jordan said "staging" (decision 188). The landing page's Athletics Results and Staff sign in now open athletics/staging/parents/ and athletics/staging/ (landing/index.html; uploaded to the hammerpest.github.io repo through github.com, 0a850b6, Pages deploy succeeded). When athletics main gets the app, point them back to athletics/parents/ and athletics/. Next numbers: decision 189, question 92, design S1.48, Swim Opt 2.29.
 
@@ -724,6 +726,13 @@ Canvas "CCAS Swim S1.39 Options": https://claude.ai/artifact/4RQVvLyyJjPp9REjWEB
 - Decision 118 then changed the phone: a photo that looks like two slips or is muddled is no longer refused. It is sent with every lane yellow, an amber "the photo may show more than one slip. The Recorder will check it." and a slip panel chip "May show more than one slip: check the photo". The phone only refuses when it cannot tell the race (race number unreadable or unsure) or the slip is for another race ("Wrong slip?").
 - Not re-run after 118: check 3 (Jordan asked to stop the rounds); a live read on staging (Jordan testing there).
 
+### 2.50 Swim Opt 2.29: darker dashed lines and outlines (13 November 2026; committed locally, not pushed)
+
+Decision 189. Only the --lt-line token changes: light rgba(20,32,63,.3) to .5 (contrast 1.9 to 3.2 to 1 on #f3f5fb); dark rgba(255,255,255,.28) to .4 (2.5 to 3.8 to 1 on #0b1226), in css/styles.css (light, prefers-color-scheme dark, data-theme dark) and parents/parents.css (light, prefers-color-scheme dark; it has no data-theme rule). Badge v2.29 (js/ui1.js, index.html).
+- Check 1: tests/baseline_shots.py before (2.28) and after, 376 screens; plus 20 parents page shots (phone and MacBook, both themes, off, home, events, event, houses). Every screen changed (the lines are on every screen); no screen changed size. A control run of 2.29 with the old line colour forced matched the 2.28 shots except the Organiser badge, so nothing else moved. The only pixels that got lighter in light (or darker in dark) were the badge text and the parents page clock.
+- Check 2: built-in browser on the local test page (Claude in Chrome not used for this one-token change): app and parents page read the new token, v2.29, no sideways scroll, no console errors, all files 200. Tests: engine and parents_test pass.
+- Check 3: PASS. Every difference is a line or outline, or the badge; both themes right; nothing too heavy. Note: on the light parents and Announcer screens the dashed dividers now sit a little stronger than the pale table row rules.
+
 ### 2.49 Swim Opt 2.28: "In the water now" label navy in the light theme (13 November 2026; on staging and main the same day, 447de58)
 
 Decision 187. css/styles.css only (html.jobs .water .label #1d3160 in light; dark keeps var(--navy-muted)). Badge v2.28.
@@ -1236,6 +1245,7 @@ Also: STOP with fewer splits than swimmers asks first; Fix splits deletes a doub
 163. (9 November 2026, answers question 78) Primary relays have two groups: Junior (ages 8, 9, 10) and Senior (ages 11, 12). Read as applying to both the freestyle and medley relays.
 162. (9 November 2026, answers question 77) Primary results go to the same next level as high school, in the same HY3 file layout (2.29, 2.30).
 161. (9 November 2026, answers question 76) Primary students swim every 50 m race (fly, back, free, breast), the 100 m freestyle and the 4 x 50 m relays. No 200 m freestyle for primary.
+189. (13 November 2026, cross country decision 5) Jordan approved darker dashed lines and outlines (--lt-line rgba(20,32,63,.5) light, rgba(255,255,255,.4) dark) and said all three carnival apps should be similar. Built as Swim Opt 2.29.
 188. (13 November 2026) Jordan said "staging": the landing page's Athletics buttons open athletics staging (/athletics/staging/ and /athletics/staging/parents/) until athletics main has the app.
 187. (13 November 2026, answers question 90) Jordan said "yes change": the Announcer "In the water now" label is navy in the light theme. Built as Swim Opt 2.28.
 186. (13 November 2026) Jordan said to do 2.22 (decisions 171, 172), 2.23 (slip reader, problem 24) and 2.25 (job screens, S1.46 version 4) together, plus more items Jordan is adding. Wait for Jordan's "Go" before building any of it.
